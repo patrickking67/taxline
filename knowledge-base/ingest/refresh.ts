@@ -17,6 +17,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const KB_ROOT = path.resolve(__dirname, '..');
@@ -30,6 +31,8 @@ interface Source {
   lastReviewed: string;
   verify: boolean;
   note: string;
+  /** sha256 (first 16 hex) of the source file at last review — detects drift. */
+  contentHash?: string;
 }
 
 interface Manifest {
@@ -64,6 +67,7 @@ async function refresh(): Promise<void> {
 
   let reviewed = 0;
   let missing = 0;
+  let changed = 0;
 
   for (const src of manifest.sources) {
     const p = sourcePath(src);
@@ -86,10 +90,20 @@ async function refresh(): Promise<void> {
     //   const fresh = await fetchAuthoritativeSource(src);     // e.g. IRS page
     //   const diff  = computeDiff(content, fresh);
     //   if (diff.hasChanges) queueForHumanReview(src, diff);   // never auto-publish
-    // Network was unavailable at seed time, so we only re-read the local seed and
-    // refresh the review stamp. The `content` length is logged as a liveness check.
+    // Network was unavailable at seed time, so we hash the local file instead: a
+    // changed hash since the last review means the seed drifted and (for verify:true
+    // sources) must be re-confirmed against the IRS source before it is trusted.
     // ───────────────────────────────────────────────────────────────────────
-    void content.length;
+    const hash = createHash('sha256').update(content).digest('hex').slice(0, 16);
+    if (src.contentHash && src.contentHash !== hash) {
+      changed += 1;
+      // eslint-disable-next-line no-console
+      console.log(
+        `  [changed] ${src.id}: ${src.contentHash} → ${hash}` +
+          (src.verify ? ' (verify:true — re-confirm against the IRS source)' : ''),
+      );
+    }
+    src.contentHash = hash;
 
     src.lastReviewed = stamp;
     reviewed += 1;
@@ -100,8 +114,8 @@ async function refresh(): Promise<void> {
 
   // eslint-disable-next-line no-console
   console.log(
-    `KB refreshed: ${reviewed} source(s) re-reviewed, ${missing} missing. updatedAt=${stamp}. ` +
-      `Verify-flagged tax sources still require human confirmation against the live IRS source.`,
+    `KB refreshed: ${reviewed} source(s) re-reviewed, ${changed} changed, ${missing} missing. ` +
+      `updatedAt=${stamp}. Verify-flagged tax sources still require human confirmation against the live IRS source.`,
   );
 }
 

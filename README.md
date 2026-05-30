@@ -22,6 +22,9 @@ npm install          # installs the site workspace
 npm run dev          # Astro dev server → http://localhost:4321
 npm run build        # static build → site/dist  (fingerprinted assets in _assets/)
 npm run check        # astro check (typecheck)
+npm run lint         # eslint (flat config, whole repo)
+npm run typecheck    # astro check + service + worker
+npm run format       # prettier --write
 ```
 
 The product app is at **`/app`** (intake queue → document → extraction review → approve). It is GUI-first; no command line is required to use the product.
@@ -39,15 +42,28 @@ Five agents behind an orchestrator, retrieving over `knowledge-base/`. Architect
 
 ## Backend adapter boundary
 
-`site/src/lib/api/` is the seam between the static frontend and any backend:
+`site/src/lib/api/` is the seam between the static frontend and any backend. There are **two
+independent seams**, both defaulting to a fully offline mock so the site works with no server:
+
+**`fleet`** — the agent backend (queue · document · run · memory search):
 
 | Adapter | When | Config |
 | --- | --- | --- |
-| `mock` (default) | static Pages, offline, demos | none |
-| `cloudflare` | real form backend | `PUBLIC_API_ADAPTER=cloudflare`, `PUBLIC_CONTACT_ENDPOINT=<worker url>` |
-| Azure Functions / Supabase / Formspree | swap-in | any endpoint that accepts `POST JSON → { ok, id }` |
+| `mockFleet` (default) | static Pages, offline, demos — simulates the orchestrator **and the human-approval gate** in the browser | none |
+| `serviceFleet` | the real Node fleet (`service/`) | `PUBLIC_API_ADAPTER`≠`mock` + `PUBLIC_SERVICE_ENDPOINT=<service url>` |
 
-The Cloudflare Worker lives in `workers/contact/` (honeypot + email validation, optional KV storage + Slack notify). Deploy with `wrangler deploy`; see `workers/contact/README.md`.
+**`api`** — the demo/contact form:
+
+| Adapter | When | Config |
+| --- | --- | --- |
+| `mock` (default) | static Pages, offline | none |
+| `cloudflare` | real form backend | `PUBLIC_API_ADAPTER=cloudflare` + `PUBLIC_CONTACT_ENDPOINT=<worker url>` |
+
+Any endpoint honoring the same contract (Azure Functions / Supabase / Formspree) drops in
+without touching components. The Cloudflare Worker lives in `workers/contact/` (honeypot +
+email validation, optional KV + Slack notify; `wrangler deploy`). The Node fleet ships as a
+container — `Dockerfile` + `fly.toml` at the repo root (`fly deploy`). Full topology and the
+deploy runbook: **`docs/system-design.md`**.
 
 ## Build, cache & deploy
 

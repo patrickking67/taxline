@@ -1,7 +1,10 @@
 {
   "updatedAt": "2026-05-30",
   "cadence": "monthly",
-  "domains": ["tax", "practices"],
+  "domains": [
+    "tax",
+    "practices"
+  ],
   "sources": [
     {
       "id": "filing-deadlines",
@@ -10,7 +13,8 @@
       "kind": "rules",
       "lastReviewed": "2026-05-30",
       "verify": true,
-      "note": "Describes the statutory rule and form map. Exact dates/holiday shifts must be verified against the current IRS source before relying on them."
+      "note": "Describes the statutory rule and form map. Exact dates/holiday shifts must be verified against the current IRS source before relying on them.",
+      "contentHash": "707550305e7e9669"
     },
     {
       "id": "forms-by-document",
@@ -19,7 +23,8 @@
       "kind": "reference",
       "lastReviewed": "2026-05-30",
       "verify": true,
-      "note": "Maps inbound documents to the forms they feed. Verify box/line specifics against current IRS instructions."
+      "note": "Maps inbound documents to the forms they feed. Verify box/line specifics against current IRS instructions.",
+      "contentHash": "cf9b524a65b97560"
     },
     {
       "id": "entities-and-returns",
@@ -28,7 +33,48 @@
       "kind": "reference",
       "lastReviewed": "2026-05-30",
       "verify": true,
-      "note": "Entity-to-return mapping. Verify any thresholds or elections against current IRS guidance."
+      "note": "Entity-to-return mapping. Verify any thresholds or elections against current IRS guidance.",
+      "contentHash": "82680953b88e5237"
+    },
+    {
+      "id": "deductions-and-credits",
+      "title": "Deductions and credits",
+      "domain": "tax",
+      "kind": "reference",
+      "lastReviewed": "2026-05-30",
+      "verify": true,
+      "note": "Deduction vs. credit and the §162 ordinary-and-necessary rule. Amounts and category limits are year-specific — verify against the IRS source.",
+      "contentHash": "ed924436ac976688"
+    },
+    {
+      "id": "depreciation",
+      "title": "Depreciation — MACRS, §179, bonus",
+      "domain": "tax",
+      "kind": "reference",
+      "lastReviewed": "2026-05-30",
+      "verify": true,
+      "note": "MACRS class lives, §179 expensing, and bonus depreciation. Dollar limits and bonus percentages change yearly — verify.",
+      "contentHash": "bc3ae955a5e3862a"
+    },
+    {
+      "id": "estimated-tax",
+      "title": "Estimated tax and safe harbor",
+      "domain": "tax",
+      "kind": "rules",
+      "lastReviewed": "2026-05-30",
+      "verify": true,
+      "note": "Quarterly estimates and the underpayment safe harbor. Safe-harbor percentages and thresholds are year-specific — verify.",
+      "contentHash": "495241bb0e37ad00"
+    },
+    {
+      "id": "recordkeeping-and-substantiation",
+      "title": "Recordkeeping and substantiation",
+      "domain": "tax",
+      "kind": "reference",
+      "lastReviewed": "2026-05-30",
+      "verify": true,
+      "note": "General §6001 recordkeeping and §274(d) heightened substantiation. Confirm retention periods against the IRS source.",
+      "contentHash": "667424abe37e16cc"
     },
     {
       "id": "ai-fluency-4ds",
@@ -37,7 +83,8 @@
       "kind": "method",
       "lastReviewed": "2026-05-30",
       "verify": false,
-      "note": "Distilled engineering practice. Not tax advice."
+      "note": "Distilled engineering practice. Not tax advice.",
+      "contentHash": "0b78eca37cd410da"
     },
     {
       "id": "prompting",
@@ -46,7 +93,8 @@
       "kind": "method",
       "lastReviewed": "2026-05-30",
       "verify": false,
-      "note": "Distilled engineering practice."
+      "note": "Distilled engineering practice.",
+      "contentHash": "4e34414a4f61e7d1"
     },
     {
       "id": "agent-architecture",
@@ -55,7 +103,8 @@
       "kind": "method",
       "lastReviewed": "2026-05-30",
       "verify": false,
-      "note": "Distilled engineering practice — the principles this service is built on."
+      "note": "Distilled engineering practice — the principles this service is built on.",
+      "contentHash": "59396627282356b5"
     },
     {
       "id": "claude-api-notes",
@@ -64,7 +113,8 @@
       "kind": "reference",
       "lastReviewed": "2026-05-30",
       "verify": false,
-      "note": "Distilled engineering reference for the Messages API and model lineup."
+      "note": "Distilled engineering reference for the Messages API and model lineup.",
+      "contentHash": "e10eb01ef42fef17"
     }
   ]
 }
