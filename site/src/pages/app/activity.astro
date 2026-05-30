@@ -1,0 +1,48 @@
+---
+import AppShell from '../../components/app/AppShell.astro';
+import FleetRunner from '../../components/app/FleetRunner.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import { Icon } from 'astro-icon/components';
+import { fleet, orchestratorName } from '../../lib/data/fleet';
+
+const statuses = ['running', 'running', 'waiting', 'idle', 'idle'];
+---
+
+<AppShell title="Agent activity" active="app/activity">
+  <div class="space-y-6 p-6">
+    <div>
+      <p class="ds-eyebrow">Agent activity</p>
+      <h1 class="ds-h2 mt-2">Run the fleet — approve before anything ships.</h1>
+      <p class="ds-small mt-2 max-w-2xl">
+        Type a task. {orchestratorName} routes it to the right agent, collects cited output, and holds
+        it at the approval gate. Nothing leaves the workspace until you approve.
+      </p>
+    </div>
+
+    <FleetRunner />
+
+    <div>
+      <span class="ds-eyebrow text-fg-faint">The fleet</span>
+      <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          fleet.map((a, i) => (
+            <div class="flex items-center gap-3 rounded-lg border border-border bg-panel p-3">
+              <div class="grid size-8 shrink-0 place-items-center rounded-md border border-border bg-raised">
+                <Icon name={a.icon} class="size-4 text-fg-muted" />
+              </div>
+              <span class="min-w-0 flex-1">
+                <span class="text-[13px] font-semibold text-fg">{a.codename}</span>{' '}
+                <span class="font-mono text-[11px] text-fg-faint">{a.role}</span>
+              </span>
+              <StatusPill status={statuses[i] ?? 'idle'} />
+            </div>
+          ))
+        }
+      </div>
+      <p class="mt-4 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
+        <Icon name="lucide:user-check" class="size-4 text-accent" />The orchestrator routes and collects — it
+        never approves. That node is yours.
+      </p>
+    </div>
+  </div>
+</AppShell>

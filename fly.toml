@@ -1,0 +1,46 @@
+# Fly.io config for the Taxline agent service (a long-lived Node process with an
+# on-disk vector memory). Deploy from the REPO ROOT:
+#
+#   fly launch --no-deploy        # first time: claims the app name, keeps this file
+#   fly volumes create taxline_data --size 1 --region iad
+#   fly secrets set ANTHROPIC_API_KEY=sk-ant-...  SITE_ORIGIN=https://patrickking67.github.io
+#   fly deploy
+#
+# Without ANTHROPIC_API_KEY the service still boots in deterministic offline mode.
+app = "taxline-service"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8787"
+  EMBEDDINGS_PROVIDER = "local"
+  # Secrets (never in this file):
+  #   ANTHROPIC_API_KEY  — enables the live agentic loop
+  #   SITE_ORIGIN        — CORS allowlist, e.g. https://patrickking67.github.io
+  #   VOYAGE_API_KEY / OPENAI_API_KEY — only if EMBEDDINGS_PROVIDER is voyage/openai
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/health"
+
+# Persist the vector memory store across deploys.
+[[mounts]]
+  source = "taxline_data"
+  destination = "/app/service/.data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

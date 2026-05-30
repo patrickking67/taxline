@@ -1,0 +1,104 @@
+---
+import AppShell from '../../components/app/AppShell.astro';
+import { Icon } from 'astro-icon/components';
+
+const examples = [
+  'section 162 business deduction',
+  'partnership 1065 due date',
+  'depreciation §179',
+  'W-2 vs 1099-NEC',
+];
+---
+
+<AppShell title="Research" active="app/research">
+  <div class="space-y-6 p-6">
+    <div>
+      <p class="ds-eyebrow">Research</p>
+      <h1 class="ds-h2 mt-2">Citation-backed answers from the knowledge base.</h1>
+      <p class="ds-small mt-2 max-w-2xl">
+        Atlas retrieves over the living knowledge base and returns sourced passages — never a freeform
+        guess. No source, no answer.
+      </p>
+    </div>
+
+    <div class="rounded-lg border border-border bg-panel p-4 shadow-1">
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-raised px-3 py-2">
+          <Icon name="lucide:search" class="size-4 shrink-0 text-fg-faint" />
+          <input
+            id="rs-q"
+            type="text"
+            placeholder="Search the knowledge base…"
+            class="w-full bg-transparent text-sm text-fg placeholder:text-fg-faint focus:outline-none"
+          />
+        </div>
+        <button
+          id="rs-go"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-2 text-[13px] font-medium text-on-accent transition-colors hover:bg-accent-hover">
+          Search
+        </button>
+      </div>
+      <div class="mt-2 flex flex-wrap gap-1.5">
+        {
+          examples.map((ex) => (
+            <button
+              type="button"
+              class="rs-ex rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
+              data-ex={ex}>
+              {ex}
+            </button>
+          ))
+        }
+      </div>
+      <div id="rs-out" class="mt-4 hidden"></div>
+    </div>
+  </div>
+</AppShell>
+
+<script>
+  import { fleet, type MemoryHit } from '../../lib/api';
+
+  const esc = (s: string) =>
+    s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+  const q = document.getElementById('rs-q') as HTMLInputElement | null;
+  const go = document.getElementById('rs-go') as HTMLButtonElement | null;
+  const out = document.getElementById('rs-out') as HTMLDivElement | null;
+
+  function card(h: MemoryHit): string {
+    const score = h.score.toFixed(2);
+    return `<div class="rounded-md border border-border-faint bg-inset p-3">
+      <div class="flex items-center justify-between gap-3 font-mono text-[11px]">
+        <span class="truncate text-fg-muted">${esc(h.file)}${h.heading ? ` <span class="text-fg-faint">›</span> <span class="text-fg">${esc(h.heading)}</span>` : ''}</span>
+        <span class="shrink-0 rounded-sm bg-raised px-1.5 py-0.5 tabular-nums text-accent">${score}</span>
+      </div>
+      <p class="mt-2 text-[13px] leading-relaxed text-fg-muted">${esc(h.text)}</p>
+    </div>`;
+  }
+
+  async function search(term: string) {
+    if (!out || !term.trim()) return;
+    out.classList.remove('hidden');
+    out.innerHTML = `<p class="font-mono text-[12px] text-fg-faint">searching…</p>`;
+    try {
+      const hits = await fleet.memorySearch(term, 5);
+      out.innerHTML = hits.length
+        ? `<div class="space-y-2">${hits.map(card).join('')}</div>`
+        : `<div class="rounded-md border border-warn/40 bg-warn-soft px-3 py-2 font-mono text-[12px] text-warn-bright">No matching source. Atlas does not answer from prior knowledge — it would flag this for a human.</div>`;
+    } catch (err) {
+      out.innerHTML = `<div class="rounded-md border border-danger/40 bg-danger-soft px-3 py-2 font-mono text-[12px] text-danger-bright">${esc(err instanceof Error ? err.message : 'Search failed.')}</div>`;
+    }
+  }
+
+  go?.addEventListener('click', () => search(q?.value ?? ''));
+  q?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') search(q.value);
+  });
+  for (const b of document.querySelectorAll<HTMLButtonElement>('.rs-ex')) {
+    b.addEventListener('click', () => {
+      if (q) q.value = b.dataset.ex ?? '';
+      search(b.dataset.ex ?? '');
+    });
+  }
+</script>

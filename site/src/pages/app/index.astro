@@ -21,8 +21,8 @@ const confColor = (c: number | null) =>
         <button type="button" data-tab="approved" class="tab rounded-sm px-3 py-1.5 text-[13px] font-medium">Approved <span class="font-mono text-fg-faint">{approved}</span></button>
       </div>
       <div class="ml-auto flex items-center gap-2">
-        <button type="button" class="inline-flex items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 text-[13px] text-fg-muted transition-colors hover:bg-raised"><Icon name="lucide:sliders-horizontal" class="size-4" />Filter</button>
-        <button type="button" class="inline-flex items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 text-[13px] text-fg-muted transition-colors hover:bg-raised"><Icon name="lucide:arrow-up-down" class="size-4" />Confidence</button>
+        <button id="q-filter" type="button" class="inline-flex items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 text-[13px] text-fg-muted transition-colors hover:bg-raised"><Icon name="lucide:sliders-horizontal" class="size-4" />Needs attention</button>
+        <button id="q-sort" type="button" class="inline-flex items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 text-[13px] text-fg-muted transition-colors hover:bg-raised"><Icon name="lucide:arrow-up-down" class="size-4" />Confidence <span data-caret class="font-mono text-fg-faint"></span></button>
       </div>
     </div>
 
@@ -40,7 +40,7 @@ const confColor = (c: number | null) =>
         </thead>
         <tbody>
           {docs.map((d) => (
-            <tr data-status={d.status} class="row border-b border-border-faint bg-base transition-colors last:border-0 hover:bg-raised">
+            <tr data-status={d.status} data-conf={d.confidence == null ? '' : d.confidence} class="row border-b border-border-faint bg-base transition-colors last:border-0 hover:bg-raised">
               <td class="px-4 py-3">
                 <a href={u('app/' + d.id)} class="flex items-center gap-2.5">
                   <Icon name="lucide:file-text" class="size-4 shrink-0 text-fg-faint" />
@@ -62,20 +62,68 @@ const confColor = (c: number | null) =>
   <script>
     const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.tab'));
     const rows = Array.from(document.querySelectorAll<HTMLTableRowElement>('tr.row'));
-    function setTab(name: string) {
-      for (const t of tabs) {
-        const on = t.dataset.tab === name;
-        t.classList.toggle('bg-raised', on);
-        t.classList.toggle('text-fg', on);
-        t.classList.toggle('text-fg-muted', !on);
-      }
+    const tbody = rows[0]?.parentElement ?? null;
+    const filterBtn = document.getElementById('q-filter');
+    const sortBtn = document.getElementById('q-sort');
+
+    let tab = 'all';
+    let lowOnly = false;
+    let sortDir: 'none' | 'desc' | 'asc' = 'none';
+
+    const conf = (r: HTMLTableRowElement) => {
+      const v = r.dataset.conf;
+      return v === '' || v == null ? NaN : Number(v);
+    };
+
+    function apply() {
       for (const r of rows) {
         const s = r.getAttribute('data-status');
-        const show = name === 'all' || s === name;
-        r.style.display = show ? '' : 'none';
+        const c = conf(r);
+        const tabOk = tab === 'all' || s === tab;
+        const lowOk = !lowOnly || Number.isNaN(c) || c < 0.85; // null/low = needs attention
+        r.style.display = tabOk && lowOk ? '' : 'none';
+      }
+      if (sortDir !== 'none' && tbody) {
+        const sorted = [...rows].sort((a, b) => {
+          const ca = conf(a);
+          const cb = conf(b);
+          if (Number.isNaN(ca) && Number.isNaN(cb)) return 0;
+          if (Number.isNaN(ca)) return 1; // unscored sinks to the bottom
+          if (Number.isNaN(cb)) return -1;
+          return sortDir === 'desc' ? cb - ca : ca - cb;
+        });
+        for (const r of sorted) tbody.appendChild(r);
       }
     }
-    tabs.forEach((t) => t.addEventListener('click', () => setTab(t.dataset.tab || 'all')));
-    setTab('all');
+
+    for (const t of tabs) {
+      t.addEventListener('click', () => {
+        tab = t.dataset.tab || 'all';
+        for (const x of tabs) {
+          const on = x.dataset.tab === tab;
+          x.classList.toggle('bg-raised', on);
+          x.classList.toggle('text-fg', on);
+          x.classList.toggle('text-fg-muted', !on);
+        }
+        apply();
+      });
+    }
+
+    filterBtn?.addEventListener('click', () => {
+      lowOnly = !lowOnly;
+      filterBtn.classList.toggle('border-accent-line', lowOnly);
+      filterBtn.classList.toggle('text-fg', lowOnly);
+      apply();
+    });
+
+    sortBtn?.addEventListener('click', () => {
+      sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+      const caret = sortBtn.querySelector('[data-caret]');
+      if (caret) caret.textContent = sortDir === 'desc' ? '↓' : '↑';
+      apply();
+    });
+
+    tabs.find((t) => t.dataset.tab === 'all')?.classList.add('bg-raised', 'text-fg');
+    apply();
   </script>
 </AppShell>

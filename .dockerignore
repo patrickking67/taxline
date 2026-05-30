@@ -1,0 +1,17 @@
+# Build context is the repo root; the service image needs service/ + knowledge-base/.
+# Exclude everything heavy or host-specific, and never bake secrets in.
+**/node_modules
+**/.data
+**/dist
+**/.astro
+**/.wrangler
+.git
+.github
+.vscode
+.claude
+site
+workers
+docs
+**/.env
+**/.env.*
+!**/.env.example

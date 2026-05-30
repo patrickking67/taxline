@@ -1,0 +1,74 @@
+---
+import AppShell from '../../components/app/AppShell.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import { Icon } from 'astro-icon/components';
+import type { AppDoc } from '../../lib/api/types';
+import { docs } from '../../lib/data/app';
+
+const base = import.meta.env.BASE_URL;
+const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+
+const byClient = new Map<string, AppDoc[]>();
+for (const d of docs) {
+  const arr = byClient.get(d.client) ?? [];
+  arr.push(d);
+  byClient.set(d.client, arr);
+}
+const clients = [...byClient.entries()].map(([client, list]) => {
+  const confs = list.map((d) => d.confidence).filter((c): c is number => c != null);
+  const mean = confs.length ? confs.reduce((a, b) => a + b, 0) / confs.length : null;
+  const forms = [...new Set(list.map((d) => d.type))];
+  return { client, list, mean, forms };
+});
+const confColor = (c: number | null): string =>
+  c == null ? 'text-fg-faint' : c >= 0.85 ? 'text-ok-bright' : c >= 0.6 ? 'text-warn-bright' : 'text-danger-bright';
+---
+
+<AppShell title="Clients" active="app/clients">
+  <div class="space-y-6 p-6">
+    <div>
+      <p class="ds-eyebrow">Clients</p>
+      <h1 class="ds-h2 mt-2">Every client, every form, with status and confidence.</h1>
+      <p class="ds-small mt-2 max-w-2xl">
+        Your book rolled up by client — documents in flight, forms in play, and the mean extraction
+        confidence across each engagement.
+      </p>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-2">
+      {
+        clients.map((c) => (
+          <div class="rounded-lg border border-border bg-panel p-5 shadow-1">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h2 class="text-[15px] font-semibold text-fg">{c.client}</h2>
+                <div class="mt-1 flex flex-wrap gap-1.5">
+                  {c.forms.map((f) => (
+                    <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[10px] text-fg-muted">{f}</span>
+                  ))}
+                </div>
+              </div>
+              <div class="shrink-0 text-right">
+                <div class={`font-mono text-lg font-semibold tabular-nums ${confColor(c.mean)}`}>
+                  {c.mean == null ? '—' : c.mean.toFixed(2)}
+                </div>
+                <div class="font-mono text-[10px] uppercase tracking-wider text-fg-faint">mean conf</div>
+              </div>
+            </div>
+            <div class="mt-4 divide-y divide-border-faint border-t border-border-faint">
+              {c.list.map((d) => (
+                <a
+                  href={u('app/' + d.id)}
+                  class="-mx-2 flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-raised">
+                  <Icon name="lucide:file-text" class="size-4 shrink-0 text-fg-faint" />
+                  <span class="min-w-0 flex-1 truncate font-mono text-[12px] text-fg">{d.name}</span>
+                  <StatusPill status={d.status} />
+                </a>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</AppShell>

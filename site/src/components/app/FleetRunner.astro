@@ -1,0 +1,206 @@
+---
+// Interactive "run the fleet" panel — the live demo of the agentic loop + the
+// human-approval gate. It calls the resolved FleetService (mock on static Pages,
+// the Node service when PUBLIC_API_ADAPTER/endpoint are set), renders the WITHHELD
+// draft, and only ships once you approve. Works fully offline via the mock.
+import { Icon } from 'astro-icon/components';
+import { docs } from '../../lib/data/app';
+
+const examples = [
+  'What makes a business expense deductible?',
+  'When is a partnership 1065 return due?',
+  'Classify and extract acme_w2_2024',
+];
+---
+
+<div class="overflow-hidden rounded-lg border border-border bg-panel shadow-1" id="fleet-runner">
+  <div class="flex items-center justify-between gap-3 border-b border-border px-4 py-2.5">
+    <span class="inline-flex items-center gap-2 font-mono text-[13px] text-fg-muted">
+      <span class="text-accent">&gt;_</span> run the fleet
+    </span>
+    <span id="fr-mode" class="inline-flex items-center gap-1.5 font-mono text-[11px] text-fg-faint">
+      <span class="size-1.5 rounded-full bg-fg-faint"></span>checking…
+    </span>
+  </div>
+
+  <div class="p-4">
+    <label for="fr-task" class="ds-eyebrow text-fg-faint">Task</label>
+    <textarea
+      id="fr-task"
+      rows="2"
+      class="mt-2 w-full resize-y rounded-md border border-border bg-raised px-3 py-2 text-sm text-fg placeholder:text-fg-faint focus:border-accent focus:outline-none focus:ring-[3px] focus:ring-accent-line"
+      placeholder="Ask the fleet a tax question, or run extraction on a document…"></textarea>
+
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <select
+        id="fr-doc"
+        class="rounded-md border border-border bg-raised px-2.5 py-[7px] font-mono text-[12px] text-fg-muted focus:border-accent focus:outline-none">
+        <option value="">no document</option>
+        {docs.map((d) => <option value={d.id}>{d.name}</option>)}
+      </select>
+      <button
+        id="fr-run"
+        type="button"
+        class="inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-[7px] text-[13px] font-medium text-on-accent transition-colors hover:bg-accent-hover active:bg-accent-press">
+        <Icon name="lucide:play" class="size-4" />Run
+      </button>
+      <span class="ml-auto flex flex-wrap gap-1.5">
+        {
+          examples.map((ex) => (
+            <button
+              type="button"
+              class="fr-ex rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
+              data-ex={ex}>
+              {ex}
+            </button>
+          ))
+        }
+      </span>
+    </div>
+
+    <div id="fr-result" class="mt-4 hidden"></div>
+  </div>
+</div>
+
+<script>
+  import { fleet, type RunInput, type RunResult } from '../../lib/api';
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
+  const esc = (s: string) =>
+    s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+  const task = $<HTMLTextAreaElement>('fr-task');
+  const docSel = $<HTMLSelectElement>('fr-doc');
+  const runBtn = $<HTMLButtonElement>('fr-run');
+  const result = $<HTMLDivElement>('fr-result');
+  const mode = $<HTMLSpanElement>('fr-mode');
+
+  let last: RunInput | null = null;
+
+  // Mode badge — live agents vs deterministic offline mock.
+  fleet
+    .health()
+    .then((h) => {
+      if (!mode) return;
+      const live = h.ok && h.liveAgents;
+      const dot = live ? 'bg-accent dot-pulse' : 'bg-warn';
+      const label = !h.ok
+        ? 'service unreachable'
+        : live
+          ? `live · ${h.provider} memory`
+          : 'offline mock';
+      mode.innerHTML = `<span class="size-1.5 rounded-full ${dot}"></span>${esc(label)}`;
+    })
+    .catch(() => {});
+
+  const band = (v: number | null) =>
+    v == null ? 'none' : v >= 0.85 ? 'ok' : v >= 0.6 ? 'warn' : 'danger';
+  const fillClass = { ok: 'bg-ok', warn: 'bg-warn', danger: 'bg-danger', none: 'bg-border-strong' };
+  const valClass = {
+    ok: 'text-ok-bright',
+    warn: 'text-warn-bright',
+    danger: 'text-danger-bright',
+    none: 'text-fg-faint',
+  };
+
+  function meter(label: string, v: number | null): string {
+    const b = band(v);
+    const pct = v == null ? 0 : Math.round(v * 100);
+    return `<div class="flex items-center gap-3.5">
+      <div class="w-[150px] shrink-0 truncate text-[13px] text-fg-muted">${esc(label)}</div>
+      <div class="h-[7px] flex-1 overflow-hidden rounded-full border border-border-faint bg-inset">
+        <div class="h-full rounded-full ${fillClass[b]}" style="width:${pct}%"></div>
+      </div>
+      <div class="w-[46px] shrink-0 text-right font-mono text-xs font-medium tabular-nums ${valClass[b]}">${v == null ? '—' : v.toFixed(2)}</div>
+    </div>`;
+  }
+
+  function render(r: RunResult) {
+    if (!result) return;
+    const shipped = r.approved;
+    const banner = shipped
+      ? `<div class="flex items-center gap-2 rounded-md border border-border bg-ok-soft px-3 py-2 text-[13px] font-medium text-ok-bright"><span class="size-1.5 rounded-full bg-accent"></span>Approved · shipped</div>`
+      : `<div class="flex items-center gap-2 rounded-md border border-warn/40 bg-warn-soft px-3 py-2 text-[13px] font-medium text-warn-bright">🔒 Output withheld · a human approves before anything ships</div>`;
+
+    const fields = (r.fields ?? []).length
+      ? `<div class="mt-4"><span class="ds-eyebrow text-fg-faint">Fields</span><div class="mt-2 space-y-2">${r
+          .fields!.map((f) => meter(f.label, f.confidence))
+          .join('')}</div></div>`
+      : '';
+
+    const cites = r.citations.length
+      ? `<div class="mt-4"><span class="ds-eyebrow text-fg-faint">Citations</span><div class="mt-2 flex flex-wrap gap-1.5">${r.citations
+          .map(
+            (c) =>
+              `<span class="inline-flex items-center gap-[7px] rounded-sm border border-border bg-base px-2.5 py-[5px] font-mono text-[11px] text-fg-muted"><span class="size-[13px] text-info">§</span>${esc(c.file)}${c.heading ? ` · <b class="font-medium text-fg">${esc(c.heading)}</b>` : ''}</span>`,
+          )
+          .join('')}</div></div>`
+      : '';
+
+    const review = r.needsHumanReview.length
+      ? `<div class="mt-4"><span class="ds-eyebrow text-fg-faint">Needs human review</span><ul class="mt-2 space-y-1">${r.needsHumanReview
+          .map(
+            (it) =>
+              `<li class="flex items-start gap-2 font-mono text-[12px] text-warn-bright"><span class="mt-1.5 size-1 shrink-0 rounded-full bg-warn"></span><span>${esc(it.label ? it.label + ' — ' : '')}${esc(it.reason)}</span></li>`,
+          )
+          .join('')}</ul></div>`
+      : '';
+
+    const trace = r.trace.length
+      ? `<div class="mt-4 flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-fg-faint"><span>trace:</span>${r.trace
+          .map(
+            (s, i) =>
+              `${i ? '<span class="text-fg-faint">→</span>' : ''}<span class="rounded-sm bg-raised px-1.5 py-0.5 text-fg-muted">${esc(s.agent)}</span>`,
+          )
+          .join('')}</div>`
+      : '';
+
+    const approve = shipped
+      ? ''
+      : `<button id="fr-approve" type="button" class="mt-4 inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-2 text-[13px] font-medium text-on-accent transition-colors hover:bg-accent-hover active:bg-accent-press">✓ Approve &amp; ship</button>`;
+
+    result.classList.remove('hidden');
+    result.innerHTML = `${banner}
+      <pre class="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-border-faint bg-inset p-3 font-mono text-[12px] leading-relaxed text-fg">${esc(r.output)}</pre>
+      ${fields}${cites}${review}${trace}${approve}`;
+
+    const approveBtn = $<HTMLButtonElement>('fr-approve');
+    approveBtn?.addEventListener('click', () => last && execute({ ...last, approved: true }));
+  }
+
+  async function execute(input: RunInput) {
+    if (!result || !runBtn) return;
+    last = input;
+    runBtn.disabled = true;
+    const prev = runBtn.innerHTML;
+    runBtn.innerHTML = 'Running…';
+    try {
+      const r = await fleet.run(input);
+      render(r);
+    } catch (err) {
+      result.classList.remove('hidden');
+      result.innerHTML = `<div class="rounded-md border border-danger/40 bg-danger-soft px-3 py-2 font-mono text-[12px] text-danger-bright">${esc(
+        err instanceof Error ? err.message : 'Run failed.',
+      )}</div>`;
+    } finally {
+      runBtn.disabled = false;
+      runBtn.innerHTML = prev;
+    }
+  }
+
+  runBtn?.addEventListener('click', () => {
+    const t = (task?.value ?? '').trim();
+    if (!t) {
+      task?.focus();
+      return;
+    }
+    execute({ task: t, docId: docSel?.value || undefined, approved: false });
+  });
+
+  for (const b of document.querySelectorAll<HTMLButtonElement>('.fr-ex')) {
+    b.addEventListener('click', () => {
+      if (task) task.value = b.dataset.ex ?? '';
+      task?.focus();
+    });
+  }
+</script>

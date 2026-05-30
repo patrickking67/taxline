@@ -1,0 +1,87 @@
+---
+import AppShell from '../../components/app/AppShell.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import { Icon } from 'astro-icon/components';
+import { docs } from '../../lib/data/app';
+
+const base = import.meta.env.BASE_URL;
+const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+const wps = docs.filter((d) => d.status === 'approved' || d.lastAgent === 'Workpaper');
+const confColor = (c: number | null): string =>
+  c == null ? 'text-fg-faint' : c >= 0.85 ? 'text-ok-bright' : c >= 0.6 ? 'text-warn-bright' : 'text-danger-bright';
+---
+
+<AppShell title="Workpapers" active="app/workpapers">
+  <div class="space-y-6 p-6">
+    <div>
+      <p class="ds-eyebrow">Workpapers</p>
+      <h1 class="ds-h2 mt-2">Reviewer-ready, sourced end to end.</h1>
+      <p class="ds-small mt-2 max-w-2xl">
+        Ledger assembles lead schedules and tie-outs where every number traces to a source. Open one to
+        check the trail, then approve.
+      </p>
+    </div>
+
+    <div class="grid gap-5 lg:grid-cols-[1fr_minmax(0,420px)]">
+      <div class="rounded-lg border border-border bg-panel p-4 shadow-1">
+        <span class="ds-eyebrow text-fg-faint">Recent workpapers</span>
+        <div class="mt-2 divide-y divide-border-faint">
+          {
+            wps.map((d) => (
+              <a
+                href={u('app/' + d.id)}
+                class="-mx-2 flex items-center gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-raised">
+                <Icon name="lucide:file-stack" class="size-4 shrink-0 text-fg-faint" />
+                <span class="min-w-0 flex-1 truncate font-mono text-[13px] text-fg">{d.name}</span>
+                <span class="hidden font-mono text-[11px] text-fg-muted sm:inline">{d.client}</span>
+                <StatusPill status={d.status} />
+                <span class={`w-10 shrink-0 text-right font-mono text-[12px] tabular-nums ${confColor(d.confidence)}`}>
+                  {d.confidence == null ? '—' : d.confidence.toFixed(2)}
+                </span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="rounded-md border border-paper-border bg-paper p-5 text-paper-ink shadow-2">
+        <div class="flex items-center justify-between border-b border-paper-border pb-3">
+          <div>
+            <div class="font-mono text-[11px] uppercase tracking-wider text-paper-ink-muted">Lead schedule — Cash</div>
+            <div class="mt-0.5 text-[15px] font-semibold">Acme Studios LLC · FY2025</div>
+          </div>
+          <span class="font-mono text-[11px] text-paper-ink-muted">WP-1100</span>
+        </div>
+        <table class="mt-3 w-full border-collapse text-left">
+          <thead>
+            <tr class="border-b border-paper-border">
+              <th class="py-2 font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">Account</th>
+              <th class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">Balance</th>
+              <th class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">Source</th>
+            </tr>
+          </thead>
+          <tbody class="font-mono text-[12px] tabular-nums">
+            <tr class="border-b border-paper-border/60">
+              <td class="py-2 font-sans">Operating — 1001</td>
+              <td class="py-2 text-right">482,140.00</td>
+              <td class="py-2 text-right text-paper-ink-muted">BS p.3</td>
+            </tr>
+            <tr class="border-b border-paper-border/60">
+              <td class="py-2 font-sans">Payroll — 1002</td>
+              <td class="py-2 text-right">91,275.50</td>
+              <td class="py-2 text-right text-paper-ink-muted">BS p.3</td>
+            </tr>
+            <tr>
+              <td class="py-2 font-sans font-semibold">Total cash</td>
+              <td class="py-2 text-right font-semibold">573,415.50</td>
+              <td class="py-2 text-right text-paper-ink-muted">tie ✓</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="mt-3 border-t border-paper-border pt-3 font-mono text-[10px] text-paper-ink-muted">
+          Every figure traces to a cited source. Confidence 0.97 · awaiting reviewer sign-off.
+        </p>
+      </div>
+    </div>
+  </div>
+</AppShell>

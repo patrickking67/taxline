@@ -1,12 +1,21 @@
-import type { ApiAdapter } from './types';
+import type { ApiAdapter, FleetService } from './types';
 import { mockAdapter } from './mock';
 import { cloudflareAdapter } from './cloudflare';
+import { mockFleet } from './mockFleet';
+import { serviceFleet } from './serviceFleet';
 
 export * from './types';
 
-// Resolve the adapter from build-time env. Default = mock (static, no backend).
-// Set PUBLIC_API_ADAPTER=cloudflare and PUBLIC_CONTACT_ENDPOINT=<worker url> to
-// route the demo form to the real Cloudflare Worker.
+// Two seams resolved from build-time env, both defaulting to a fully offline mock
+// so the static site works on GitHub Pages with no backend:
+//
+//   api   — the demo/contact form  (PUBLIC_CONTACT_ENDPOINT → Cloudflare Worker)
+//   fleet — the agent backend      (PUBLIC_SERVICE_ENDPOINT → Node service)
+//
+// Set PUBLIC_API_ADAPTER to anything other than "mock" plus the matching endpoint
+// to point either seam at a real backend. Any endpoint honoring the same contract
+// (Azure Functions, Supabase, …) drops in without touching the components.
+
 function resolveAdapter(): ApiAdapter {
   const which = import.meta.env.PUBLIC_API_ADAPTER ?? 'mock';
   const endpoint = import.meta.env.PUBLIC_CONTACT_ENDPOINT;
@@ -14,4 +23,12 @@ function resolveAdapter(): ApiAdapter {
   return mockAdapter;
 }
 
+function resolveFleet(): FleetService {
+  const which = import.meta.env.PUBLIC_API_ADAPTER ?? 'mock';
+  const endpoint = import.meta.env.PUBLIC_SERVICE_ENDPOINT;
+  if (which !== 'mock' && endpoint) return serviceFleet(endpoint);
+  return mockFleet;
+}
+
 export const api: ApiAdapter = resolveAdapter();
+export const fleet: FleetService = resolveFleet();

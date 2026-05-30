@@ -1,0 +1,56 @@
+---
+import AppShell from '../../components/app/AppShell.astro';
+import { Icon } from 'astro-icon/components';
+
+const deadlines = [
+  { form: 'Sales/use · TX', client: 'Northgate Co', days: 2, rule: 'monthly state remittance' },
+  { form: '1040-ES · Q2', client: 'Acme Studios LLC', days: 6, rule: 'quarterly individual estimate' },
+  { form: '1120 · Meadow LP', client: 'Meadow LP', days: 21, rule: '15th day of the 4th month after year-end' },
+  { form: '1120-S · Acme Studios', client: 'Acme Studios LLC', days: 34, rule: '15th day of the 3rd month after year-end' },
+  { form: '990 · Northgate Fund', client: 'Northgate Co', days: 51, rule: '15th day of the 5th month after year-end' },
+].sort((a, b) => a.days - b.days);
+
+const dayClass = (d: number): string =>
+  d <= 3 ? 'text-danger-bright' : d <= 7 ? 'text-warn-bright' : 'text-fg-muted';
+const dotClass = (d: number): string => (d <= 3 ? 'bg-danger' : d <= 7 ? 'bg-warn' : 'bg-border-strong');
+---
+
+<AppShell title="Compliance" active="app/compliance">
+  <div class="space-y-6 p-6">
+    <div>
+      <p class="ds-eyebrow">Compliance</p>
+      <h1 class="ds-h2 mt-2">Deadlines across every entity — Sentry drafts, you send.</h1>
+      <p class="ds-small mt-2 max-w-2xl">
+        Filing dates tracked across clients and forms, soonest first. Sentry computes each from the
+        statutory rule and drafts the client follow-up; you review and send.
+      </p>
+    </div>
+
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        deadlines.map((d) => (
+          <div class="rounded-lg border border-border bg-panel p-4 shadow-1">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="truncate font-mono text-[13px] text-fg">{d.form}</div>
+                <div class="mt-0.5 truncate text-[12px] text-fg-muted">{d.client}</div>
+              </div>
+              <span class={`inline-flex shrink-0 items-center gap-1.5 font-mono text-[13px] font-medium tabular-nums ${dayClass(d.days)}`}>
+                <span class={`size-1.5 rounded-full ${dotClass(d.days)}`} />
+                {d.days}d
+              </span>
+            </div>
+            <p class="mt-3 border-t border-border-faint pt-2.5 font-mono text-[11px] leading-relaxed text-fg-faint">
+              {d.rule}
+            </p>
+          </div>
+        ))
+      }
+    </div>
+
+    <p class="inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
+      <Icon name="lucide:shield-check" class="size-4 text-accent" />Computed from the rule and shifted off
+      weekends/holidays — verify each date against the current IRS source before relying on it.
+    </p>
+  </div>
+</AppShell>
