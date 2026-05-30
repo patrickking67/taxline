@@ -1,0 +1,9 @@
+dist
+.astro
+node_modules
+service/.data
+.wrangler
+**/package-lock.json
+site/public
+# Prose is hand-formatted (hard line breaks, tables) — leave markdown alone.
+*.md

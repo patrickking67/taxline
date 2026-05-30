@@ -1,4 +1,4 @@
-# Type-check and build the site on pull requests and non-main branch pushes.
+# Typecheck, lint, and build on pull requests and non-main branch pushes.
 name: CI
 
 on:
@@ -7,19 +7,59 @@ on:
     branches-ignore: [main]
 
 jobs:
-  check:
+  site:
+    name: Site — check + build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-
       - run: npm ci
-
       - run: npm run check --workspace site
-
       - run: npm run build --workspace site
+
+  lint:
+    name: Lint (eslint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run lint
+
+  service:
+    name: Service — typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: service/package-lock.json
+      - run: npm ci
+        working-directory: service
+      - run: npm run typecheck
+        working-directory: service
+
+  worker:
+    name: Worker — typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: workers/contact/package-lock.json
+      - run: npm ci
+        working-directory: workers/contact
+      - run: npm run typecheck
+        working-directory: workers/contact

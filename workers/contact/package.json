@@ -5,10 +5,12 @@
   "description": "Cloudflare Worker that receives Taxline demo requests and stores them in KV.",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250501.0",
+    "typescript": "^5.7.2",
     "wrangler": "^4.0.0"
   }
 }

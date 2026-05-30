@@ -39,16 +39,47 @@ export class EmbeddingsError extends Error {
 const LOCAL_DIM = 512;
 
 const STOPWORDS = new Set([
-  'the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'on', 'for', 'by', 'is', 'are',
-  'be', 'as', 'at', 'it', 'this', 'that', 'with', 'from', 'into', 'per', 'each',
-  'you', 'your', 'not', 'no', 'do', 'if', 'after', 'before', 'when', 'than',
+  'the',
+  'a',
+  'an',
+  'and',
+  'or',
+  'of',
+  'to',
+  'in',
+  'on',
+  'for',
+  'by',
+  'is',
+  'are',
+  'be',
+  'as',
+  'at',
+  'it',
+  'this',
+  'that',
+  'with',
+  'from',
+  'into',
+  'per',
+  'each',
+  'you',
+  'your',
+  'not',
+  'no',
+  'do',
+  'if',
+  'after',
+  'before',
+  'when',
+  'than',
 ]);
 
 /** Same tokenization shape as kb/retrieve.ts so local vectors track that scoring. */
 function tokenize(s: string): string[] {
   return s
     .toLowerCase()
-    .replace(/[^a-z0-9§\-]+/g, ' ')
+    .replace(/[^a-z0-9§-]+/g, ' ')
     .split(/\s+/)
     .filter((t) => t.length > 1 && !STOPWORDS.has(t));
 }
@@ -146,14 +177,22 @@ async function postEmbeddings(args: {
   } catch (err) {
     // Network-level failure (DNS, timeout, offline) — transient, retryable.
     throw new EmbeddingsError(
-      fail('transient', `${args.provider} embeddings request failed (network).`, err instanceof Error ? err.message : String(err)),
+      fail(
+        'transient',
+        `${args.provider} embeddings request failed (network).`,
+        err instanceof Error ? err.message : String(err),
+      ),
     );
   }
 
   if (!res.ok) {
     const detail = await res.text().catch(() => '');
     throw new EmbeddingsError(
-      fail('transient', `${args.provider} embeddings returned HTTP ${res.status}.`, detail.slice(0, 500)),
+      fail(
+        'transient',
+        `${args.provider} embeddings returned HTTP ${res.status}.`,
+        detail.slice(0, 500),
+      ),
     );
   }
 
@@ -182,7 +221,10 @@ async function postEmbeddings(args: {
 }
 
 /** Probe one input to learn the live vector width (model dims can vary). */
-async function probeDim(getOne: (text: string) => Promise<number[][]>, fallback: number): Promise<number> {
+async function probeDim(
+  getOne: (text: string) => Promise<number[][]>,
+  fallback: number,
+): Promise<number> {
   try {
     const [vec] = await getOne('dimension probe');
     return Array.isArray(vec) && vec.length > 0 ? vec.length : fallback;

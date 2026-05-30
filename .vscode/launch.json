@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Site (Astro dev :4321)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Service (agent fleet :8787)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm --prefix service run dev",
+      "cwd": "${workspaceFolder}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Site + Service",
+      "configurations": ["Site (Astro dev :4321)", "Service (agent fleet :8787)"]
+    }
+  ]
+}

@@ -70,7 +70,7 @@ const audiences = [
   if (trigger && menu) {
     const open = () => { menu.hidden = false; trigger.setAttribute('aria-expanded', 'true'); };
     const close = () => { menu.hidden = true; trigger.setAttribute('aria-expanded', 'false'); };
-    trigger.addEventListener('click', (e) => { e.stopPropagation(); menu.hidden ? open() : close(); });
+    trigger.addEventListener('click', (e) => { e.stopPropagation(); if (menu.hidden) open(); else close(); });
     document.addEventListener('click', (e) => {
       if (!menu.hidden && !menu.contains(e.target as Node) && !trigger.contains(e.target as Node)) close();
     });

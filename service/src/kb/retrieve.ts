@@ -35,18 +35,51 @@ interface RawChunk {
 let cache: RawChunk[] | null = null;
 
 const STOPWORDS = new Set([
-  'the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'on', 'for', 'by', 'is', 'are',
-  'be', 'as', 'at', 'it', 'this', 'that', 'with', 'from', 'into', 'per', 'each',
-  'you', 'your', 'not', 'no', 'do', 'if', 'after', 'before', 'when', 'than',
+  'the',
+  'a',
+  'an',
+  'and',
+  'or',
+  'of',
+  'to',
+  'in',
+  'on',
+  'for',
+  'by',
+  'is',
+  'are',
+  'be',
+  'as',
+  'at',
+  'it',
+  'this',
+  'that',
+  'with',
+  'from',
+  'into',
+  'per',
+  'each',
+  'you',
+  'your',
+  'not',
+  'no',
+  'do',
+  'if',
+  'after',
+  'before',
+  'when',
+  'than',
 ]);
 
 function tokenize(s: string): string[] {
-  return s
-    .toLowerCase()
-    // keep tax form ids like 1099-nec, 1120-s together, plus § references.
-    .replace(/[^a-z0-9§\-]+/g, ' ')
-    .split(/\s+/)
-    .filter((t) => t.length > 1 && !STOPWORDS.has(t));
+  return (
+    s
+      .toLowerCase()
+      // keep tax form ids like 1099-nec, 1120-s together, plus § references.
+      .replace(/[^a-z0-9§-]+/g, ' ')
+      .split(/\s+/)
+      .filter((t) => t.length > 1 && !STOPWORDS.has(t))
+  );
 }
 
 async function listMarkdown(dir: string): Promise<string[]> {

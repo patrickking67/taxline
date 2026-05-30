@@ -1,0 +1,19 @@
+# Normalize line endings to LF across platforms.
+* text=auto eol=lf
+
+# Binary assets — never diff or normalize.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.woff  binary
+*.woff2 binary
+*.pdf   binary
+
+# SVG is text (icons/logo are hand-edited).
+*.svg text
+
+# Generated — collapse in diffs and exclude from language stats.
+package-lock.json linguist-generated -diff
