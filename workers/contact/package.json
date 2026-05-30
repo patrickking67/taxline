@@ -1,0 +1,14 @@
+{
+  "name": "@taxline/contact-worker",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Cloudflare Worker that receives Taxline demo requests and stores them in KV.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250501.0",
+    "wrangler": "^4.0.0"
+  }
+}

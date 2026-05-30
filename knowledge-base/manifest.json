@@ -1,0 +1,70 @@
+{
+  "updatedAt": "2026-05-30",
+  "cadence": "monthly",
+  "domains": ["tax", "practices"],
+  "sources": [
+    {
+      "id": "filing-deadlines",
+      "title": "Filing deadlines — rules and form map",
+      "domain": "tax",
+      "kind": "rules",
+      "lastReviewed": "2026-05-30",
+      "verify": true,
+      "note": "Describes the statutory rule and form map. Exact dates/holiday shifts must be verified against the current IRS source before relying on them."
+    },
+    {
+      "id": "forms-by-document",
+      "title": "Forms by document type",
+      "domain": "tax",
+      "kind": "reference",
+      "lastReviewed": "2026-05-30",
+      "verify": true,
+      "note": "Maps inbound documents to the forms they feed. Verify box/line specifics against current IRS instructions."
+    },
+    {
+      "id": "entities-and-returns",
+      "title": "Entities and their returns",
+      "domain": "tax",
+      "kind": "reference",
+      "lastReviewed": "2026-05-30",
+      "verify": true,
+      "note": "Entity-to-return mapping. Verify any thresholds or elections against current IRS guidance."
+    },
+    {
+      "id": "ai-fluency-4ds",
+      "title": "AI fluency — the 4Ds and three interaction modes",
+      "domain": "practices",
+      "kind": "method",
+      "lastReviewed": "2026-05-30",
+      "verify": false,
+      "note": "Distilled engineering practice. Not tax advice."
+    },
+    {
+      "id": "prompting",
+      "title": "Prompting techniques",
+      "domain": "practices",
+      "kind": "method",
+      "lastReviewed": "2026-05-30",
+      "verify": false,
+      "note": "Distilled engineering practice."
+    },
+    {
+      "id": "agent-architecture",
+      "title": "Agent architecture principles",
+      "domain": "practices",
+      "kind": "method",
+      "lastReviewed": "2026-05-30",
+      "verify": false,
+      "note": "Distilled engineering practice — the principles this service is built on."
+    },
+    {
+      "id": "claude-api-notes",
+      "title": "Claude API notes",
+      "domain": "practices",
+      "kind": "reference",
+      "lastReviewed": "2026-05-30",
+      "verify": false,
+      "note": "Distilled engineering reference for the Messages API and model lineup."
+    }
+  ]
+}

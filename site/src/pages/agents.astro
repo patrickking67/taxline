@@ -1,0 +1,305 @@
+---
+import Base from '../layouts/Base.astro';
+import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
+import Button from '../components/Button.astro';
+import ConfidenceMeter from '../components/ConfidenceMeter.astro';
+import EvidenceChip from '../components/EvidenceChip.astro';
+import { Icon } from 'astro-icon/components';
+
+const base = import.meta.env.BASE_URL;
+const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+
+// Orchestrator handoff chain — same node+connector pattern as ConsoleHero
+const handoff = [
+  { icon: 'lucide:inbox', label: 'Intake' },
+  { icon: 'lucide:scan-line', label: 'Extraction' },
+  { icon: 'lucide:search', label: 'Research' },
+  { icon: 'lucide:file-stack', label: 'Workpaper' },
+  { icon: 'lucide:calendar-clock', label: 'Compliance' },
+];
+
+// Per-agent detail rows
+const agents = [
+  {
+    icon: 'lucide:inbox',
+    name: 'Intake',
+    title: 'Triage and queue',
+    body: 'Classify every inbound document by form type and entity, deduplicate, and route each one to the right agent. The orchestrator builds the work queue from what Intake reports.',
+    tools: ['classify', 'route', 'dedupe'],
+    inputs: 'Emails, uploads, portal drops',
+    outputs: 'Typed, routed work queue',
+  },
+  {
+    icon: 'lucide:scan-line',
+    name: 'Extraction',
+    title: 'Fields with proof',
+    body: 'Pull every field with a confidence score and a citation back to the source page. High-confidence cells pass; anything below threshold routes to a person before it moves on.',
+    tools: ['doc-extract', 'confidence', 'cite'],
+    inputs: 'Classified documents',
+    outputs: 'Scored fields + page citations',
+  },
+  {
+    icon: 'lucide:search',
+    name: 'Research',
+    title: 'Citation-backed answers',
+    body: 'Answer tax questions by retrieval over a living knowledge base of code, regs, and publications. Every claim carries its source — sources, not guesses.',
+    tools: ['kb-search', 'retrieve'],
+    inputs: 'A scoped tax question',
+    outputs: 'Answer + primary-source citations',
+  },
+  {
+    icon: 'lucide:file-stack',
+    name: 'Workpaper',
+    title: 'Reviewer-ready output',
+    body: 'Assemble lead schedules and tie-outs where every number traces back to a source. Output lands formatted for review, not for rework.',
+    tools: ['assemble', 'tie-out', 'cite'],
+    inputs: 'Scored fields + research',
+    outputs: 'Sourced, reviewer-ready workpapers',
+  },
+  {
+    icon: 'lucide:calendar-clock',
+    name: 'Compliance',
+    title: 'Deadlines and follow-up',
+    body: 'Track filing deadlines across every entity and flag what is due. Taxline drafts the follow-up and surfaces the date — you send it.',
+    tools: ['calendar', 'notify'],
+    inputs: 'Entity and filing calendar',
+    outputs: 'Dated alerts + drafted follow-ups',
+  },
+];
+
+// Extraction sample — green ≥0.85, amber 0.6–0.85, red <0.6
+const extractionFields = [
+  { label: 'Wages · box 1', value: 0.97 },
+  { label: 'State w/h', value: 0.74 },
+  { label: 'Local code', value: 0.41 },
+];
+
+const sectionLabel = 'flex items-center gap-2 font-mono text-[10px] font-medium uppercase tracking-[0.13em] text-fg-faint';
+---
+
+<Base
+  title="The fleet — Taxline"
+  description="Five specialized agents behind one orchestrator: Intake, Extraction, Research, Workpaper, Compliance. Each is a narrow tool-using worker. The orchestrator routes work and collects cited output. Nothing is autonomous end to end — you approve before output ships."
+>
+  <TopNav />
+  <main>
+    <!-- 1 · Hero -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 pb-16 pt-20 sm:px-6">
+        <p class="ds-eyebrow">The fleet</p>
+        <h1 class="ds-display mt-4 max-w-3xl">Five agents. One orchestrator. Your approval.</h1>
+        <p class="ds-lead mt-5 max-w-2xl">
+          Each agent is a narrow, tool-using worker with one job. The orchestrator routes every
+          request to the right agent and collects its cited output. No single agent runs the whole
+          job — nothing is autonomous end to end. You review before anything ships.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <Button href={u('contact')}>Book a demo</Button>
+          <Button href={u('docs')} variant="ghost">Read the docs</Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · Orchestrator + handoff diagram -->
+    <section class="border-b border-border bg-panel/40">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">The orchestrator</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">One router. Five workers. A human at the end.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">
+          The orchestrator decides which agent runs next, passes its output forward, and stops at
+          you. Work moves left to right — and the last node is always a person.
+        </p>
+
+        <div class="mt-10 rounded-lg border border-border bg-panel p-5 shadow-1 sm:p-7">
+          <span class={sectionLabel}><Icon name="lucide:git-branch" class="size-3.5" />Handoff</span>
+          <div class="mt-5 flex flex-wrap items-center gap-y-4">
+            {handoff.map((h) => (
+              <>
+                <div class="flex flex-col items-center gap-2" title={h.label}>
+                  <div class="grid size-12 place-items-center rounded-md border border-border bg-raised">
+                    <Icon name={h.icon} class="size-5 text-fg-muted" />
+                  </div>
+                  <span class="font-mono text-[11px] text-fg-muted">{h.label}</span>
+                </div>
+                <div class="mx-1 h-px w-5 shrink-0 bg-border-strong sm:w-8"></div>
+              </>
+            ))}
+            <!-- final node: the human, in accent -->
+            <div class="flex flex-col items-center gap-2" title="You · review">
+              <div class="grid size-12 place-items-center rounded-md border border-accent bg-accent-soft">
+                <Icon name="lucide:user-check" class="size-5 text-accent" />
+              </div>
+              <span class="font-mono text-[11px] font-medium text-accent">You · review</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
+          <Icon name="lucide:user-check" class="size-4 text-accent" />
+          The orchestrator routes and collects — it never approves. That node is yours.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3 · Per-agent detail -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">In depth</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">What each agent actually does.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">
+          One narrow worker per job. Each runs its own tools, takes a defined input, and returns a
+          defined output to the orchestrator.
+        </p>
+
+        <div class="mt-10 space-y-4">
+          {agents.map((a) => (
+            <article class="rounded-lg border border-border bg-panel p-5 shadow-1 sm:p-6">
+              <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
+                <!-- left: identity + description + tools -->
+                <div>
+                  <div class="flex items-center gap-3">
+                    <div class="grid size-10 shrink-0 place-items-center rounded-md border border-border bg-raised">
+                      <Icon name={a.icon} class="size-5 text-fg-muted" />
+                    </div>
+                    <div>
+                      <span class="ds-eyebrow">{a.name}</span>
+                      <h3 class="text-[17px] font-semibold leading-tight text-fg">{a.title}</h3>
+                    </div>
+                  </div>
+                  <p class="mt-4 max-w-xl text-[13px] leading-relaxed text-fg-muted">{a.body}</p>
+                  <div class="mt-4 flex flex-wrap gap-1.5 border-t border-border-faint pt-4">
+                    {a.tools.map((t) => (
+                      <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[10px] text-fg-muted">{t}</span>
+                    ))}
+                  </div>
+                  <div class="mt-4 flex flex-wrap items-center gap-2 font-mono text-[11px] text-fg-faint">
+                    <span class="text-fg-muted">{a.inputs}</span>
+                    <Icon name="lucide:arrow-right" class="size-3.5 text-accent" />
+                    <span class="text-fg-muted">{a.outputs}</span>
+                  </div>
+                </div>
+
+                <!-- right: per-agent proof panel -->
+                <div class="rounded-md border border-border-faint bg-inset p-4">
+                  {a.name === 'Extraction' && (
+                    <>
+                      <div class="flex items-center justify-between">
+                        <span class={sectionLabel}><Icon name="lucide:scan-line" class="size-3.5" />acme_w2 · fields</span>
+                        <span class="rounded-sm border border-warn/40 bg-warn-soft px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-warn-bright">1 review</span>
+                      </div>
+                      <div class="mt-3 space-y-2.5">
+                        {extractionFields.map((f) => <ConfidenceMeter label={f.label} value={f.value} labelWidth="w-[86px]" />)}
+                      </div>
+                      <p class="mt-3 font-mono text-[11px] leading-relaxed text-fg-faint">Local code 0.41 &lt; threshold → routed to review.</p>
+                    </>
+                  )}
+
+                  {a.name === 'Research' && (
+                    <>
+                      <span class={sectionLabel}><Icon name="lucide:book-open" class="size-3.5" />Citations</span>
+                      <div class="mt-3 flex flex-wrap gap-1.5">
+                        <EvidenceChip icon="lucide:book-open">IRC <b class="font-medium text-fg">§162(a)</b></EvidenceChip>
+                        <EvidenceChip icon="lucide:quote">Pub. <b class="font-medium text-fg">535</b></EvidenceChip>
+                      </div>
+                      <p class="mt-3 font-mono text-[11px] leading-relaxed text-fg-faint">Every answer ships with its source. No source, no answer.</p>
+                    </>
+                  )}
+
+                  {a.name === 'Intake' && (
+                    <>
+                      <span class={sectionLabel}><Icon name="lucide:layout-list" class="size-3.5" />Queue</span>
+                      <div class="mt-3 space-y-1.5 font-mono text-[11px] leading-relaxed">
+                        <div class="flex items-center gap-2"><Icon name="lucide:file-text" class="size-3.5 shrink-0 text-fg-faint" /><span class="min-w-0 flex-1 truncate text-fg">acme_w2_2024.pdf</span><span class="text-info-bright">W-2</span></div>
+                        <div class="flex items-center gap-2"><Icon name="lucide:file-text" class="size-3.5 shrink-0 text-fg-faint" /><span class="min-w-0 flex-1 truncate text-fg">1099-nec_batch.pdf</span><span class="text-info-bright">1099-NEC</span></div>
+                        <div class="flex items-center gap-2"><Icon name="lucide:file-text" class="size-3.5 shrink-0 text-fg-faint" /><span class="min-w-0 flex-1 truncate text-fg">k1_meadow_lp.pdf</span><span class="text-info-bright">K-1</span></div>
+                      </div>
+                      <p class="mt-3 font-mono text-[11px] leading-relaxed text-fg-faint">Classified, routed, queued — in order.</p>
+                    </>
+                  )}
+
+                  {a.name === 'Workpaper' && (
+                    <>
+                      <span class={sectionLabel}><Icon name="lucide:file-stack" class="size-3.5" />Lead schedule</span>
+                      <div class="mt-3 space-y-1.5 font-mono text-[11px] leading-relaxed">
+                        <div class="flex items-center justify-between rounded-sm bg-panel px-2 py-1"><span class="text-fg">Wages</span><span class="tabular-nums text-fg-muted">tied · p.1</span></div>
+                        <div class="flex items-center justify-between rounded-sm bg-panel px-2 py-1"><span class="text-fg">Interest</span><span class="tabular-nums text-fg-muted">tied · p.3</span></div>
+                        <div class="flex items-center justify-between rounded-sm bg-panel px-2 py-1"><span class="text-fg">Schedule C</span><span class="tabular-nums text-fg-muted">assembled</span></div>
+                      </div>
+                      <p class="mt-3 font-mono text-[11px] leading-relaxed text-fg-faint">Every number traces back to a source page.</p>
+                    </>
+                  )}
+
+                  {a.name === 'Compliance' && (
+                    <>
+                      <span class={sectionLabel}><Icon name="lucide:calendar-clock" class="size-3.5" />Deadlines</span>
+                      <div class="mt-3 space-y-1.5">
+                        <div class="flex items-center justify-between rounded-sm bg-panel px-2.5 py-1.5 font-mono text-[11px]"><span class="text-fg">Sales/use · TX</span><span class="font-medium tabular-nums text-danger-bright">2d</span></div>
+                        <div class="flex items-center justify-between rounded-sm bg-panel px-2.5 py-1.5 font-mono text-[11px]"><span class="text-fg">1040-ES · Q2</span><span class="font-medium tabular-nums text-warn-bright">6d</span></div>
+                        <div class="flex items-center justify-between rounded-sm bg-panel px-2.5 py-1.5 font-mono text-[11px]"><span class="text-fg">1120 · Meadow LP</span><span class="font-medium tabular-nums text-fg-muted">21d</span></div>
+                      </div>
+                      <p class="mt-3 font-mono text-[11px] leading-relaxed text-fg-faint">Taxline drafts the follow-up. You send it.</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 · Keep the human approval -->
+    <section class="border-b border-border bg-panel/40">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <div class="rounded-lg border border-border bg-panel p-7 shadow-1 sm:p-10">
+          <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,300px)] lg:items-center">
+            <div>
+              <p class="ds-eyebrow">Keep the human approval</p>
+              <h2 class="ds-h2 mt-3 max-w-xl">Nothing ships unreviewed.</h2>
+              <p class="ds-lead mt-3 max-w-xl">
+                The fleet drafts; it never signs off. Every field carries a confidence score and a
+                citation, and anything below threshold routes to a person before output moves. The
+                final approval is always yours.
+              </p>
+              <div class="mt-6 flex flex-wrap gap-x-7 gap-y-2">
+                <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
+                  <Icon name="lucide:shield-check" class="size-4 text-accent" />Score + citation on every field
+                </span>
+                <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
+                  <Icon name="lucide:git-branch" class="size-4 text-accent" />Low confidence routes to review
+                </span>
+              </div>
+            </div>
+            <div class="rounded-md border border-border-faint bg-inset p-4">
+              <span class={sectionLabel}><Icon name="lucide:user-check" class="size-3.5" />Review gate</span>
+              <div class="mt-3 space-y-2.5">
+                <ConfidenceMeter label="Wages · box 1" value={0.97} labelWidth="w-[90px]" />
+                <ConfidenceMeter label="State w/h" value={0.74} labelWidth="w-[90px]" />
+                <ConfidenceMeter label="Local code" value={0.41} labelWidth="w-[90px]" />
+              </div>
+              <p class="mt-3 inline-flex items-center gap-2 font-mono text-[11px] text-fg-faint">
+                <Icon name="lucide:lock" class="size-3.5 text-accent" />2 fields held for you
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · CTA -->
+    <section class="border-b border-border">
+      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
+        <div>
+          <h2 class="ds-h2 max-w-xl">Watch the fleet run on your documents.</h2>
+          <p class="ds-small mt-2">Reduce review drag. Keep the human approval.</p>
+        </div>
+        <div class="flex gap-3">
+          <Button href={u('contact')}>Book a demo</Button>
+          <Button href={u('app')} variant="ghost">Open the app</Button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

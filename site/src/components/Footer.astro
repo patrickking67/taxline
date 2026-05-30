@@ -1,0 +1,36 @@
+---
+import Logo from './Logo.astro';
+const base = import.meta.env.BASE_URL;
+const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+
+const cols = [
+  { head: 'Product', links: [['AI Tax Co-Pilot', 'product'], ['Agent Workforce', 'agents'], ['Workpaper Builder', 'product'], ['Compliance Calendar', 'product'], ['Tax Matrix', 'product']] },
+  { head: 'Solutions', links: [['Tax & accounting firms', 'solutions'], ['Businesses', 'solutions'], ['Solo operators', 'solutions'], ['Security', 'security']] },
+  { head: 'Resources', links: [['Docs', 'docs'], ['Open the app', 'app'], ['Pricing', 'pricing'], ['Book a demo', 'contact']] },
+];
+---
+
+<footer class="border-t border-border bg-base">
+  <div class="mx-auto max-w-[1200px] px-5 py-14 sm:px-6">
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+      <div>
+        <Logo />
+        <p class="ds-small mt-4 max-w-xs">Agentic tax operations, from intake to reviewer-ready workpapers. A human approves before output ships.</p>
+      </div>
+      {cols.map((c) => (
+        <div>
+          <p class="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-fg-faint">{c.head}</p>
+          <ul class="mt-3 space-y-2">
+            {c.links.map(([label, href]) => (
+              <li><a href={u(href)} class="text-sm text-fg-muted transition-colors hover:text-fg">{label}</a></li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+    <div class="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border-faint pt-6 sm:flex-row sm:items-center">
+      <p class="font-mono text-xs text-fg-faint">© 2026 Taxline. Orchestrated, not autonomous.</p>
+      <p class="font-mono text-xs text-fg-faint">Static-first · human-in-the-loop · SOC 2</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,112 @@
+---
+import Base from '../layouts/Base.astro';
+import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
+import { Icon } from 'astro-icon/components';
+
+const trust = [
+  ['lucide:user-check', 'A human approves before anything ships.'],
+  ['lucide:lock', 'We never train on your client data.'],
+  ['lucide:scan-line', 'Every field carries a confidence score and a citation.'],
+];
+const field = 'w-full rounded-md border border-border bg-raised px-[11px] py-[9px] text-sm text-fg placeholder:text-fg-faint focus:border-accent focus:outline-none focus:ring-[3px] focus:ring-accent-line';
+---
+
+<Base title="Book a demo — Taxline" description="See the fleet run on your own documents.">
+  <TopNav />
+  <main>
+    <section class="border-b border-border">
+      <div class="mx-auto grid max-w-[1200px] gap-12 px-5 py-20 sm:px-6 lg:grid-cols-2">
+        <div>
+          <p class="ds-eyebrow">Contact</p>
+          <h1 class="ds-h1 mt-3 max-w-md">Book a demo</h1>
+          <p class="ds-lead mt-4 max-w-md">See the fleet triage, extract, and assemble on your own documents — with confidence scores and citations on every field. No autonomous filing. You stay in control.</p>
+          <ul class="mt-8 space-y-3">
+            {trust.map(([icon, text]) => (
+              <li class="flex items-start gap-3 text-sm text-fg-muted"><Icon name={icon} class="mt-0.5 size-4 shrink-0 text-accent" />{text}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="rounded-lg border border-border bg-panel p-6 shadow-1">
+          <form id="demo-form" novalidate>
+            <div class="space-y-4">
+              <div>
+                <label for="email" class="mb-1.5 block text-xs font-medium text-fg-muted">Work email</label>
+                <input id="email" name="email" type="email" required placeholder="you@firm.com" class={field} />
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label for="firm" class="mb-1.5 block text-xs font-medium text-fg-muted">Firm name</label>
+                  <input id="firm" name="firm" type="text" placeholder="Northgate Tax LLP" class={field} />
+                </div>
+                <div>
+                  <label for="seats" class="mb-1.5 block text-xs font-medium text-fg-muted">Preparers</label>
+                  <input id="seats" name="seats" type="number" min="1" value="1" class={field} />
+                </div>
+              </div>
+              <div>
+                <label for="engagement" class="mb-1.5 block text-xs font-medium text-fg-muted">Primary engagement</label>
+                <select id="engagement" name="engagement" class={field}>
+                  <option>1040 · individual</option>
+                  <option>1120 / 1120-S · corporate</option>
+                  <option>1065 · partnership</option>
+                  <option>Multi-entity / mixed</option>
+                </select>
+              </div>
+              <div>
+                <label for="message" class="mb-1.5 block text-xs font-medium text-fg-muted">What would you automate first?</label>
+                <textarea id="message" name="message" rows="3" placeholder="Intake and extraction across ~400 1040s each season…" class={field}></textarea>
+              </div>
+              <!-- honeypot: hidden from humans, catches bots -->
+              <div class="absolute left-[-9999px]" aria-hidden="true"><label>Company website<input name="company_website" tabindex="-1" autocomplete="off" /></label></div>
+              <button id="submit-btn" type="submit" class="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:bg-accent-press">Book a demo</button>
+              <p id="form-status" class="hidden font-mono text-[12px]" role="status" aria-live="polite"></p>
+              <p class="text-center font-mono text-[11px] text-fg-faint">No autonomous filing · we reply within one business day.</p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<script>
+  import { api } from '../lib/api';
+
+  const form = document.getElementById('demo-form') as HTMLFormElement | null;
+  const status = document.getElementById('form-status');
+  const btn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+
+  function show(msg: string, ok: boolean) {
+    if (!status) return;
+    status.textContent = msg;
+    status.classList.remove('hidden', 'text-ok-bright', 'text-danger-bright');
+    status.classList.add(ok ? 'text-ok-bright' : 'text-danger-bright');
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!btn) return;
+    const data = new FormData(form);
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    const res = await api.submitDemo({
+      email: String(data.get('email') || ''),
+      firm: String(data.get('firm') || ''),
+      seats: Number(data.get('seats') || 0),
+      engagement: String(data.get('engagement') || ''),
+      message: String(data.get('message') || ''),
+      company_website: String(data.get('company_website') || ''),
+    });
+    btn.disabled = false;
+    btn.textContent = 'Book a demo';
+    if (res.ok) {
+      form.reset();
+      show(`Thanks — we'll be in touch.${res.id ? ' ref: ' + res.id : ''}`, true);
+    } else {
+      show(res.error || 'Something went wrong. Try again.', false);
+    }
+  });
+</script>

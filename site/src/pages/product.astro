@@ -1,0 +1,200 @@
+---
+import Base from '../layouts/Base.astro';
+import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
+import Button from '../components/Button.astro';
+import StatusPill from '../components/StatusPill.astro';
+import { Icon } from 'astro-icon/components';
+
+const base = import.meta.env.BASE_URL;
+const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+
+const surfaces = [
+  { icon: 'lucide:bot', name: 'AI Tax Co-Pilot', body: 'Ask in plain language; get cited answers and drafted next steps you approve.' },
+  { icon: 'lucide:git-branch', name: 'Agent Workforce', body: 'Five specialized agents behind one orchestrator, routing work end to end.' },
+  { icon: 'lucide:search', name: 'Tax Research', body: 'Retrieval over a living knowledge base. Sources on every answer, not guesses.' },
+  { icon: 'lucide:file-check', name: 'Tax Prep Support', body: 'Returns assembled with confidence scores and a clear path to review.' },
+  { icon: 'lucide:line-chart', name: 'Client Intelligence', body: 'Track status, deadlines, and exposure across every entity you serve.' },
+  { icon: 'lucide:file-stack', name: 'Workpaper Builder', body: 'Lead schedules and tie-outs where every number traces to a source.' },
+  { icon: 'lucide:calendar-clock', name: 'Compliance Calendar', body: 'Deadlines across entities. Taxline drafts the follow-up; you send it.' },
+  { icon: 'lucide:table', name: 'Tax Matrix', body: 'Every client against every form, with status and confidence in one grid.' },
+];
+
+const forms = ['W-2', '1099', 'K-1', '1120'];
+const matrix = [
+  { client: 'Acme Studios LLC', cells: [
+    { status: 'approved', conf: '0.98' },
+    { status: 'approved', conf: '0.94' },
+    { status: 'review', conf: '0.72' },
+    { status: 'new', conf: null },
+  ] },
+  { client: 'Meadow LP', cells: [
+    { status: 'approved', conf: '0.96' },
+    { status: 'review', conf: '0.81' },
+    { status: 'review', conf: '0.64' },
+    { status: 'new', conf: null },
+  ] },
+  { client: 'Northgate Co', cells: [
+    { status: 'approved', conf: '0.99' },
+    { status: 'approved', conf: '0.91' },
+    { status: 'approved', conf: '0.88' },
+    { status: 'review', conf: '0.77' },
+  ] },
+];
+---
+
+<Base
+  title="Product — Taxline"
+  description="One console for the whole tax operation. Eight surfaces — co-pilot, agent workforce, research, prep support, client intelligence, workpaper builder, compliance calendar, and the tax matrix — with confidence and citations on every field."
+>
+  <TopNav />
+  <main>
+    <!-- Hero -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Product</p>
+        <h1 class="ds-display mt-4 max-w-3xl">One console for the whole tax operation.</h1>
+        <p class="ds-lead mt-5 max-w-2xl">
+          Eight surfaces over one fleet of agents. Intake to reviewer-ready, every field
+          carries a confidence score and a citation — and a human approves before output ships.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <Button href={u('contact')}>Book a demo</Button>
+          <Button href={u('docs')} variant="ghost">Read the docs</Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Eight surfaces -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Eight surfaces</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">One console. Eight ways to work the operation.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">Each surface is a focused view on the same cited record. Switch context without leaving the console or losing the trail back to source.</p>
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {surfaces.map((s) => (
+            <div class="rounded-lg border border-border bg-panel p-5 shadow-1">
+              <div class="grid size-8 place-items-center rounded-md border border-border bg-raised">
+                <Icon name={s.icon} class="size-4 text-fg-muted" />
+              </div>
+              <h3 class="mt-3.5 text-[15px] font-semibold text-fg">{s.name}</h3>
+              <p class="mt-1.5 text-[13px] leading-relaxed text-fg-muted">{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Tax Matrix highlight -->
+    <section class="border-b border-border bg-panel/40">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Tax Matrix</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">Every client against every form, in one grid.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">See status and confidence for the whole book at a glance. Low-confidence cells route to review; nothing ships until you approve it.</p>
+        <div class="mt-10 overflow-x-auto rounded-lg border border-border bg-panel shadow-1">
+          <table class="w-full min-w-[640px] border-collapse text-left">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-fg-faint">Client</th>
+                {forms.map((f) => (
+                  <th class="px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-fg-faint">{f}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {matrix.map((row) => (
+                <tr class="border-b border-border-faint last:border-0">
+                  <td class="whitespace-nowrap px-4 py-3.5 text-[13px] font-medium text-fg">{row.client}</td>
+                  {row.cells.map((c) => (
+                    <td class="px-4 py-3.5">
+                      <div class="flex flex-col items-start gap-1.5">
+                        <StatusPill status={c.status} />
+                        <span class="font-mono text-[11px] tabular-nums text-fg-faint">{c.conf ?? '—'}</span>
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
+          <Icon name="lucide:user-check" class="size-4 text-accent" />Cells under 0.85 confidence route to review before approval.
+        </p>
+      </div>
+    </section>
+
+    <!-- Workpaper Builder highlight -->
+    <section class="border-b border-border">
+      <div class="mx-auto grid max-w-[1200px] items-start gap-12 px-5 py-20 sm:px-6 lg:grid-cols-2">
+        <div>
+          <p class="ds-eyebrow">Workpaper Builder</p>
+          <h2 class="ds-h2 mt-3 max-w-xl">Reviewer-ready output, sourced end to end.</h2>
+          <p class="ds-lead mt-3 max-w-xl">Taxline assembles lead schedules and tie-outs where every number traces back to the source page it came from. You open the workpaper, check the trail, and sign off.</p>
+          <ul class="mt-6 space-y-3">
+            <li class="flex items-start gap-2.5 text-[14px] text-fg-muted">
+              <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />Lead schedules built from cited fields, not retyped figures.
+            </li>
+            <li class="flex items-start gap-2.5 text-[14px] text-fg-muted">
+              <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />Every line carries a confidence score and a citation.
+            </li>
+            <li class="flex items-start gap-2.5 text-[14px] text-fg-muted">
+              <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />Export the package once a human approves it.
+            </li>
+          </ul>
+        </div>
+        <div class="rounded-md border border-paper-border bg-paper p-5 text-paper-ink shadow-2">
+          <div class="flex items-center justify-between border-b border-paper-border pb-3">
+            <div>
+              <div class="font-mono text-[11px] uppercase tracking-wider text-paper-ink-muted">Lead schedule — Cash</div>
+              <div class="mt-0.5 text-[15px] font-semibold">Acme Studios LLC · FY2025</div>
+            </div>
+            <span class="font-mono text-[11px] text-paper-ink-muted">WP-1100</span>
+          </div>
+          <table class="mt-3 w-full border-collapse text-left">
+            <thead>
+              <tr class="border-b border-paper-border">
+                <th class="py-2 font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">Account</th>
+                <th class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">Balance</th>
+                <th class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">Source</th>
+              </tr>
+            </thead>
+            <tbody class="font-mono text-[12px] tabular-nums">
+              <tr class="border-b border-paper-border/60">
+                <td class="py-2 font-sans">Operating — 1001</td>
+                <td class="py-2 text-right">482,140.00</td>
+                <td class="py-2 text-right text-paper-ink-muted">BS p.3</td>
+              </tr>
+              <tr class="border-b border-paper-border/60">
+                <td class="py-2 font-sans">Payroll — 1002</td>
+                <td class="py-2 text-right">91,275.50</td>
+                <td class="py-2 text-right text-paper-ink-muted">BS p.3</td>
+              </tr>
+              <tr>
+                <td class="py-2 font-sans font-semibold">Total cash</td>
+                <td class="py-2 text-right font-semibold">573,415.50</td>
+                <td class="py-2 text-right text-paper-ink-muted">tie ✓</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="mt-3 border-t border-paper-border pt-3 font-mono text-[10px] text-paper-ink-muted">Every figure traces to a cited source. Confidence 0.97 · awaiting reviewer sign-off.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="border-b border-border">
+      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
+        <div>
+          <h2 class="ds-h2 max-w-xl">Run the whole operation from one console.</h2>
+          <p class="ds-small mt-2">See every surface working on your own documents.</p>
+        </div>
+        <div class="flex gap-3">
+          <Button href={u('contact')}>Book a demo</Button>
+          <Button href={u('app')} variant="ghost">Open the app</Button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

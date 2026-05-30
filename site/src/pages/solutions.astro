@@ -1,0 +1,221 @@
+---
+import Base from '../layouts/Base.astro';
+import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
+import Button from '../components/Button.astro';
+import AgentCard from '../components/AgentCard.astro';
+import { Icon } from 'astro-icon/components';
+
+const base = import.meta.env.BASE_URL;
+const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+
+const firmAgents = [
+  { icon: 'lucide:scan-line', name: 'Extraction', title: 'Every number sourced', body: 'Fields pulled from statements and forms, each with a confidence score and a citation back to the source page.', tools: ['doc-extract', 'cite'] },
+  { icon: 'lucide:file-stack', name: 'Workpaper', title: 'Reviewer-ready packets', body: 'Lead schedules and tie-outs assembled so a reviewer can trace any figure in one click.', tools: ['assemble', 'tie-out'] },
+  { icon: 'lucide:calendar-clock', name: 'Compliance', title: 'Multi-client calendar', body: 'Deadlines tracked across every client and entity. Taxline drafts the follow-up; you send it.', tools: ['calendar', 'notify'] },
+];
+
+const firmOutcomes = [
+  'Reduce review drag across hundreds of returns.',
+  'Reviewer-ready workpapers — every number sourced and cited.',
+  'One compliance calendar across all clients and entities.',
+  'Partner and senior time back on the work that needs judgment.',
+];
+
+const businessNeeds = [
+  { icon: 'lucide:git-branch', t: 'Books to return, tight', d: 'Close the gap between bookkeeping and the filing — no re-keying, no lost context.' },
+  { icon: 'lucide:scan-line', t: 'Extraction that proves itself', d: 'Pull figures from statements and invoices, each scored and cited to its source.' },
+  { icon: 'lucide:calendar-clock', t: 'Deadlines across entities', d: 'Track every obligation across your entities in one place. Nothing slips.' },
+  { icon: 'lucide:file-check', t: 'One place for the whole filing', d: 'Documents, extracted fields, and workpapers stay together through sign-off.' },
+];
+
+const soloSteps = [
+  { n: '01', icon: 'lucide:inbox', t: 'Intake', d: 'Drop the documents. The fleet classifies and queues them by form and entity.' },
+  { n: '02', icon: 'lucide:scan-line', t: 'Extract', d: 'Every field scored and cited. Low-confidence cells route to you, not past you.' },
+  { n: '03', icon: 'lucide:file-stack', t: 'Draft', d: 'Workpapers assembled, sourced end to end and ready for your read.' },
+  { n: '04', icon: 'lucide:user-check', t: 'Approve', d: 'You sign off. Nothing ships unreviewed — predictable work, per return.' },
+];
+
+const compare = [
+  { seg: 'Tax & accounting firms', driver: 'Throughput across a book of clients', products: 'Workpaper Builder · Compliance Calendar · Agent Workforce' },
+  { seg: 'Businesses', driver: 'Books-to-return for your own entities', products: 'AI Tax Co-Pilot · Client Intelligence · Tax Matrix' },
+  { seg: 'Solo operators', driver: 'More returns without more hours', products: 'Tax Prep Support · Tax Research · Workpaper Builder' },
+];
+---
+
+<Base title="Solutions — Taxline" description="Built for whoever owns the return — tax and accounting firms, businesses, and solo operators. Cited extraction, reviewer-ready workpapers, and a human approval on every output.">
+  <TopNav />
+  <main>
+    <!-- Hero -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Solutions</p>
+        <h1 class="ds-h1 mt-4 max-w-3xl">Built for whoever owns the return.</h1>
+        <p class="ds-lead mt-5 max-w-2xl">
+          Firm, business, or solo — the same fleet does the work. It triages, extracts, and assembles
+          with a confidence score and a citation on every field. You review. Nothing ships unreviewed.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-x-7 gap-y-2">
+          <a href="#firms" class="inline-flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-fg">
+            <Icon name="lucide:building-2" class="size-4 text-fg-faint" />Tax & accounting firms
+          </a>
+          <a href="#businesses" class="inline-flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-fg">
+            <Icon name="lucide:briefcase" class="size-4 text-fg-faint" />Businesses
+          </a>
+          <a href="#solo" class="inline-flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-fg">
+            <Icon name="lucide:user" class="size-4 text-fg-faint" />Solo operators
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tax & accounting firms -->
+    <section id="firms" class="scroll-mt-20 border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <div class="flex items-center gap-3">
+          <div class="grid size-9 place-items-center rounded-md border border-border bg-raised">
+            <Icon name="lucide:building-2" class="size-4 text-accent" />
+          </div>
+          <p class="ds-eyebrow">Tax & accounting firms</p>
+        </div>
+        <h2 class="ds-h2 mt-4 max-w-2xl">Move the whole book without growing the team.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">
+          Put the repetitive work on the fleet and keep your reviewers on judgment. Every output arrives
+          sourced, cited, and ready for a partner to sign.
+        </p>
+
+        <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+          <ul class="grid gap-3 self-start">
+            {firmOutcomes.map((o) => (
+              <li class="flex items-start gap-3 rounded-lg border border-border bg-panel p-4 shadow-1">
+                <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />
+                <span class="text-[15px] leading-relaxed text-fg">{o}</span>
+              </li>
+            ))}
+          </ul>
+          <div class="grid gap-4 sm:grid-cols-2">
+            {firmAgents.map((a) => <AgentCard {...a} href={u('agents')} />)}
+            <a href={u('products')} class="flex flex-col justify-between rounded-lg border border-dashed border-border bg-base p-5 transition-colors hover:border-border-strong">
+              <span class="ds-eyebrow text-fg-faint">Agent Workforce</span>
+              <span class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent">See every product <Icon name="lucide:arrow-right" class="size-4" /></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Businesses -->
+    <section id="businesses" class="scroll-mt-20 border-b border-border bg-panel/40">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <div class="flex items-center gap-3">
+          <div class="grid size-9 place-items-center rounded-md border border-border bg-raised">
+            <Icon name="lucide:briefcase" class="size-4 text-accent" />
+          </div>
+          <p class="ds-eyebrow">Businesses</p>
+        </div>
+        <h2 class="ds-h2 mt-4 max-w-2xl">Keep books and the return on the same page.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">
+          One workspace from source document to filed return — for your entities, your deadlines,
+          your numbers. Cited at every step so finance can stand behind it.
+        </p>
+        <div class="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
+          {businessNeeds.map((b) => (
+            <div class="flex flex-col gap-3 bg-base p-6">
+              <div class="grid size-9 place-items-center rounded-md border border-border bg-raised">
+                <Icon name={b.icon} class="size-4 text-accent" />
+              </div>
+              <div>
+                <div class="text-[15px] font-semibold text-fg">{b.t}</div>
+                <p class="mt-1 text-[13px] leading-relaxed text-fg-muted">{b.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
+          <Icon name="lucide:user-check" class="size-4 text-accent" />Every field carries a confidence score and a citation — a human approves before output ships.
+        </p>
+      </div>
+    </section>
+
+    <!-- Solo operators -->
+    <section id="solo" class="scroll-mt-20 border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <div class="flex items-center gap-3">
+          <div class="grid size-9 place-items-center rounded-md border border-border bg-raised">
+            <Icon name="lucide:user" class="size-4 text-accent" />
+          </div>
+          <p class="ds-eyebrow">Solo operators</p>
+        </div>
+        <h2 class="ds-h2 mt-4 max-w-2xl">Do more returns without more hours.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">
+          Intake, extraction, and drafting run for you. You stay the reviewer of record — and the
+          economics stay predictable, per return.
+        </p>
+        <ol class="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          {soloSteps.map((s) => (
+            <li class="flex flex-col gap-3 bg-base p-5">
+              <div class="flex items-center justify-between">
+                <Icon name={s.icon} class="size-5 text-accent" />
+                <span class="font-mono text-[11px] tabular-nums text-fg-faint">{s.n}</span>
+              </div>
+              <div>
+                <div class="text-[15px] font-semibold text-fg">{s.t}</div>
+                <p class="mt-1 text-[13px] leading-relaxed text-fg-muted">{s.d}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2">
+          <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
+            <Icon name="lucide:check" class="size-4 text-accent" />You approve every return
+          </span>
+          <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
+            <Icon name="lucide:check" class="size-4 text-accent" />Predictable per-return economics
+          </span>
+          <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
+            <Icon name="lucide:check" class="size-4 text-accent" />Backed by Tax Research and Tax Prep Support
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison strip -->
+    <section class="border-b border-border bg-panel/40">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Pick your lane</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">Same fleet, tuned to who owns the return.</h2>
+        <div class="mt-10 overflow-hidden rounded-lg border border-border shadow-1">
+          <div class="hidden grid-cols-[minmax(0,3fr)_minmax(0,4fr)_minmax(0,5fr)] gap-px bg-border sm:grid">
+            <div class="bg-raised px-5 py-3 ds-eyebrow text-fg-faint">Audience</div>
+            <div class="bg-raised px-5 py-3 ds-eyebrow text-fg-faint">What it solves</div>
+            <div class="bg-raised px-5 py-3 ds-eyebrow text-fg-faint">Products that serve them</div>
+          </div>
+          <div class="grid gap-px bg-border">
+            {compare.map((r) => (
+              <div class="grid gap-px bg-border sm:grid-cols-[minmax(0,3fr)_minmax(0,4fr)_minmax(0,5fr)]">
+                <div class="bg-base px-5 py-4 text-[15px] font-semibold text-fg">{r.seg}</div>
+                <div class="bg-base px-5 py-4 text-[14px] leading-relaxed text-fg-muted">{r.driver}</div>
+                <div class="bg-base px-5 py-4 font-mono text-[12px] leading-relaxed text-fg-muted">{r.products}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="border-b border-border">
+      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
+        <div>
+          <h2 class="ds-h2 max-w-xl">Reduce review drag. Keep the human approval.</h2>
+          <p class="ds-small mt-2">See the fleet run on your own returns — whoever owns them.</p>
+        </div>
+        <div class="flex gap-3">
+          <Button href={u('contact')}>Book a demo</Button>
+          <Button href={u('pricing')} variant="ghost">See pricing</Button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

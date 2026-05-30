@@ -1,0 +1,189 @@
+---
+import Base from '../layouts/Base.astro';
+import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
+import Button from '../components/Button.astro';
+import { Icon } from 'astro-icon/components';
+
+const base = import.meta.env.BASE_URL;
+const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+
+const controls = [
+  {
+    icon: 'lucide:shield-check',
+    title: 'SOC 2',
+    body: 'Type II audit in progress. Controls are designed to the framework; the report is not yet issued.',
+  },
+  {
+    icon: 'lucide:user-check',
+    title: 'Human-in-the-loop approval',
+    body: 'A person approves before any output ships. The fleet drafts; you sign off.',
+  },
+  {
+    icon: 'lucide:lock',
+    title: 'No training on your data',
+    body: 'Your documents and client data are never used to train models.',
+  },
+  {
+    icon: 'lucide:key',
+    title: 'Encryption in transit & at rest',
+    body: 'Data is encrypted on the wire and in storage using industry-standard ciphers.',
+  },
+  {
+    icon: 'lucide:list-checks',
+    title: 'Role-based access control',
+    body: 'Scope access by role so people see only the workspaces and records they need.',
+  },
+  {
+    icon: 'lucide:scroll-text',
+    title: 'Audit log of every agent action',
+    body: 'Every agent step and human approval is recorded with a timestamp and actor.',
+  },
+  {
+    icon: 'lucide:map-pin',
+    title: 'Data residency options',
+    body: 'Choose where your data is stored to support regional residency requirements.',
+  },
+  {
+    icon: 'lucide:quote',
+    title: 'Citations & provenance',
+    body: 'Every extracted field carries a confidence score and a citation to its source.',
+  },
+  {
+    icon: 'lucide:git-branch',
+    title: 'Least-privilege agent tools',
+    body: 'Each agent gets a narrow toolset scoped to its job — nothing broader.',
+  },
+];
+
+const flow = [
+  {
+    n: '01',
+    icon: 'lucide:file-stack',
+    t: 'Documents stay in your workspace',
+    d: 'Source files live in your tenant. Taxline reads them in place — it does not copy them out.',
+  },
+  {
+    n: '02',
+    icon: 'lucide:search',
+    t: 'Agents retrieve over your knowledge base',
+    d: 'The fleet answers from your sources with citations, not from a shared model memory.',
+  },
+  {
+    n: '03',
+    icon: 'lucide:user-check',
+    t: 'Nothing ships unreviewed',
+    d: 'Output is held for a person to approve. You decide what leaves the workspace.',
+  },
+];
+
+const never = [
+  'No autonomous filing — Taxline never submits a return on its own.',
+  'No selling or sharing your data with third parties.',
+  'No training models on client data.',
+  'No action without a person approving it first.',
+];
+---
+
+<Base title="Security — Taxline" description="How Taxline keeps a human in the loop and your data yours: human-in-the-loop approval, no training on your data, encryption, audit logs, and provenance on every field.">
+  <TopNav />
+  <main>
+    <!-- Hero -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Security</p>
+        <h1 class="ds-h1 mt-4 max-w-3xl">Keep a human in the loop — and your data yours.</h1>
+        <p class="ds-lead mt-5 max-w-2xl">
+          Taxline is built so that a person approves before anything ships, your documents stay in
+          your workspace, and every field carries a citation. The controls below describe what is in
+          place today and what is in progress.
+        </p>
+        <div class="mt-7 flex flex-wrap gap-x-7 gap-y-2">
+          <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
+            <Icon name="lucide:user-check" class="size-4 text-fg-faint" />Human-in-the-loop
+          </span>
+          <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
+            <Icon name="lucide:lock" class="size-4 text-fg-faint" />No training on your data
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls grid -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Controls</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">Designed for high-trust tax operations.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">
+          Measures that protect your data and keep a person in control. Some are live today; SOC 2 is
+          in progress.
+        </p>
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {controls.map((c) => (
+            <div class="rounded-lg border border-border bg-panel p-5 shadow-1">
+              <Icon name={c.icon} class="size-5 text-accent" />
+              <h3 class="ds-h3 mt-4">{c.title}</h3>
+              <p class="ds-small mt-2">{c.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- How your data flows -->
+    <section class="border-b border-border bg-panel/40">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">How your data flows</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">Your data stays yours, end to end.</h2>
+        <div class="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3">
+          {flow.map((s) => (
+            <div class="flex flex-col gap-3 bg-base p-5">
+              <div class="flex items-center justify-between">
+                <Icon name={s.icon} class="size-5 text-accent" />
+                <span class="font-mono text-[11px] tabular-nums text-fg-faint">{s.n}</span>
+              </div>
+              <div>
+                <div class="text-[15px] font-semibold text-fg">{s.t}</div>
+                <p class="mt-1 text-[13px] leading-relaxed text-fg-muted">{s.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
+          <Icon name="lucide:user-check" class="size-4 text-accent" />A human approves before output ships — every time.
+        </p>
+      </div>
+    </section>
+
+    <!-- What Taxline never does -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Boundaries</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">What Taxline never does.</h2>
+        <div class="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
+          {never.map((line) => (
+            <div class="flex items-start gap-3 bg-base p-5">
+              <Icon name="lucide:lock" class="mt-0.5 size-4 shrink-0 text-accent" />
+              <p class="ds-body">{line}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="border-b border-border">
+      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
+        <div>
+          <h2 class="ds-h2 max-w-xl">Have a security question? Put it to us.</h2>
+          <p class="ds-small mt-2">Talk to security or see the controls run on your own documents.</p>
+        </div>
+        <div class="flex gap-3">
+          <Button href={u('contact')}>Talk to security</Button>
+          <Button href={u('contact')} variant="ghost">Book a demo</Button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

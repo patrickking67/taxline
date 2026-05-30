@@ -1,0 +1,25 @@
+{
+  "name": "@taxline/service",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Taxline agent backend — a 5-agent fleet behind an orchestrator, with a retrieval-backed knowledge base. Human-approved before any output ships.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "refresh-kb": "tsx ../knowledge-base/ingest/refresh.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

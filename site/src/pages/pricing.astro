@@ -1,0 +1,218 @@
+---
+import Base from '../layouts/Base.astro';
+import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
+import Button from '../components/Button.astro';
+import { Icon } from 'astro-icon/components';
+
+const base = import.meta.env.BASE_URL;
+const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+
+const plans = [
+  {
+    name: 'Solo',
+    price: '$49',
+    unit: '/ preparer / mo',
+    for: 'For solo operators running their own book of returns.',
+    bullets: ['Intake and extraction', 'Citation-backed research', 'Up to 50 returns / mo', 'Email support'],
+    cta: { label: 'Start', variant: 'ghost' },
+    featured: false,
+  },
+  {
+    name: 'Firm',
+    price: '$39',
+    unit: '/ seat / mo + per-return',
+    for: 'For tax and accounting firms running a shared queue.',
+    bullets: ['Everything in Solo', 'Multi-client queue', 'Compliance calendar', 'Reviewer workflow', 'SSO'],
+    cta: { label: 'Book a demo', variant: 'primary' },
+    featured: true,
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    unit: '',
+    for: 'For large firms with volume, residency, and audit needs.',
+    bullets: ['Volume pricing', 'Data residency', 'Audit log', 'Dedicated support', 'SLA'],
+    cta: { label: 'Talk to us', variant: 'ghost' },
+    featured: false,
+  },
+];
+
+const matrix = [
+  { cap: 'Intake & queue', solo: true, firm: true, ent: true },
+  { cap: 'Extraction with confidence', solo: true, firm: true, ent: true },
+  { cap: 'Citation-backed research', solo: true, firm: true, ent: true },
+  { cap: 'Workpaper builder', solo: true, firm: true, ent: true },
+  { cap: 'Compliance calendar', solo: false, firm: true, ent: true },
+  { cap: 'Multi-client', solo: false, firm: true, ent: true },
+  { cap: 'SSO / RBAC', solo: false, firm: true, ent: true },
+  { cap: 'Audit log', solo: false, firm: false, ent: true },
+  { cap: 'Data residency', solo: false, firm: false, ent: true },
+  { cap: 'Support', solo: 'Email', firm: 'Priority', ent: 'Dedicated' },
+];
+
+const faqs = [
+  {
+    q: 'Is there a free trial?',
+    a: 'Yes. Run the fleet on a sample of your own documents before you commit. Book a demo and we set up a scoped trial with your forms.',
+  },
+  {
+    q: 'Per-return or per-seat — which applies?',
+    a: 'Solo is flat per preparer. Firm is per seat plus a per-return rate, so cost tracks actual volume instead of a fixed tier you may not fill. Enterprise moves to volume pricing.',
+  },
+  {
+    q: 'Do you train on our data?',
+    a: 'No. Your documents and client data are never used to train models. They are processed to do the work you asked for, and nothing leaves that boundary without your action.',
+  },
+  {
+    q: 'Can we self-host or pin data residency?',
+    a: 'Data residency is available on Enterprise — pin processing to a region and keep an audit log of every access. Talk to us about deployment scope for your environment.',
+  },
+  {
+    q: 'What counts as a return?',
+    a: 'A return is one filed entity for one tax year. Amendments and re-runs on the same entity and year do not count again. Extensions are included.',
+  },
+];
+---
+
+<Base title="Pricing — Taxline" description="Priced by the work, not the hype. Plans for solo operators, firms, and large teams — confidence scores and citations on every field, a human approval before output ships.">
+  <TopNav />
+  <main>
+    <!-- Hero -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Pricing</p>
+        <h1 class="ds-h1 mt-4 max-w-3xl">Priced by the work, not the hype.</h1>
+        <p class="ds-lead mt-5 max-w-2xl">
+          Pay for returns moved through the fleet, not for seats you never fill. Every plan ships
+          confidence scores and citations on each field, and a human approves before output leaves.
+        </p>
+      </div>
+    </section>
+
+    <!-- Plan cards -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <div class="grid gap-4 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <div
+              class:list={[
+                'relative flex flex-col rounded-lg p-6 shadow-1',
+                plan.featured
+                  ? 'border border-accent bg-panel'
+                  : 'border border-border bg-panel',
+              ]}
+            >
+              {plan.featured && (
+                <>
+                  <div class="pointer-events-none absolute inset-x-0 top-0 h-24 rounded-t-lg bg-accent-soft"></div>
+                  <span class="absolute right-5 top-6 inline-flex items-center gap-1.5 rounded-sm bg-accent-soft px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-accent">
+                    <Icon name="lucide:check" class="size-3" />Most popular
+                  </span>
+                </>
+              )}
+              <div class="relative">
+                <span class="ds-eyebrow">{plan.name}</span>
+                <div class="mt-4 flex items-baseline gap-1.5">
+                  <span class="font-mono text-3xl font-semibold tracking-tight text-fg">{plan.price}</span>
+                  {plan.unit && <span class="text-[13px] text-fg-muted">{plan.unit}</span>}
+                </div>
+                <p class="mt-3 min-h-[3rem] text-[13px] leading-relaxed text-fg-muted">{plan.for}</p>
+              </div>
+              <ul class="relative mt-5 flex-1 space-y-2.5 border-t border-border-faint pt-5">
+                {plan.bullets.map((b) => (
+                  <li class="flex items-start gap-2.5 text-sm text-fg">
+                    <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+              <div class="relative mt-6">
+                <Button href={u('contact')} variant={plan.cta.variant as 'primary' | 'ghost' | 'text'} class="w-full">{plan.cta.label}</Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
+          <Icon name="lucide:tag" class="size-4 text-fg-faint" />Representative pricing — contact for current rates.
+        </p>
+      </div>
+    </section>
+
+    <!-- Feature comparison -->
+    <section class="border-b border-border bg-panel/40">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Compare</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">What each plan includes.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">The same engine across every tier. Higher plans add coordination, control, and assurance.</p>
+
+        <div class="mt-10 overflow-hidden rounded-lg border border-border bg-panel shadow-1">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[640px] text-left">
+              <thead>
+                <tr class="border-b border-border">
+                  <th class="px-5 py-3.5 font-mono text-[11px] uppercase tracking-[0.14em] text-fg-faint">Capability</th>
+                  <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-fg-muted">Solo</th>
+                  <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Firm</th>
+                  <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-fg-muted">Enterprise</th>
+                </tr>
+              </thead>
+              <tbody>
+                {matrix.map((row) => (
+                  <tr class="border-b border-border-faint last:border-0">
+                    <th scope="row" class="px-5 py-3.5 text-sm font-normal text-fg">{row.cap}</th>
+                    {[row.solo, row.firm, row.ent].map((cell) => (
+                      <td class="px-5 py-3.5 text-center">
+                        {cell === true ? (
+                          <Icon name="lucide:check" class="mx-auto size-4 text-accent" />
+                        ) : cell === false ? (
+                          <span class="text-fg-faint">—</span>
+                        ) : (
+                          <span class="font-mono text-[12px] text-fg-muted">{cell}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Questions</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">Before you decide.</h2>
+        <div class="mt-10 grid gap-3 lg:max-w-3xl">
+          {faqs.map((item) => (
+            <details class="group rounded-lg border border-border bg-panel px-5 shadow-1 open:border-border-strong">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[15px] font-medium text-fg [&::-webkit-details-marker]:hidden">
+                {item.q}
+                <Icon name="lucide:plus" class="size-4 shrink-0 text-fg-faint transition-transform duration-150 group-open:rotate-45" />
+              </summary>
+              <p class="border-t border-border-faint pb-4 pt-4 text-sm leading-relaxed text-fg-muted">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA band -->
+    <section class="border-b border-border">
+      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
+        <div>
+          <h2 class="ds-h2 max-w-xl">See the fleet run before you pay for it.</h2>
+          <p class="ds-small mt-2">Bring your own documents. We scope a trial to your forms and volume.</p>
+        </div>
+        <div class="flex gap-3">
+          <Button href={u('contact')}>Book a demo</Button>
+          <Button href={u('docs')} variant="ghost">Read the docs</Button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

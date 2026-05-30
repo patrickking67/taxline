@@ -1,0 +1,23 @@
+---
+interface Props {
+  label: string;
+  value: number | null;
+  labelWidth?: string;
+  class?: string;
+}
+const { label, value, labelWidth = 'w-[150px]', class: cls = '' } = Astro.props;
+
+const band = value == null ? 'none' : value >= 0.85 ? 'ok' : value >= 0.6 ? 'warn' : 'danger';
+const pct = value == null ? 0 : Math.round(value * 100);
+const fill = { ok: 'bg-ok', warn: 'bg-warn', danger: 'bg-danger', none: 'bg-border-strong' }[band];
+const valColor = { ok: 'text-ok-bright', warn: 'text-warn-bright', danger: 'text-danger-bright', none: 'text-fg-faint' }[band];
+const valText = value == null ? '—' : value.toFixed(2);
+---
+
+<div class:list={['flex items-center gap-3.5', cls]}>
+  <div class:list={[labelWidth, 'shrink-0 truncate text-[13px] text-fg-muted']}>{label}</div>
+  <div class="h-[7px] flex-1 overflow-hidden rounded-full border border-border-faint bg-inset">
+    <div class:list={['h-full rounded-full', fill]} style={`width:${pct}%`}></div>
+  </div>
+  <div class:list={['w-[46px] shrink-0 text-right font-mono text-xs font-medium tabular-nums', valColor]}>{valText}</div>
+</div>

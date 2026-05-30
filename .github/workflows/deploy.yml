@@ -1,0 +1,59 @@
+# Build the Astro site and deploy it to GitHub Pages.
+#
+# GitHub Pages from a PRIVATE repo requires a paid plan (Pro / Team /
+# Enterprise). On a public repo it works on the free tier.
+#
+# For a project page keep BASE_PATH=/taxline (served at
+# https://<user>.github.io/taxline). For a custom domain set BASE_PATH=/ and
+# SITE_URL to the domain (e.g. https://taxline.app).
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          SITE_URL: 'https://patrickking67.github.io'
+          BASE_PATH: '/taxline'
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

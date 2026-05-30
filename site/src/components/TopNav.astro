@@ -1,0 +1,30 @@
+---
+import Logo from './Logo.astro';
+import Button from './Button.astro';
+import MegaMenu from './MegaMenu.astro';
+import { Icon } from 'astro-icon/components';
+
+const base = import.meta.env.BASE_URL;
+const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+---
+
+<header class="sticky top-0 z-50 border-b border-border bg-base">
+  <div class="mx-auto flex h-[60px] max-w-[1200px] items-center justify-between px-5 sm:px-6">
+    <div class="flex items-center gap-3">
+      <button
+        type="button"
+        aria-label="Open product menu"
+        data-megamenu-trigger
+        class="grid size-9 place-items-center rounded-md text-fg-muted transition-colors hover:bg-raised hover:text-fg"
+      >
+        <Icon name="lucide:menu" class="size-5" />
+      </button>
+      <a href={u('')} class="flex items-center" aria-label="Taxline home"><Logo /></a>
+    </div>
+    <nav class="flex items-center gap-2 sm:gap-3">
+      <a href={u('app')} class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg sm:inline">Sign in</a>
+      <Button href={u('contact')} size="sm">Book a demo</Button>
+    </nav>
+  </div>
+  <MegaMenu />
+</header>

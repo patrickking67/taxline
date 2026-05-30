@@ -1,0 +1,158 @@
+---
+import { Icon } from 'astro-icon/components';
+import StatusPill from './StatusPill.astro';
+import ConfidenceMeter from './ConfidenceMeter.astro';
+import EvidenceChip from './EvidenceChip.astro';
+
+const queue = [
+  { name: 'acme_w2_2024.pdf', status: 'review', conf: 0.94 },
+  { name: '1099-nec_batch.pdf', status: 'new', conf: 0.78 },
+  { name: 'k1_meadow_lp.pdf', status: 'new', conf: null },
+  { name: 'depr_schedule.xlsx', status: 'approved', conf: 0.99 },
+];
+
+const handoff = [
+  { icon: 'lucide:inbox', label: 'Intake' },
+  { icon: 'lucide:scan-line', label: 'Extraction' },
+  { icon: 'lucide:search', label: 'Research' },
+  { icon: 'lucide:file-stack', label: 'Workpaper' },
+  { icon: 'lucide:calendar-clock', label: 'Compliance' },
+];
+
+const agents = [
+  { icon: 'lucide:inbox', name: 'Intake', status: 'running' },
+  { icon: 'lucide:scan-line', name: 'Extraction', status: 'running' },
+  { icon: 'lucide:search', name: 'Research', status: 'waiting' },
+  { icon: 'lucide:file-stack', name: 'Workpaper', status: 'idle' },
+  { icon: 'lucide:calendar-clock', name: 'Compliance', status: 'idle' },
+];
+
+const log = [
+  { t: '12:04:22', who: 'intake', c: 'text-info-bright', msg: 'acme_w2_2024.pdf · classified W-2' },
+  { t: '12:04:24', who: 'extraction', c: 'text-ok-bright', msg: 'pulling 24 fields…' },
+  { t: '12:04:27', who: 'extraction', c: 'text-ok-bright', msg: '24/24 fields · mean 0.83' },
+  { t: '12:04:29', who: 'extraction', c: 'text-ok-bright', msg: 'state w/h conf 0.74 → review' },
+  { t: '12:04:31', who: 'research', c: 'text-warn-bright', msg: '§162(a) deductibility · 3 sources' },
+  { t: '12:04:35', who: 'workpaper', c: 'text-fg-muted', msg: 'schedule C assembled' },
+  { t: '12:04:38', who: 'compliance', c: 'text-info-bright', msg: '1040-ES Q2 due in 6d' },
+];
+
+const fields = [
+  { label: 'Wages · box 1', value: 0.97 },
+  { label: 'Federal w/h', value: 0.91 },
+  { label: 'State w/h', value: 0.74 },
+  { label: 'Local code', value: 0.41 },
+];
+
+const deadlines = [
+  { label: '1040-ES · Q2', days: 6 },
+  { label: '1120 · Meadow LP', days: 21 },
+  { label: 'Sales/use · TX', days: 2 },
+];
+const dayColor = (d: number) => (d <= 3 ? 'text-danger-bright' : d <= 7 ? 'text-warn-bright' : 'text-fg-muted');
+
+const sectionLabel = 'flex items-center gap-2 font-mono text-[10px] font-medium uppercase tracking-[0.13em] text-fg-faint';
+---
+
+<div class="overflow-hidden rounded-lg border border-border bg-panel shadow-2">
+  <!-- header -->
+  <div class="flex items-center justify-between gap-4 border-b border-border px-4 py-2.5">
+    <span class="inline-flex items-center gap-2 font-mono text-[13px] text-fg-muted">
+      <span class="text-accent">&gt;_</span> taxline · operations
+    </span>
+    <span class="hidden items-center gap-2 font-mono text-xs text-fg-muted sm:inline-flex">
+      <span class="size-1.5 rounded-full bg-accent dot-pulse"></span>fleet running · 5 agents
+    </span>
+    <span class="font-mono text-xs tabular-nums text-fg-faint">12:04:41</span>
+  </div>
+
+  <!-- body: 3 columns -->
+  <div class="grid grid-cols-1 divide-y divide-border lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.05fr)] lg:divide-x lg:divide-y-0">
+    <!-- col 1 — intake queue + handoff -->
+    <div class="space-y-3 p-4">
+      <div class="flex items-center justify-between">
+        <span class={sectionLabel}><Icon name="lucide:layout-list" class="size-3.5" />Intake queue</span>
+        <span class="rounded-sm bg-raised px-1.5 py-0.5 font-mono text-[11px] text-fg-muted">{queue.length}</span>
+      </div>
+      <div class="space-y-1.5">
+        {queue.map((q) => (
+          <div class="flex items-center gap-2.5 rounded-md px-1.5 py-1.5 transition-colors hover:bg-raised">
+            <Icon name="lucide:file-text" class="size-4 shrink-0 text-fg-faint" />
+            <span class="min-w-0 flex-1 truncate font-mono text-[12px] text-fg">{q.name}</span>
+            <StatusPill status={q.status} class="!px-1.5 !text-[10px]" />
+            <span class:list={['w-8 shrink-0 text-right font-mono text-[11px] tabular-nums', q.conf == null ? 'text-fg-faint' : q.conf >= 0.85 ? 'text-ok-bright' : 'text-warn-bright']}>
+              {q.conf == null ? '—' : q.conf.toFixed(2)}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div class="pt-2">
+        <span class={sectionLabel}><Icon name="lucide:git-branch" class="size-3.5" />Handoff</span>
+        <div class="mt-3 flex items-center">
+          {handoff.map((h, i) => (
+            <>
+              <div class="grid size-9 place-items-center rounded-md border border-border bg-raised" title={h.label}>
+                <Icon name={h.icon} class="size-4 text-fg-muted" />
+              </div>
+              {i < handoff.length - 1 && <div class="h-px w-3 bg-border-strong"></div>}
+            </>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- col 2 — agent activity + log -->
+    <div class="space-y-3 p-4">
+      <span class={sectionLabel}><Icon name="lucide:activity" class="size-3.5" />Agent activity</span>
+      <div class="space-y-1">
+        {agents.map((a) => (
+          <div class="flex items-center gap-3 rounded-md px-1.5 py-1.5">
+            <div class="grid size-7 shrink-0 place-items-center rounded-sm border border-border bg-raised">
+              <Icon name={a.icon} class="size-4 text-fg-muted" />
+            </div>
+            <span class="flex-1 text-[13px] font-semibold text-fg">{a.name}</span>
+            <StatusPill status={a.status} />
+          </div>
+        ))}
+      </div>
+      <div class="rounded-md border border-border-faint bg-inset p-3">
+        <div class="space-y-1 font-mono text-[11px] leading-relaxed">
+          {log.map((l) => (
+            <div class="flex gap-2">
+              <span class="shrink-0 tabular-nums text-fg-faint">{l.t}</span>
+              <span class:list={['shrink-0', l.c]}>{l.who}</span>
+              <span class="min-w-0 flex-1 truncate text-fg-muted">{l.msg}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- col 3 — extraction + compliance + evidence -->
+    <div class="space-y-3 p-4">
+      <div class="flex items-center justify-between">
+        <span class={sectionLabel}><Icon name="lucide:scan-line" class="size-3.5" />Extraction · acme_w2</span>
+        <span class="rounded-sm border border-warn/40 bg-warn-soft px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-warn-bright">2 review</span>
+      </div>
+      <div class="space-y-2.5">
+        {fields.map((f) => <ConfidenceMeter label={f.label} value={f.value} labelWidth="w-[92px]" />)}
+      </div>
+      <div class="pt-1">
+        <span class={sectionLabel}><Icon name="lucide:calendar-clock" class="size-3.5" />Compliance</span>
+        <div class="mt-2 space-y-1.5">
+          {deadlines.map((d) => (
+            <div class="flex items-center justify-between rounded-md border border-border-faint bg-inset px-2.5 py-1.5">
+              <span class="font-mono text-[12px] text-fg">{d.label}</span>
+              <span class:list={['font-mono text-[12px] font-medium tabular-nums', dayColor(d.days)]}>{d.days}d</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-1.5 pt-1">
+        <EvidenceChip icon="lucide:file-text"><b class="font-medium text-fg">1099-NEC</b> · p.1</EvidenceChip>
+        <EvidenceChip icon="lucide:book-open">IRC <b class="font-medium text-fg">§162(a)</b></EvidenceChip>
+        <EvidenceChip icon="lucide:quote">Pub. <b class="font-medium text-fg">535</b></EvidenceChip>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Taxline Site (Astro dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 4321
+    },
+    {
+      "name": "Taxline Service (agent fleet)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "service", "run", "dev"],
+      "port": 8787
+    }
+  ]
+}

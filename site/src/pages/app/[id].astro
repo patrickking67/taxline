@@ -1,0 +1,103 @@
+---
+import AppShell from '../../components/app/AppShell.astro';
+import ConfidenceMeter from '../../components/ConfidenceMeter.astro';
+import EvidenceChip from '../../components/EvidenceChip.astro';
+import Button from '../../components/Button.astro';
+import { Icon } from 'astro-icon/components';
+import { docs, docById } from '../../lib/data/app';
+
+export function getStaticPaths() {
+  return docs.map((d) => ({ params: { id: d.id } }));
+}
+
+const { id } = Astro.params;
+const doc = docById(id!)!;
+const reviewCount = doc.fields.filter((f) => f.confidence != null && f.confidence < 0.85).length;
+
+// Tint a value cell on the light "paper" surface when confidence is low.
+const tint = (c: number | null) =>
+  c == null || c >= 0.85 ? '' : c >= 0.6 ? 'background:rgba(201,162,39,0.20)' : 'background:rgba(216,88,78,0.18)';
+---
+
+<AppShell active="app" breadcrumb={[{ label: 'Intake queue', href: 'app' }, { label: doc.name }]}>
+  {doc.fields.length === 0 ? (
+    <div class="grid min-h-[70vh] place-items-center p-6">
+      <div class="max-w-md text-center">
+        <div class="mx-auto grid size-12 place-items-center rounded-lg border border-border bg-panel"><Icon name="lucide:inbox" class="size-5 text-fg-muted" /></div>
+        <h2 class="ds-h3 mt-4">In intake — not yet extracted</h2>
+        <p class="ds-small mt-2">Intake classified <span class="font-mono text-fg">{doc.name}</span> as {doc.docTitle}. Run extraction to pull fields with confidence and citations.</p>
+        <div class="mt-5 flex justify-center"><Button><Icon name="lucide:scan-line" class="size-4" />Run extraction</Button></div>
+      </div>
+    </div>
+  ) : (
+    <div class="grid gap-px bg-border lg:grid-cols-[1fr_380px]">
+      <!-- document (paper surface) -->
+      <div class="bg-base p-6">
+        <div class="mb-3 flex items-center justify-between font-mono text-[12px] text-fg-faint">
+          <span class="inline-flex items-center gap-2"><Icon name="lucide:file-text" class="size-4" />{doc.name}</span>
+          <span>page 1 / {doc.pages}</span>
+        </div>
+        <div class="mx-auto max-w-lg rounded-lg border border-paper-border bg-paper p-6 text-paper-ink shadow-2">
+          <h2 class="text-[17px] font-semibold leading-snug">{doc.docTitle}</h2>
+          <div class="mt-5 grid grid-cols-2 gap-x-6 gap-y-5">
+            {doc.fields.map((f) => (
+              <div>
+                <div class="font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">{f.label}</div>
+                <div class="mt-1 rounded-sm px-2 py-1 font-mono text-[15px] text-paper-ink" style={tint(f.confidence)}>{f.value}</div>
+              </div>
+            ))}
+          </div>
+          <p class="mt-6 border-t border-paper-border pt-3 text-[11px] text-paper-ink-muted">Source scan · highlighted cells routed to review by confidence threshold.</p>
+        </div>
+      </div>
+
+      <!-- extraction panel -->
+      <div class="bg-base p-6">
+        <div class="mb-4 flex items-center justify-between">
+          <a href="app" class="inline-flex items-center gap-1.5 font-mono text-[12px] text-fg-muted hover:text-fg"><Icon name="lucide:arrow-left" class="size-4" />Back to queue</a>
+        </div>
+        <div class="flex items-baseline justify-between">
+          <span class="ds-eyebrow">Extraction</span>
+          <span class="font-mono text-[12px] text-fg-muted">mean {doc.confidence?.toFixed(2)}</span>
+        </div>
+        <div class="mt-4 space-y-2.5">
+          {doc.fields.map((f) => <ConfidenceMeter label={f.label} value={f.confidence} labelWidth="w-[150px]" />)}
+        </div>
+
+        {doc.evidence.length > 0 && (
+          <div class="mt-6">
+            <span class="ds-eyebrow text-fg-faint">Evidence</span>
+            <div class="mt-2 flex flex-wrap gap-1.5">
+              {doc.evidence.map((e) => (
+                <EvidenceChip icon={e.icon}>{e.strong ? <Fragment><span>{e.label}</span> <b class="font-medium text-fg">{e.strong}</b></Fragment> : <b class="font-medium text-fg">{e.label}</b>}</EvidenceChip>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div class="mt-7 space-y-2" id="approve-zone">
+          <button type="button" id="approve-btn" class="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:bg-accent-press">
+            <Icon name="lucide:check" class="size-4" />Approve {doc.fields.length} fields
+          </button>
+          <button type="button" class="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-raised px-4 py-2.5 text-sm text-fg transition-colors hover:border-border-strong"><Icon name="lucide:flag" class="size-4 text-fg-faint" />Flag for senior review</button>
+        </div>
+        {reviewCount > 0 && <p class="mt-3 font-mono text-[11px] text-warn-bright">{reviewCount} field{reviewCount > 1 ? 's' : ''} below threshold · review before approve.</p>}
+      </div>
+    </div>
+  )}
+
+  <script>
+    const btn = document.getElementById('approve-btn');
+    const zone = document.getElementById('approve-zone');
+    btn?.addEventListener('click', () => {
+      if (!zone) return;
+      zone.replaceChildren();
+      const ok = document.createElement('div');
+      ok.className = 'flex items-center gap-2 rounded-md border border-border bg-ok-soft px-4 py-2.5 text-sm font-medium text-ok-bright';
+      const dot = document.createElement('span');
+      dot.className = 'size-1.5 rounded-full bg-accent';
+      ok.append(dot, document.createTextNode('Approved · handed off to Workpaper'));
+      zone.append(ok);
+    });
+  </script>
+</AppShell>

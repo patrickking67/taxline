@@ -1,0 +1,19 @@
+{
+  "name": "taxline",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Taxline — AI tax operations, from intake to reviewer-ready workpapers.",
+  "workspaces": [
+    "site"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace site",
+    "build": "npm run build --workspace site",
+    "preview": "npm run preview --workspace site",
+    "check": "npm run check --workspace site"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

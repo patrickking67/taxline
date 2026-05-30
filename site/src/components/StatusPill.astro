@@ -1,0 +1,26 @@
+---
+interface Props {
+  status: 'running' | 'waiting' | 'blocked' | 'idle' | 'new' | 'review' | 'approved' | 'archived' | string;
+  label?: string;
+  class?: string;
+}
+const { status, label, class: cls = '' } = Astro.props;
+
+const map: Record<string, { bg: string; text: string; dot?: string; pulse?: boolean; txt: string }> = {
+  running:  { bg: 'bg-ok-soft',     text: 'text-ok-bright',     dot: 'bg-accent',   pulse: true,  txt: 'running' },
+  waiting:  { bg: 'bg-warn-soft',   text: 'text-warn-bright',   dot: 'bg-warn',     txt: 'waiting' },
+  blocked:  { bg: 'bg-danger-soft', text: 'text-danger-bright', dot: 'bg-danger',   txt: 'blocked' },
+  idle:     { bg: 'bg-raised',      text: 'text-fg-muted',      dot: 'bg-fg-faint', txt: 'idle' },
+  new:      { bg: 'bg-info-soft',   text: 'text-info-bright',   txt: 'new' },
+  review:   { bg: 'bg-accent-soft', text: 'text-ok-bright',     txt: 'in review' },
+  approved: { bg: 'bg-ok-soft',     text: 'text-ok-bright',     txt: 'approved' },
+  archived: { bg: 'bg-raised',      text: 'text-fg-muted',      txt: 'archived' },
+};
+const s = map[status] ?? { bg: 'bg-raised', text: 'text-fg-muted', txt: status };
+const text = label ?? s.txt;
+---
+
+<span class:list={['inline-flex items-center gap-1.5 rounded-sm px-[9px] py-1 font-mono text-[11px] font-medium', s.bg, s.text, cls]}>
+  {s.dot && <span class:list={['size-[7px] rounded-full', s.dot, s.pulse && 'dot-pulse']}></span>}
+  {text}
+</span>
