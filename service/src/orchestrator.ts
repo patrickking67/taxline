@@ -12,6 +12,7 @@ import { extraction } from './agents/extraction.js';
 import { research } from './agents/research.js';
 import { workpaper } from './agents/workpaper.js';
 import { compliance } from './agents/compliance.js';
+import { memory } from './memory/index.js';
 import {
   CONFIDENCE_THRESHOLD,
   type OrchestratorResult,
@@ -176,6 +177,36 @@ function dedupeReview(items: ReviewItem[]): ReviewItem[] {
 }
 
 /**
+ * CONTINUOUS LEARNING — remember approved, cited findings.
+ *
+ * Called ONLY after the human-approval gate has passed (result.approved === true).
+ * It writes the key cited finding(s) into the persistent vector memory so future
+ * retrievals can draw on prior approved work. We deliberately remember nothing when
+ * approval is absent, nothing flagged for review, and nothing without a citation — so
+ * unapproved drafts and low-confidence content never enter memory. Failures here are
+ * swallowed (logged): a memory hiccup must not break the already-approved result.
+ */
+async function rememberApprovedFindings(result: OrchestratorResult): Promise<void> {
+  if (!result.approved) return; // gate not passed -> never remember.
+  if (result.needsHumanReview.length > 0) return; // unresolved review -> not safe to learn.
+  if (result.citations.length === 0) return; // no provenance -> nothing groundable to keep.
+
+  // The approved output is the finding; attach the top citation as its provenance so
+  // the remembered record is traceable back to a source.
+  const top = result.citations[0]!;
+  try {
+    await memory.remember(result.output, {
+      file: top.file,
+      heading: top.heading ?? undefined,
+      kind: 'finding',
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('memory.remember failed (continuous learning skipped):', err instanceof Error ? err.message : err);
+  }
+}
+
+/**
  * Run a task through the fleet: start at the entry agent, follow handoffs,
  * aggregate everything, then apply the approval gate. Returns one structured
  * result. The handoff hop-count is a backstop only — the chain naturally ends at
@@ -199,7 +230,7 @@ export async function orchestrate(task: OrchestratorTask): Promise<OrchestratorR
   if (task.docId) context.docId = task.docId;
 
   while (current && hops < maxHops) {
-    const agent = REGISTRY[current];
+    const agent: AgentDefinition | undefined = REGISTRY[current];
     if (!agent) break;
 
     const run = await runAgent(agent, { task: task.task, context });
@@ -237,5 +268,10 @@ export async function orchestrate(task: OrchestratorTask): Promise<OrchestratorR
   };
 
   // Must-happen ordering: the gate is the LAST step before returning.
-  return requireHumanApproval(draft, task.approved === true);
+  const result = requireHumanApproval(draft, task.approved === true);
+
+  // Continuous learning: only AFTER the gate passes do we remember the cited finding.
+  await rememberApprovedFindings(result);
+
+  return result;
 }

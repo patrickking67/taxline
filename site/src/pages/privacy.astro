@@ -1,0 +1,132 @@
+---
+import Base from '../layouts/Base.astro';
+import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Base
+  title="Privacy — Taxline"
+  description="How Taxline collects, uses, and protects your data. We do not train models on your client data, and a human approves before any output ships."
+>
+  <TopNav />
+  <main>
+    <section class="mx-auto max-w-3xl px-5 py-20 sm:px-6">
+      <p class="ds-eyebrow">Legal</p>
+      <h1 class="ds-h1 mt-3">Privacy Policy</h1>
+      <p class="mt-2 font-mono text-xs text-fg-faint">Last updated: May 30, 2026</p>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">Overview</h2>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        Taxline is an AI tax-operations platform. A fleet of specialized agents triages, extracts,
+        researches, and assembles tax work into reviewer-ready output, and a human approves before
+        anything ships. To do that, the platform handles sensitive financial and personal
+        information. This policy explains what we collect, how we use it, and the controls you have.
+        It applies to the Taxline application and this website.
+      </p>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">Information we collect</h2>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        We collect only what the service needs to function.
+      </p>
+      <ul class="mt-3 list-disc space-y-1 pl-5 text-fg-muted">
+        <li>
+          <span class="font-medium text-fg">Account information.</span> Your name, work email,
+          organization, role, and authentication details when you create or are invited to an account.
+        </li>
+        <li>
+          <span class="font-medium text-fg">Uploaded tax documents and financial data.</span> The
+          returns, forms, statements, schedules, and client records you or your team submit for
+          processing, along with the structured data the fleet extracts from them.
+        </li>
+        <li>
+          <span class="font-medium text-fg">Usage data.</span> Logs, device and browser metadata,
+          and product interactions we use to operate, secure, and improve the service.
+        </li>
+      </ul>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">How we use information</h2>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        We use your information to provide and operate the service: to run intake, extraction,
+        research, and workpaper assembly; to attach confidence scores and citations to each field;
+        to route work for human review; and to maintain security, support, and billing.
+      </p>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        <span class="font-medium text-fg">We do not train models on your client data.</span> Your
+        uploaded documents and the data derived from them are used to produce your output, not to
+        train, fine-tune, or improve any machine-learning model — ours or a third party's.
+      </p>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">Data handling and security</h2>
+      <ul class="mt-3 list-disc space-y-1 pl-5 text-fg-muted">
+        <li>
+          <span class="font-medium text-fg">Encryption.</span> Data is encrypted in transit and at rest.
+        </li>
+        <li>
+          <span class="font-medium text-fg">Access controls.</span> Access is scoped by role and
+          least privilege, with authentication and audit logging on sensitive actions.
+        </li>
+        <li>
+          <span class="font-medium text-fg">Retention.</span> We retain your data for as long as
+          your account is active or as needed to provide the service and meet legal obligations.
+        </li>
+        <li>
+          <span class="font-medium text-fg">Deletion.</span> You can request deletion of your data,
+          and we will delete it subject to any retention we are legally required to keep.
+        </li>
+      </ul>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">Subprocessors</h2>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        Taxline relies on a small set of infrastructure and model providers to deliver the service —
+        for example, hosting, storage, and the model and embedding providers that power the agents.
+        These subprocessors process data only under contract, only to perform services for Taxline,
+        and not to train their own models on your data. We require confidentiality and security terms
+        consistent with this policy.
+      </p>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">Your rights</h2>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        Depending on your location, you may have rights over your personal information. In most cases
+        you can:
+      </p>
+      <ul class="mt-3 list-disc space-y-1 pl-5 text-fg-muted">
+        <li><span class="font-medium text-fg">Access</span> the information we hold about you.</li>
+        <li><span class="font-medium text-fg">Export</span> your data in a portable format.</li>
+        <li><span class="font-medium text-fg">Delete</span> your data, subject to legal retention requirements.</li>
+      </ul>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        To exercise these rights, contact us at the address below. If you use Taxline through your
+        firm or employer, some requests may be directed to them as the controller of the data.
+      </p>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">Cookies and analytics</h2>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        We use a small number of cookies and similar technologies to keep you signed in, remember
+        preferences, and understand aggregate product usage. We do not sell your personal
+        information. You can control cookies through your browser settings, though disabling some may
+        affect how the service works.
+      </p>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">Children's privacy</h2>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        Taxline is a business tool intended for adults. It is not directed to children under 13, and
+        we do not knowingly collect personal information from them. If you believe a child has
+        provided us information, contact us and we will delete it.
+      </p>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">Changes to this policy</h2>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        We may update this policy as the service evolves or the law changes. When we make material
+        changes, we will update the date above and, where appropriate, notify you. Continued use of
+        Taxline after an update means you accept the revised policy.
+      </p>
+
+      <h2 class="mt-10 text-xl font-semibold text-fg">Contact</h2>
+      <p class="mt-3 text-fg-muted leading-relaxed">
+        Questions about this policy or your data? Email us at
+        <a href="mailto:privacy@taxline.example" class="text-accent transition-colors hover:text-accent-hover">privacy@taxline.example</a>.
+      </p>
+    </section>
+  </main>
+  <Footer />
+</Base>

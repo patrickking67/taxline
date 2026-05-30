@@ -1,0 +1,51 @@
+---
+import { Icon } from 'astro-icon/components';
+import Logo from './Logo.astro';
+import { fleet, orchestratorName } from '../lib/data/fleet';
+
+// Position the five agents evenly on an orbit (top, then clockwise).
+const R = 38; // % radius
+const nodes = fleet.map((a, i) => {
+  const ang = ((-90 + i * 72) * Math.PI) / 180;
+  return { ...a, x: 50 + R * Math.cos(ang), y: 50 + R * Math.sin(ang), i };
+});
+---
+
+<div class="relative mx-auto aspect-square w-full max-w-[460px]">
+  <!-- breathing accent glow -->
+  <div
+    class="fleet-glow pointer-events-none absolute inset-[14%] rounded-full"
+    style="background: radial-gradient(circle, rgba(61,165,123,0.30), rgba(61,165,123,0) 68%);"
+  >
+  </div>
+
+  <!-- rings + connectors -->
+  <svg viewBox="0 0 100 100" class="absolute inset-0 size-full" fill="none" aria-hidden="true">
+    <circle cx="50" cy="50" r="46.5" stroke="var(--color-border-faint)" stroke-width="0.3" />
+    <circle cx="50" cy="50" r="38" stroke="var(--color-border)" stroke-width="0.3" class="ring-spin" style="stroke-dasharray: 0.6 3.5;" />
+    {nodes.map((n) => (
+      <g>
+        <line x1="50" y1="50" x2={n.x} y2={n.y} stroke="var(--color-border)" stroke-width="0.3" />
+        <line x1="50" y1="50" x2={n.x} y2={n.y} stroke="var(--color-accent)" stroke-width="0.5" class="flow-line" style={`animation-delay:${n.i * 0.42}s`} />
+      </g>
+    ))}
+  </svg>
+
+  <!-- core: the Conductor -->
+  <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+    <div class="node-pulse flex flex-col items-center gap-1 rounded-lg border border-border-strong bg-panel px-3.5 py-2.5 shadow-2">
+      <Logo wordmark={false} size={22} />
+      <span class="font-mono text-[10px] uppercase tracking-[0.14em] text-accent">{orchestratorName}</span>
+    </div>
+  </div>
+
+  <!-- agent nodes -->
+  {nodes.map((n) => (
+    <div class="absolute -translate-x-1/2 -translate-y-1/2" style={`left:${n.x}%;top:${n.y}%`}>
+      <div class="lift flex items-center gap-1.5 rounded-md border border-border bg-panel px-2.5 py-1.5 shadow-1 hover:border-accent-line">
+        <Icon name={n.icon} class="size-3.5 text-accent" />
+        <span class="text-[11px] font-semibold text-fg">{n.codename}</span>
+      </div>
+    </div>
+  ))}
+</div>

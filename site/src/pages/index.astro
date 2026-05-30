@@ -4,25 +4,33 @@ import TopNav from '../components/TopNav.astro';
 import Footer from '../components/Footer.astro';
 import Button from '../components/Button.astro';
 import ConsoleHero from '../components/ConsoleHero.astro';
+import FleetOrbit from '../components/FleetOrbit.astro';
+import FeatureShowcase from '../components/FeatureShowcase.astro';
 import AgentCard from '../components/AgentCard.astro';
 import { Icon } from 'astro-icon/components';
+import { fleet } from '../lib/data/fleet';
 
 const base = import.meta.env.BASE_URL;
 const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
 
-const fleet = [
-  { icon: 'lucide:inbox', name: 'Intake', title: 'Triage and queue', body: 'Classify every inbound document by form and entity, route it to the right agent, and build the queue.', tools: ['classify', 'route'] },
-  { icon: 'lucide:scan-line', name: 'Extraction', title: 'Fields with proof', body: 'Pull every field with a confidence score and a citation back to the source page. Low-confidence cells route to review.', tools: ['doc-extract', 'confidence'] },
-  { icon: 'lucide:search', name: 'Research', title: 'Citation-backed answers', body: 'Tax questions answered by retrieval over a living knowledge base. Sources, not guesses.', tools: ['kb-search'] },
-  { icon: 'lucide:file-stack', name: 'Workpaper', title: 'Reviewer-ready output', body: 'Assemble lead schedules and tie-outs where every number traces back to a source.', tools: ['assemble', 'cite'] },
-  { icon: 'lucide:calendar-clock', name: 'Compliance', title: 'Deadlines and follow-up', body: 'Track deadlines across entities. Taxline drafts the follow-up; you send it.', tools: ['calendar', 'notify'] },
+const trust = [
+  ['lucide:shield-check', 'SOC 2'],
+  ['lucide:lock', 'No training on your data'],
+  ['lucide:quote', 'Citation-backed'],
+  ['lucide:user-check', 'Human-approved'],
+];
+
+const audiences = [
+  ['lucide:building-2', 'Tax & accounting firms'],
+  ['lucide:briefcase', 'Finance teams'],
+  ['lucide:user', 'Solo operators'],
 ];
 
 const steps = [
-  { n: '01', icon: 'lucide:inbox', t: 'Intake', d: 'Drop documents. The fleet classifies and queues them.' },
-  { n: '02', icon: 'lucide:scan-line', t: 'Extract', d: 'Every field scored and cited. Nothing assumed.' },
-  { n: '03', icon: 'lucide:search', t: 'Research', d: 'Questions answered from primary sources.' },
-  { n: '04', icon: 'lucide:file-stack', t: 'Assemble', d: 'Reviewer-ready workpapers, sourced end to end.' },
+  { n: '01', icon: 'lucide:inbox', t: 'Intake', d: 'Drop documents. Relay classifies and queues them.' },
+  { n: '02', icon: 'lucide:scan-line', t: 'Extract', d: 'Lens scores and cites every field. Nothing assumed.' },
+  { n: '03', icon: 'lucide:search', t: 'Research', d: 'Atlas answers from primary sources.' },
+  { n: '04', icon: 'lucide:file-stack', t: 'Assemble', d: 'Ledger builds reviewer-ready workpapers.' },
   { n: '05', icon: 'lucide:user-check', t: 'Review', d: 'You approve. Nothing ships unreviewed.' },
 ];
 ---
@@ -32,30 +40,73 @@ const steps = [
   <main>
     <!-- Hero -->
     <section class="relative overflow-hidden border-b border-border">
-      <div class="pointer-events-none absolute inset-0 console-grid opacity-70"></div>
-      <div class="relative mx-auto max-w-[1200px] px-5 pb-16 pt-20 sm:px-6">
-        <p class="ds-eyebrow reveal">Agentic tax operations</p>
-        <h1 class="ds-display reveal mt-4 max-w-3xl" style="animation-delay:.05s">
-          Remove manual tax operations.<br class="hidden sm:block" /> Keep the human approval.
-        </h1>
-        <p class="ds-lead reveal mt-5 max-w-2xl" style="animation-delay:.1s">
-          A fleet of specialized agents triages, extracts, researches, and assembles — with
-          confidence scores and citations on every field. You review. Nothing ships unreviewed.
-        </p>
-        <div class="reveal mt-8 flex flex-wrap gap-3" style="animation-delay:.15s">
-          <Button href={u('contact')}>Book a demo</Button>
-          <Button href={u('docs')} variant="ghost">Read the docs</Button>
+      <div class="pointer-events-none absolute inset-0 console-grid opacity-60"></div>
+      <div class="relative mx-auto grid max-w-[1200px] items-center gap-12 px-5 pb-14 pt-20 sm:px-6 lg:grid-cols-2">
+        <div>
+          <p class="ds-eyebrow reveal">Agentic tax operations</p>
+          <h1 class="ds-display reveal mt-4" style="animation-delay:.05s">
+            Remove manual tax operations.<br class="hidden sm:block" /> Keep the human approval.
+          </h1>
+          <p class="ds-lead reveal mt-5 max-w-xl" style="animation-delay:.1s">
+            A coordinated agent fleet — Relay, Lens, Atlas, Ledger, and Sentry — turns a pile of
+            documents into reviewer-ready workpapers. A confidence score and a citation on every
+            field. You approve. Nothing ships unreviewed.
+          </p>
+          <div class="reveal mt-8 flex flex-wrap gap-3" style="animation-delay:.15s">
+            <Button href={u('contact')}>Book a demo</Button>
+            <Button href={u('app')} variant="ghost">See it run</Button>
+          </div>
+          <p class="reveal mt-4 font-mono text-xs text-fg-faint" style="animation-delay:.2s">Free Core plan · no credit card</p>
+          <div class="reveal mt-7 flex flex-wrap gap-x-5 gap-y-2.5" style="animation-delay:.25s">
+            {trust.map(([icon, label]) => (
+              <span class="inline-flex items-center gap-2 text-[13px] text-fg-muted">
+                <Icon name={icon} class="size-4 text-fg-faint" />{label}
+              </span>
+            ))}
+          </div>
         </div>
-        <div class="reveal mt-7 flex flex-wrap gap-x-7 gap-y-2" style="animation-delay:.2s">
-          <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
-            <Icon name="lucide:shield-check" class="size-4 text-fg-faint" />SOC 2 · human-in-the-loop
-          </span>
-          <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
-            <Icon name="lucide:git-branch" class="size-4 text-fg-faint" />Orchestrated, not autonomous
-          </span>
+        <div class="reveal" style="animation-delay:.15s">
+          <FleetOrbit />
         </div>
-        <div class="reveal mt-14" style="animation-delay:.25s">
+      </div>
+      <div class="relative border-t border-border-faint">
+        <div class="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-8 gap-y-2 px-5 py-4 sm:px-6">
+          <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-fg-faint">Built for</span>
+          {audiences.map(([icon, label]) => (
+            <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
+              <Icon name={icon} class="size-4 text-fg-faint" />{label}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Live console -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <div data-reveal class="flex items-end justify-between gap-6">
+          <div>
+            <p class="ds-eyebrow">The operating console</p>
+            <h2 class="ds-h2 mt-3 max-w-2xl">Watch the fleet work — live, not a screenshot.</h2>
+          </div>
+          <a href={u('app')} class="hidden shrink-0 items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover sm:inline-flex">Open the app <Icon name="lucide:arrow-right" class="size-4" /></a>
+        </div>
+        <div data-reveal class="mt-8" style="--reveal-delay:80ms">
           <ConsoleHero />
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature showcase -->
+    <section class="border-b border-border bg-panel/30">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <div data-reveal>
+          <p class="ds-eyebrow">Why Taxline</p>
+          <h2 class="ds-h2 mt-3 max-w-2xl">Operations that move fast — and stay defensible.</h2>
+          <p class="ds-lead mt-3 max-w-2xl">Speed where it's safe, a person where it matters. Every output is sourced, scored, and signed off.</p>
+        </div>
+        <div data-reveal class="mt-10" style="--reveal-delay:80ms">
+          <FeatureShowcase />
         </div>
       </div>
     </section>
@@ -63,13 +114,19 @@ const steps = [
     <!-- The fleet -->
     <section class="border-b border-border">
       <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
-        <p class="ds-eyebrow">The fleet</p>
-        <h2 class="ds-h2 mt-3 max-w-2xl">Five agents. One orchestrator. Your approval.</h2>
-        <p class="ds-lead mt-3 max-w-2xl">Each agent is a tool-using worker with a narrow job. The orchestrator routes work between them and hands cited output to review. Nothing is autonomous end to end.</p>
+        <div data-reveal>
+          <p class="ds-eyebrow">The fleet</p>
+          <h2 class="ds-h2 mt-3 max-w-2xl">Five named agents. One orchestrator. Your approval.</h2>
+          <p class="ds-lead mt-3 max-w-2xl">Each is a tool-using worker with a narrow job. Conductor routes between them and hands cited output to review.</p>
+        </div>
         <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {fleet.map((a) => <AgentCard {...a} href={u('agents')} />)}
-          <a href={u('agents')} class="flex flex-col justify-between rounded-lg border border-dashed border-border bg-base p-5 transition-colors hover:border-border-strong">
-            <span class="ds-eyebrow text-fg-faint">Orchestrator</span>
+          {fleet.map((a, i) => (
+            <div data-reveal style={`--reveal-delay:${i * 70}ms`}>
+              <AgentCard icon={a.icon} name={a.role} title={a.codename} body={a.blurb} tools={a.tools} href={u('agents')} class="lift h-full" />
+            </div>
+          ))}
+          <a data-reveal style={`--reveal-delay:${fleet.length * 70}ms`} href={u('agents')} class="lift flex flex-col justify-between rounded-lg border border-dashed border-border bg-base p-5 hover:border-accent-line">
+            <span class="ds-eyebrow text-fg-faint">Conductor</span>
             <span class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent">See how routing works <Icon name="lucide:arrow-right" class="size-4" /></span>
           </a>
         </div>
@@ -77,11 +134,13 @@ const steps = [
     </section>
 
     <!-- How it works -->
-    <section class="border-b border-border bg-panel/40">
+    <section class="border-b border-border bg-panel/30">
       <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
-        <p class="ds-eyebrow">Intake to reviewer-ready</p>
-        <h2 class="ds-h2 mt-3 max-w-2xl">From a dropped document to a workpaper you sign off on.</h2>
-        <div class="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
+        <div data-reveal>
+          <p class="ds-eyebrow">Intake to reviewer-ready</p>
+          <h2 class="ds-h2 mt-3 max-w-2xl">From a dropped document to a workpaper you sign off on.</h2>
+        </div>
+        <div data-reveal class="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
           {steps.map((s) => (
             <div class="flex flex-col gap-3 bg-base p-5">
               <div class="flex items-center justify-between">
@@ -95,7 +154,7 @@ const steps = [
             </div>
           ))}
         </div>
-        <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
+        <p data-reveal class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
           <Icon name="lucide:user-check" class="size-4 text-accent" />A human approves before output ships — every time.
         </p>
       </div>
@@ -103,14 +162,14 @@ const steps = [
 
     <!-- CTA -->
     <section class="border-b border-border">
-      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
+      <div data-reveal class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
         <div>
           <h2 class="ds-h2 max-w-xl">Reduce review drag. Ship reviewer-ready output.</h2>
           <p class="ds-small mt-2">See the fleet run on your own documents.</p>
         </div>
         <div class="flex gap-3">
           <Button href={u('contact')}>Book a demo</Button>
-          <Button href={u('app')} variant="ghost">Open the app</Button>
+          <Button href={u('pricing')} variant="ghost">See pricing</Button>
         </div>
       </div>
     </section>

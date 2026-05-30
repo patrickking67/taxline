@@ -30,7 +30,11 @@ const cols = [
     </div>
     <div class="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border-faint pt-6 sm:flex-row sm:items-center">
       <p class="font-mono text-xs text-fg-faint">© 2026 Taxline. Orchestrated, not autonomous.</p>
-      <p class="font-mono text-xs text-fg-faint">Static-first · human-in-the-loop · SOC 2</p>
+      <div class="flex flex-wrap items-center gap-4 font-mono text-xs">
+        <a href={u('privacy')} class="text-fg-faint transition-colors hover:text-fg">Privacy</a>
+        <a href={u('terms')} class="text-fg-faint transition-colors hover:text-fg">Terms</a>
+        <span class="text-fg-faint">human-in-the-loop · SOC 2</span>
+      </div>
     </div>
   </div>
 </footer>

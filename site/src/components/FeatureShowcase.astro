@@ -1,0 +1,103 @@
+---
+import { Icon } from 'astro-icon/components';
+import ConfidenceMeter from './ConfidenceMeter.astro';
+import EvidenceChip from './EvidenceChip.astro';
+import StatusPill from './StatusPill.astro';
+import { fleet } from '../lib/data/fleet';
+
+const features = [
+  { key: 'confidence', icon: 'lucide:scan-line', title: 'Confidence and a citation on every field', body: 'Lens pulls each field with a score and a citation back to the source page. Low-confidence cells route to a person — nothing is assumed.' },
+  { key: 'fleet', icon: 'lucide:git-branch', title: 'A coordinated fleet, one orchestrator', body: 'Conductor routes work between Relay, Lens, Atlas, Ledger, and Sentry. Each agent has a narrow job; none act alone.' },
+  { key: 'workpaper', icon: 'lucide:file-stack', title: 'Reviewer-ready workpapers', body: 'Ledger assembles lead schedules and tie-outs where every number traces back to a source document.' },
+  { key: 'compliance', icon: 'lucide:calendar-clock', title: 'Compliance that watches the calendar', body: 'Sentry tracks deadlines across entities and drafts the client follow-up. You send it.' },
+];
+---
+
+<div class="grid gap-5 lg:grid-cols-[1.05fr_1fr]">
+  <!-- preview panel — panes toggle with the selected feature -->
+  <div class="relative min-h-[340px] overflow-hidden rounded-lg border border-border bg-panel shadow-2">
+    <div class="flex items-center gap-2 border-b border-border px-4 py-2.5 font-mono text-[11px] text-fg-faint">
+      <span class="size-1.5 rounded-full bg-accent dot-pulse"></span>taxline · preview
+    </div>
+
+    <div data-pane="confidence" class="feat-pane space-y-2.5 p-5">
+      <div class="flex items-center justify-between"><span class="ds-eyebrow">Lens · extraction</span><span class="font-mono text-[11px] text-fg-muted">mean 0.83</span></div>
+      <ConfidenceMeter label="Wages · box 1" value={0.97} labelWidth="w-[120px]" />
+      <ConfidenceMeter label="Federal w/h" value={0.91} labelWidth="w-[120px]" />
+      <ConfidenceMeter label="State w/h" value={0.74} labelWidth="w-[120px]" />
+      <ConfidenceMeter label="Local code" value={0.41} labelWidth="w-[120px]" />
+      <div class="flex flex-wrap gap-1.5 pt-1">
+        <EvidenceChip icon="lucide:file-text"><b class="font-medium text-fg">W-2</b> · p.1</EvidenceChip>
+        <EvidenceChip icon="lucide:book-open">IRS <b class="font-medium text-fg">Pub 15-T</b></EvidenceChip>
+      </div>
+    </div>
+
+    <div data-pane="fleet" class="feat-pane hidden space-y-1.5 p-5">
+      {fleet.map((a, i) => (
+        <div class="flex items-center gap-3 rounded-md px-1.5 py-1.5">
+          <div class="grid size-7 shrink-0 place-items-center rounded-sm border border-border bg-raised"><Icon name={a.icon} class="size-4 text-fg-muted" /></div>
+          <span class="text-[13px] font-semibold text-fg">{a.codename}</span>
+          <span class="font-mono text-[11px] text-fg-faint">{a.role}</span>
+          <span class="ml-auto"><StatusPill status={i === 0 ? 'running' : i === 1 ? 'running' : i === 2 ? 'waiting' : 'idle'} /></span>
+        </div>
+      ))}
+    </div>
+
+    <div data-pane="workpaper" class="feat-pane hidden p-5">
+      <div class="rounded-md border border-paper-border bg-paper p-5 text-paper-ink">
+        <div class="text-[13px] font-semibold">Schedule C · lead schedule</div>
+        <div class="mt-3 space-y-2 font-mono text-[12px]">
+          <div class="flex justify-between border-b border-paper-border pb-1.5"><span>Gross receipts</span><span>$412,900.00</span></div>
+          <div class="flex justify-between border-b border-paper-border pb-1.5"><span>Deductible expenses</span><span>$128,440.00</span></div>
+          <div class="flex justify-between font-semibold"><span>Net profit</span><span>$284,460.00</span></div>
+        </div>
+        <p class="mt-3 text-[11px] text-paper-ink-muted">Every figure links to a source document.</p>
+      </div>
+    </div>
+
+    <div data-pane="compliance" class="feat-pane hidden space-y-2 p-5">
+      <span class="ds-eyebrow">Sentry · compliance</span>
+      {[['1040-ES · Q2', '6d', 'text-warn-bright'], ['1120 · Meadow LP', '21d', 'text-fg-muted'], ['Sales/use · TX', '2d', 'text-danger-bright']].map(([l, d, c]) => (
+        <div class="flex items-center justify-between rounded-md border border-border-faint bg-inset px-3 py-2">
+          <span class="font-mono text-[12px] text-fg">{l}</span><span class={`font-mono text-[12px] font-medium ${c}`}>{d}</span>
+        </div>
+      ))}
+      <p class="pt-1 font-mono text-[11px] text-fg-faint">Taxline drafts the follow-up; you send it.</p>
+    </div>
+  </div>
+
+  <!-- accordion -->
+  <div class="flex flex-col gap-2">
+    {features.map((f, i) => (
+      <button type="button" data-feat={f.key} class={`feat-item rounded-lg border bg-panel px-5 py-4 text-left transition-colors ${i === 0 ? 'border-accent-line' : 'border-border hover:border-border-strong'}`} aria-expanded={i === 0 ? 'true' : 'false'}>
+        <div class="flex items-center gap-3">
+          <Icon name={f.icon} class={`size-[18px] ${i === 0 ? 'text-accent' : 'text-fg-faint'}`} />
+          <span class="text-[15px] font-semibold text-fg">{f.title}</span>
+        </div>
+        <p class={`feat-body mt-2 text-[13px] leading-relaxed text-fg-muted ${i === 0 ? '' : 'hidden'}`}>{f.body}</p>
+      </button>
+    ))}
+  </div>
+</div>
+
+<script>
+  const items = Array.from(document.querySelectorAll<HTMLButtonElement>('.feat-item'));
+  const panes = Array.from(document.querySelectorAll<HTMLElement>('.feat-pane'));
+  function select(key: string) {
+    for (const it of items) {
+      const on = it.dataset.feat === key;
+      it.classList.toggle('border-accent-line', on);
+      it.classList.toggle('border-border', !on);
+      it.setAttribute('aria-expanded', on ? 'true' : 'false');
+      const icon = it.querySelector('svg');
+      icon?.classList.toggle('text-accent', on);
+      icon?.classList.toggle('text-fg-faint', !on);
+      it.querySelector('.feat-body')?.classList.toggle('hidden', !on);
+    }
+    for (const p of panes) p.classList.toggle('hidden', p.dataset.pane !== key);
+  }
+  items.forEach((it) => {
+    it.addEventListener('click', () => it.dataset.feat && select(it.dataset.feat));
+    it.addEventListener('mouseenter', () => it.dataset.feat && select(it.dataset.feat));
+  });
+</script>

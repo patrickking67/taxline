@@ -1,14 +1,18 @@
 // Knowledge-base retrieval — the living-KB read path.
 //
-// Deliberately dependency-free: NO external vector DB, NO embeddings. It loads
-// every markdown file under ../../knowledge-base, splits each into chunks by
-// heading, and scores chunks against a query with simple keyword/overlap scoring.
-// This keeps the retrieval transparent and runnable offline; the production plan
-// (README) describes swapping this for embeddings without touching callers.
+// This now delegates to the VECTOR MEMORY layer (src/memory): the query is embedded
+// and cosine-searched against the persistent on-disk store, which holds the indexed KB
+// plus any remember()'d findings. The exported `retrieve()` signature is UNCHANGED, so
+// kb-search.ts and the agents keep working without edits.
+//
+// FALLBACK: if the memory store is empty (e.g. the index hasn't been built yet), this
+// file's original dependency-free keyword/overlap scoring runs instead — preserved below
+// in full so retrieval always works offline with zero setup.
 
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { memory } from '../memory/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** knowledge-base lives a sibling of service/, two levels up from src/kb/. */
@@ -113,15 +117,12 @@ export function refreshKb(): void {
 }
 
 /**
- * Retrieve the top-k chunks for a query.
- *
- * Scoring is intentionally simple and explainable: term-overlap (query terms
- * present in the chunk) weighted by how rare the term is across the corpus
- * (a light IDF), with a small bonus when a query term appears in the heading.
- * Returns [] for an empty corpus or no-match — an EMPTY RESULT, distinct from a
- * load failure (which would throw and be caught by the calling tool).
+ * Keyword fallback retrieval. Scoring is intentionally simple and explainable:
+ * term-overlap (query terms present in the chunk) weighted by how rare the term is
+ * across the corpus (a light IDF), with a small bonus when a query term appears in the
+ * heading. Returns [] for an empty corpus or no-match.
  */
-export async function retrieve(query: string, k = 4): Promise<KbChunk[]> {
+async function keywordRetrieve(query: string, k: number): Promise<KbChunk[]> {
   const chunks = await loadChunks();
   if (chunks.length === 0) return [];
 
@@ -154,4 +155,27 @@ export async function retrieve(query: string, k = 4): Promise<KbChunk[]> {
     .filter((c) => c.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, k);
+}
+
+/**
+ * Retrieve the top-k chunks for a query.
+ *
+ * Primary path: vector memory (embed the query, cosine top-k over the persistent
+ * store). If the store is empty — index not built yet — fall back to the keyword
+ * scoring above so retrieval still works with zero setup. Either way an empty corpus /
+ * no-match returns [] (an EMPTY RESULT, distinct from a load failure, which throws and
+ * is caught by the calling tool).
+ */
+export async function retrieve(query: string, k = 4): Promise<KbChunk[]> {
+  if (await memory.isEmpty()) {
+    return keywordRetrieve(query, k);
+  }
+  const hits = await memory.retrieve(query, k);
+  // Adapt the memory layer's source shape back to KbChunk's { file, heading } so the
+  // public contract (consumed by kb-search.ts) is byte-for-byte the same as before.
+  return hits.map((h) => ({
+    text: h.text,
+    source: { file: h.source.file ?? '', heading: h.source.heading ?? null },
+    score: h.score,
+  }));
 }

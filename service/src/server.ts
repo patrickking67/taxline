@@ -6,6 +6,9 @@
 //   GET  /doc/:id           one document (full fields/evidence)
 //   POST /agents/run {task} run a task through the orchestrator (returns gated result)
 //   POST /demo              demo-request intake (mirrors the site's DemoRequest)
+//   POST /memory/index      rebuild the vector memory from the knowledge base
+//   POST /memory/remember   {text, source} append one finding to continuous memory
+//   GET  /memory/search     ?q=&k= cosine search over the vector memory
 //
 // CORS is restricted to the configured site origin(s).
 
@@ -13,6 +16,7 @@ import http from 'node:http';
 import { PORT, SITE_ORIGINS, hasApiKey, MODEL_DEFAULT, MODEL_FAST } from './config.js';
 import { queueSummary, docById } from './seed/queue.js';
 import { orchestrate, type AgentName } from './orchestrator.js';
+import { memory } from './memory/index.js';
 
 /** Resolve the Access-Control-Allow-Origin value for a request. */
 function corsOrigin(reqOrigin: string | undefined): string {
@@ -86,6 +90,8 @@ const server = http.createServer(async (req, res) => {
         liveAgents: hasApiKey, // false => offline deterministic mode
         models: { default: MODEL_DEFAULT, fast: MODEL_FAST },
         agents: VALID_AGENTS,
+        // Vector memory snapshot: which embeddings provider and how many records.
+        memory: { provider: memory.provider, records: memory.size },
         note: 'A human approves before any output ships. No customer data is used for training.',
       });
     }
@@ -129,6 +135,51 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, result);
     }
 
+    // --- POST /memory/index ------------------------------------------------
+    // Rebuild the vector memory from the knowledge base (idempotent upsert by id).
+    if (req.method === 'POST' && path === '/memory/index') {
+      const indexed = await memory.indexKnowledgeBase();
+      return sendJson(res, 200, {
+        ok: true,
+        indexed,
+        records: memory.size,
+        provider: memory.provider,
+      });
+    }
+
+    // --- POST /memory/remember ---------------------------------------------
+    // Append one finding/interaction to continuous memory. `text` is required;
+    // `source` is optional provenance ({ file?, heading?, kind? }).
+    if (req.method === 'POST' && path === '/memory/remember') {
+      const body = (await readJsonBody(req)) as {
+        text?: string;
+        source?: { file?: string; heading?: string; kind?: string };
+      };
+      if (!body.text || typeof body.text !== 'string' || body.text.trim() === '') {
+        return sendJson(res, 400, { ok: false, error: '`text` (non-empty string) is required.' });
+      }
+      const src = body.source ?? {};
+      const id = await memory.remember(body.text, {
+        file: typeof src.file === 'string' ? src.file : undefined,
+        heading: typeof src.heading === 'string' ? src.heading : undefined,
+        kind: typeof src.kind === 'string' && src.kind ? src.kind : 'finding',
+      });
+      return sendJson(res, 200, { ok: true, id, records: memory.size });
+    }
+
+    // --- GET /memory/search ------------------------------------------------
+    // Cosine search over the vector memory. `q` is the query; `k` caps results (default 5).
+    if (req.method === 'GET' && path === '/memory/search') {
+      const q = url.searchParams.get('q') ?? '';
+      if (q.trim() === '') {
+        return sendJson(res, 400, { ok: false, error: '`q` query parameter is required.' });
+      }
+      const kRaw = Number(url.searchParams.get('k') ?? 5);
+      const k = Number.isFinite(kRaw) && kRaw > 0 ? Math.min(Math.floor(kRaw), 20) : 5;
+      const results = await memory.retrieve(q, k);
+      return sendJson(res, 200, { ok: true, results, empty: results.length === 0 });
+    }
+
     // --- POST /demo --------------------------------------------------------
     // Mirrors the site's DemoRequest/DemoResult contract (honeypot + email check).
     if (req.method === 'POST' && path === '/demo') {
@@ -161,6 +212,26 @@ server.listen(PORT, () => {
   console.log(
     `Taxline service on http://localhost:${PORT}  ·  ${mode}  ·  ` +
       `models ${MODEL_DEFAULT}/${MODEL_FAST}  ·  CORS ${SITE_ORIGINS.join(', ')}  ·  ` +
-      `human-approval gate active`,
+      `human-approval gate active  ·  memory ${memory.provider}`,
   );
+
+  // Persistent vector memory: if the on-disk store is empty (first run / fresh volume),
+  // build the index from the knowledge base now so retrieval is vector-backed
+  // immediately. A failure here is logged but non-fatal — retrieve() falls back to
+  // keyword scoring while the store is empty.
+  void (async () => {
+    try {
+      if (await memory.isEmpty()) {
+        const n = await memory.indexKnowledgeBase();
+        // eslint-disable-next-line no-console
+        console.log(`Memory index built: ${n} KB chunk(s) embedded via ${memory.provider}.`);
+      } else {
+        // eslint-disable-next-line no-console
+        console.log(`Memory store loaded: ${memory.size} record(s) (provider ${memory.provider}).`);
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('Memory index build failed (keyword fallback active):', err instanceof Error ? err.message : err);
+    }
+  })();
 });

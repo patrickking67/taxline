@@ -151,7 +151,36 @@ body {
 @keyframes ds-fadeup { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .reveal { animation: ds-fadeup 0.5s var(--ease-ds) both; }
 
+/* Scroll-reveal — elements rise + fade as they enter the viewport */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.7s var(--ease-ds), transform 0.7s var(--ease-ds);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+[data-reveal].revealed { opacity: 1; transform: none; }
+
+/* Hero graphic — breathing accent glow, node pulse, flowing connectors, slow ring */
+@keyframes ds-breathe { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.05); } }
+.fleet-glow { animation: ds-breathe 7s var(--ease-ds) infinite; }
+
+@keyframes ds-node { 0%, 100% { box-shadow: 0 0 0 0 var(--color-accent-line); } 50% { box-shadow: 0 0 0 7px rgba(61, 165, 123, 0); } }
+.node-pulse { animation: ds-node 3.6s var(--ease-ds) infinite; }
+
+@keyframes ds-flow { to { stroke-dashoffset: -16; } }
+.flow-line { stroke-dasharray: 3 9; animation: ds-flow 2.6s linear infinite; }
+
+@keyframes ds-spin { to { transform: rotate(360deg); } }
+.ring-spin { animation: ds-spin 64s linear infinite; transform-origin: center; transform-box: fill-box; }
+
+/* Card hover lift (sleek, subtle) */
+.lift { transition: transform 0.18s var(--ease-ds), border-color 0.18s var(--ease-ds); }
+.lift:hover { transform: translateY(-2px); }
+
 @media (prefers-reduced-motion: reduce) {
-  .dot-pulse, .reveal { animation: none !important; }
+  .dot-pulse, .reveal, .fleet-glow, .node-pulse, .flow-line, .ring-spin { animation: none !important; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .lift:hover { transform: none; }
   * { scroll-behavior: auto !important; }
 }

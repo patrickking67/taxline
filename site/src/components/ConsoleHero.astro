@@ -20,11 +20,11 @@ const handoff = [
 ];
 
 const agents = [
-  { icon: 'lucide:inbox', name: 'Intake', status: 'running' },
-  { icon: 'lucide:scan-line', name: 'Extraction', status: 'running' },
-  { icon: 'lucide:search', name: 'Research', status: 'waiting' },
-  { icon: 'lucide:file-stack', name: 'Workpaper', status: 'idle' },
-  { icon: 'lucide:calendar-clock', name: 'Compliance', status: 'idle' },
+  { icon: 'lucide:inbox', codename: 'Relay', role: 'Intake', status: 'running' },
+  { icon: 'lucide:scan-line', codename: 'Lens', role: 'Extraction', status: 'running' },
+  { icon: 'lucide:search', codename: 'Atlas', role: 'Research', status: 'waiting' },
+  { icon: 'lucide:file-stack', codename: 'Ledger', role: 'Workpaper', status: 'idle' },
+  { icon: 'lucide:calendar-clock', codename: 'Sentry', role: 'Compliance', status: 'idle' },
 ];
 
 const log = [
@@ -110,7 +110,7 @@ const sectionLabel = 'flex items-center gap-2 font-mono text-[10px] font-medium 
             <div class="grid size-7 shrink-0 place-items-center rounded-sm border border-border bg-raised">
               <Icon name={a.icon} class="size-4 text-fg-muted" />
             </div>
-            <span class="flex-1 text-[13px] font-semibold text-fg">{a.name}</span>
+            <span class="flex-1 truncate"><span class="text-[13px] font-semibold text-fg">{a.codename}</span> <span class="font-mono text-[11px] text-fg-faint">{a.role}</span></span>
             <StatusPill status={a.status} />
           </div>
         ))}

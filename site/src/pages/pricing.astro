@@ -8,99 +8,193 @@ import { Icon } from 'astro-icon/components';
 const base = import.meta.env.BASE_URL;
 const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
 
-const plans = [
+const personalPlans = [
   {
-    name: 'Solo',
-    price: '$49',
-    unit: '/ preparer / mo',
-    for: 'For solo operators running their own book of returns.',
-    bullets: ['Intake and extraction', 'Citation-backed research', 'Up to 50 returns / mo', 'Email support'],
-    cta: { label: 'Start', variant: 'ghost' },
+    name: 'Core',
+    price: 'Free',
+    unit: '',
+    for: 'For individuals filing their own returns.',
+    bullets: [
+      'Relay intake + Lens extraction with confidence scores',
+      'Atlas citation-backed research',
+      'Up to 10 documents / mo',
+      'Community support',
+    ],
+    cta: { label: 'Start free', variant: 'ghost' as const },
+  },
+  {
+    name: 'Pro',
+    price: '$39',
+    unit: '/ mo',
+    for: 'For solo preparers running their own book.',
+    bullets: [
+      'Everything in Core',
+      'Unlimited documents',
+      'Ledger workpaper builder',
+      'Sentry compliance calendar',
+      'Priority support',
+    ],
+    cta: { label: 'Start Pro', variant: 'primary' as const },
+  },
+];
+
+const businessPlans = [
+  {
+    name: 'Team Plus',
+    price: '$59',
+    unit: '/ seat / mo',
+    for: 'For small firms running a shared queue.',
+    bullets: [
+      'Everything in Pro',
+      'Shared intake queue',
+      'Multi-client',
+      'Roles & review workflow',
+      'Minimum 5 seats',
+    ],
+    cta: { label: 'Book a demo', variant: 'primary' as const },
     featured: false,
   },
   {
-    name: 'Firm',
-    price: '$39',
-    unit: '/ seat / mo + per-return',
-    for: 'For tax and accounting firms running a shared queue.',
-    bullets: ['Everything in Solo', 'Multi-client queue', 'Compliance calendar', 'Reviewer workflow', 'SSO'],
-    cta: { label: 'Book a demo', variant: 'primary' },
+    name: 'Team Pro',
+    price: '$99',
+    unit: '/ seat / mo',
+    for: 'For growing firms that need control and assurance.',
+    bullets: [
+      'Everything in Team Plus',
+      'SSO / SAML',
+      'Audit log',
+      'Per-return billing option',
+      'Advanced compliance',
+      'Dedicated success manager',
+    ],
+    cta: { label: 'Book a demo', variant: 'primary' as const },
     featured: true,
   },
   {
     name: 'Enterprise',
     price: 'Custom',
     unit: '',
-    for: 'For large firms with volume, residency, and audit needs.',
-    bullets: ['Volume pricing', 'Data residency', 'Audit log', 'Dedicated support', 'SLA'],
-    cta: { label: 'Talk to us', variant: 'ghost' },
+    for: 'For large firms with residency and audit needs.',
+    bullets: [
+      'Everything in Team Pro',
+      'Data residency',
+      'Custom retention',
+      'Security review',
+      'SLA',
+      'Dedicated support',
+    ],
+    cta: { label: 'Talk to us', variant: 'ghost' as const },
     featured: false,
   },
 ];
 
 const matrix = [
-  { cap: 'Intake & queue', solo: true, firm: true, ent: true },
-  { cap: 'Extraction with confidence', solo: true, firm: true, ent: true },
-  { cap: 'Citation-backed research', solo: true, firm: true, ent: true },
-  { cap: 'Workpaper builder', solo: true, firm: true, ent: true },
-  { cap: 'Compliance calendar', solo: false, firm: true, ent: true },
-  { cap: 'Multi-client', solo: false, firm: true, ent: true },
-  { cap: 'SSO / RBAC', solo: false, firm: true, ent: true },
-  { cap: 'Audit log', solo: false, firm: false, ent: true },
-  { cap: 'Data residency', solo: false, firm: false, ent: true },
-  { cap: 'Support', solo: 'Email', firm: 'Priority', ent: 'Dedicated' },
+  { cap: 'Relay intake', core: true, pro: true, teamPlus: true, teamPro: true, ent: true },
+  { cap: 'Lens extraction + confidence', core: true, pro: true, teamPlus: true, teamPro: true, ent: true },
+  { cap: 'Atlas research', core: true, pro: true, teamPlus: true, teamPro: true, ent: true },
+  { cap: 'Ledger workpapers', core: false, pro: true, teamPlus: true, teamPro: true, ent: true },
+  { cap: 'Sentry compliance', core: false, pro: true, teamPlus: true, teamPro: true, ent: true },
+  { cap: 'Documents / mo', core: '10', pro: 'Unlimited', teamPlus: 'Unlimited', teamPro: 'Unlimited', ent: 'Unlimited' },
+  { cap: 'Multi-client queue', core: false, pro: false, teamPlus: true, teamPro: true, ent: true },
+  { cap: 'Roles & review', core: false, pro: false, teamPlus: true, teamPro: true, ent: true },
+  { cap: 'SSO / SAML', core: false, pro: false, teamPlus: false, teamPro: true, ent: true },
+  { cap: 'Audit log', core: false, pro: false, teamPlus: false, teamPro: true, ent: true },
+  { cap: 'Data residency', core: false, pro: false, teamPlus: false, teamPro: false, ent: true },
+  { cap: 'Support', core: 'Community', pro: 'Priority', teamPlus: 'Priority', teamPro: 'Dedicated', ent: 'Dedicated' },
 ];
 
 const faqs = [
   {
-    q: 'Is there a free trial?',
-    a: 'Yes. Run the fleet on a sample of your own documents before you commit. Book a demo and we set up a scoped trial with your forms.',
+    q: 'What are the limits on the free Core plan?',
+    a: 'Core runs Relay intake, Lens extraction, and Atlas research on up to 10 documents a month. Every field still carries a confidence score and a citation, and a human approves before output ships. Move to Pro when you need unlimited documents and the Ledger and Sentry agents.',
   },
   {
-    q: 'Per-return or per-seat — which applies?',
-    a: 'Solo is flat per preparer. Firm is per seat plus a per-return rate, so cost tracks actual volume instead of a fixed tier you may not fill. Enterprise moves to volume pricing.',
+    q: 'Per-seat or per-return — which applies?',
+    a: 'Team Plus and Team Pro are billed per seat each month, so a fixed team has a predictable cost. Team Pro also offers a per-return billing option for firms with uneven volume, so cost tracks actual work instead of a tier you may not fill.',
   },
   {
     q: 'Do you train on our data?',
     a: 'No. Your documents and client data are never used to train models. They are processed to do the work you asked for, and nothing leaves that boundary without your action.',
   },
   {
-    q: 'Can we self-host or pin data residency?',
-    a: 'Data residency is available on Enterprise — pin processing to a region and keep an audit log of every access. Talk to us about deployment scope for your environment.',
+    q: 'Can we pin data residency or self-host?',
+    a: 'Data residency, custom retention, and a security review are available on Enterprise — pin processing to a region and keep an audit log of every access. Talk to us about deployment scope for your environment.',
   },
   {
-    q: 'What counts as a return?',
-    a: 'A return is one filed entity for one tax year. Amendments and re-runs on the same entity and year do not count again. Extensions are included.',
+    q: 'Can we switch plans later?',
+    a: 'Yes. Upgrade or downgrade at any time and the change applies to the next cycle. Seats on Team Plus and Team Pro are adjustable; documents and history carry over. No plan locks you in for a term.',
+  },
+  {
+    q: 'What counts as a document?',
+    a: 'A document is one file submitted to Relay for intake — a W-2, a 1099, a brokerage statement, a receipt. Re-running Lens extraction on a file already counted does not count again, and pages within one file count as one document.',
   },
 ];
 ---
 
-<Base title="Pricing — Taxline" description="Priced by the work, not the hype. Plans for solo operators, firms, and large teams — confidence scores and citations on every field, a human approval before output ships.">
+<Base title="Pricing — Taxline" description="Priced for the work, not the seat. A Personal line for solo operators and a Business line for firms — confidence scores and citations on every field, a human approval before output ships.">
   <TopNav />
   <main>
     <!-- Hero -->
     <section class="border-b border-border">
       <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
         <p class="ds-eyebrow">Pricing</p>
-        <h1 class="ds-h1 mt-4 max-w-3xl">Priced by the work, not the hype.</h1>
+        <h1 class="ds-h1 mt-4 max-w-3xl">Priced for the work, not the seat.</h1>
         <p class="ds-lead mt-5 max-w-2xl">
-          Pay for returns moved through the fleet, not for seats you never fill. Every plan ships
+          Pay for documents moved through the fleet, not for chairs you never fill. Every plan ships
           confidence scores and citations on each field, and a human approves before output leaves.
+        </p>
+        <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
+          <Icon name="lucide:tag" class="size-4 text-fg-faint" />Representative pricing — contact for current rates.
         </p>
       </div>
     </section>
 
-    <!-- Plan cards -->
+    <!-- Personal line -->
     <section class="border-b border-border">
       <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
-        <div class="grid gap-4 lg:grid-cols-3">
-          {plans.map((plan) => (
+        <p class="ds-eyebrow">Personal</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">For solo operators and individual preparers.</h2>
+
+        <div class="mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-2">
+          {personalPlans.map((plan) => (
+            <div class="relative flex flex-col rounded-lg border border-border bg-panel p-6 shadow-1">
+              <div>
+                <span class="ds-eyebrow">{plan.name}</span>
+                <div class="mt-4 flex items-baseline gap-1.5">
+                  <span class="font-mono text-3xl font-semibold tracking-tight text-fg">{plan.price}</span>
+                  {plan.unit && <span class="text-[13px] text-fg-muted">{plan.unit}</span>}
+                </div>
+                <p class="mt-3 min-h-[3rem] text-[13px] leading-relaxed text-fg-muted">{plan.for}</p>
+              </div>
+              <ul class="mt-5 flex-1 space-y-2.5 border-t border-border-faint pt-5">
+                {plan.bullets.map((b) => (
+                  <li class="flex items-start gap-2.5 text-sm text-fg">
+                    <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+              <div class="mt-6">
+                <Button href={u('contact')} variant={plan.cta.variant} class="w-full">{plan.cta.label}</Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Business line -->
+    <section class="border-b border-border bg-panel/40">
+      <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
+        <p class="ds-eyebrow">Business</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">For firms and teams.</h2>
+
+        <div class="mt-10 grid gap-4 lg:grid-cols-3">
+          {businessPlans.map((plan) => (
             <div
               class:list={[
                 'relative flex flex-col rounded-lg p-6 shadow-1',
-                plan.featured
-                  ? 'border border-accent bg-panel'
-                  : 'border border-border bg-panel',
+                plan.featured ? 'border border-accent bg-panel' : 'border border-border bg-panel',
               ]}
             >
               {plan.featured && (
@@ -128,32 +222,31 @@ const faqs = [
                 ))}
               </ul>
               <div class="relative mt-6">
-                <Button href={u('contact')} variant={plan.cta.variant as 'primary' | 'ghost' | 'text'} class="w-full">{plan.cta.label}</Button>
+                <Button href={u('contact')} variant={plan.cta.variant} class="w-full">{plan.cta.label}</Button>
               </div>
             </div>
           ))}
         </div>
-        <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
-          <Icon name="lucide:tag" class="size-4 text-fg-faint" />Representative pricing — contact for current rates.
-        </p>
       </div>
     </section>
 
     <!-- Feature comparison -->
-    <section class="border-b border-border bg-panel/40">
+    <section class="border-b border-border">
       <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
         <p class="ds-eyebrow">Compare</p>
         <h2 class="ds-h2 mt-3 max-w-2xl">What each plan includes.</h2>
-        <p class="ds-lead mt-3 max-w-2xl">The same engine across every tier. Higher plans add coordination, control, and assurance.</p>
+        <p class="ds-lead mt-3 max-w-2xl">The same five agents across every tier. Higher plans add coordination, control, and assurance.</p>
 
         <div class="mt-10 overflow-hidden rounded-lg border border-border bg-panel shadow-1">
           <div class="overflow-x-auto">
-            <table class="w-full min-w-[640px] text-left">
+            <table class="w-full min-w-[760px] text-left">
               <thead>
                 <tr class="border-b border-border">
                   <th class="px-5 py-3.5 font-mono text-[11px] uppercase tracking-[0.14em] text-fg-faint">Capability</th>
-                  <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-fg-muted">Solo</th>
-                  <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Firm</th>
+                  <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-fg-muted">Core</th>
+                  <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-fg-muted">Pro</th>
+                  <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-fg-muted">Team Plus</th>
+                  <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Team Pro</th>
                   <th class="px-5 py-3.5 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-fg-muted">Enterprise</th>
                 </tr>
               </thead>
@@ -161,7 +254,7 @@ const faqs = [
                 {matrix.map((row) => (
                   <tr class="border-b border-border-faint last:border-0">
                     <th scope="row" class="px-5 py-3.5 text-sm font-normal text-fg">{row.cap}</th>
-                    {[row.solo, row.firm, row.ent].map((cell) => (
+                    {[row.core, row.pro, row.teamPlus, row.teamPro, row.ent].map((cell) => (
                       <td class="px-5 py-3.5 text-center">
                         {cell === true ? (
                           <Icon name="lucide:check" class="mx-auto size-4 text-accent" />

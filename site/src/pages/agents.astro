@@ -19,6 +19,8 @@ const handoff = [
   { icon: 'lucide:calendar-clock', label: 'Compliance' },
 ];
 
+const code: Record<string, string> = { Intake: 'Relay', Extraction: 'Lens', Research: 'Atlas', Workpaper: 'Ledger', Compliance: 'Sentry' };
+
 // Per-agent detail rows
 const agents = [
   {
@@ -88,11 +90,11 @@ const sectionLabel = 'flex items-center gap-2 font-mono text-[10px] font-medium 
     <section class="border-b border-border">
       <div class="mx-auto max-w-[1200px] px-5 pb-16 pt-20 sm:px-6">
         <p class="ds-eyebrow">The fleet</p>
-        <h1 class="ds-display mt-4 max-w-3xl">Five agents. One orchestrator. Your approval.</h1>
+        <h1 class="ds-display mt-4 max-w-3xl">Five named agents. One orchestrator. Your approval.</h1>
         <p class="ds-lead mt-5 max-w-2xl">
-          Each agent is a narrow, tool-using worker with one job. The orchestrator routes every
-          request to the right agent and collects its cited output. No single agent runs the whole
-          job — nothing is autonomous end to end. You review before anything ships.
+          Relay, Lens, Atlas, Ledger, and Sentry — each a narrow, tool-using worker with one job.
+          Conductor routes every request to the right agent and collects its cited output. No single
+          agent runs the whole job — nothing is autonomous end to end. You review before anything ships.
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
           <Button href={u('contact')}>Book a demo</Button>
@@ -120,7 +122,7 @@ const sectionLabel = 'flex items-center gap-2 font-mono text-[10px] font-medium 
                   <div class="grid size-12 place-items-center rounded-md border border-border bg-raised">
                     <Icon name={h.icon} class="size-5 text-fg-muted" />
                   </div>
-                  <span class="font-mono text-[11px] text-fg-muted">{h.label}</span>
+                  <span class="font-mono text-[11px] text-fg-muted">{code[h.label]}</span>
                 </div>
                 <div class="mx-1 h-px w-5 shrink-0 bg-border-strong sm:w-8"></div>
               </>
@@ -163,7 +165,7 @@ const sectionLabel = 'flex items-center gap-2 font-mono text-[10px] font-medium 
                       <Icon name={a.icon} class="size-5 text-fg-muted" />
                     </div>
                     <div>
-                      <span class="ds-eyebrow">{a.name}</span>
+                      <span class="ds-eyebrow">{code[a.name]} · {a.name}</span>
                       <h3 class="text-[17px] font-semibold leading-tight text-fg">{a.title}</h3>
                     </div>
                   </div>
