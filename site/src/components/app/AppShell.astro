@@ -4,6 +4,7 @@ import Logo from '../Logo.astro';
 import Button from '../Button.astro';
 import { Icon } from 'astro-icon/components';
 import { sidebarNav } from '../../lib/data/app';
+import { u } from '../../lib/url';
 
 interface Props {
   title?: string;
@@ -11,8 +12,6 @@ interface Props {
   breadcrumb?: { label: string; href?: string }[];
 }
 const { title = '', active = 'app', breadcrumb } = Astro.props;
-const base = import.meta.env.BASE_URL;
-const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
 ---
 
 <Base title={`${title} · Taxline`}>

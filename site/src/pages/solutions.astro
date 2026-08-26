@@ -5,9 +5,8 @@ import Footer from '../components/Footer.astro';
 import Button from '../components/Button.astro';
 import AgentCard from '../components/AgentCard.astro';
 import { Icon } from 'astro-icon/components';
+import { u } from '../lib/url';
 
-const base = import.meta.env.BASE_URL;
-const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
 
 const firmAgents = [
   { icon: 'lucide:scan-line', name: 'Extraction', title: 'Every number sourced', body: 'Fields pulled from statements and forms, each with a confidence score and a citation back to the source page.', tools: ['doc-extract', 'cite'] },
