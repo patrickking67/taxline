@@ -4,9 +4,8 @@ import TopNav from '../components/TopNav.astro';
 import Footer from '../components/Footer.astro';
 import Button from '../components/Button.astro';
 import { Icon } from 'astro-icon/components';
+import { u } from '../lib/url';
 
-const base = import.meta.env.BASE_URL;
-const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
 
 const controls = [
   {

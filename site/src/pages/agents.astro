@@ -6,9 +6,8 @@ import Button from '../components/Button.astro';
 import ConfidenceMeter from '../components/ConfidenceMeter.astro';
 import EvidenceChip from '../components/EvidenceChip.astro';
 import { Icon } from 'astro-icon/components';
+import { u } from '../lib/url';
 
-const base = import.meta.env.BASE_URL;
-const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
 
 // Orchestrator handoff chain — same node+connector pattern as ConsoleHero
 const handoff = [

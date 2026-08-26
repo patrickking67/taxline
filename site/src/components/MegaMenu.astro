@@ -1,7 +1,6 @@
 ---
 import { Icon } from 'astro-icon/components';
-const base = import.meta.env.BASE_URL;
-const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
+import { u } from '../lib/url';
 
 const products = [
   { icon: 'lucide:bot', name: 'AI Tax Co-Pilot', desc: 'Ask the fleet across a client file.', href: 'product' },

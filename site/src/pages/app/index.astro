@@ -3,9 +3,8 @@ import AppShell from '../../components/app/AppShell.astro';
 import StatusPill from '../../components/StatusPill.astro';
 import { Icon } from 'astro-icon/components';
 import { docs } from '../../lib/data/app';
+import { u } from '../../lib/url';
 
-const base = import.meta.env.BASE_URL;
-const u = (p = '') => (base + p).replace(/\/{2,}/g, '/');
 const needsReview = docs.filter((d) => d.status === 'review').length;
 const approved = docs.filter((d) => d.status === 'approved').length;
 const confColor = (c: number | null) =>
