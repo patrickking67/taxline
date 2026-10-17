@@ -1,17 +1,19 @@
 ---
 import Logo from './Logo.astro';
 import { u } from '../lib/url';
+import { tools } from '../lib/data/tools';
 
 const cols = [
   { head: 'Product', links: [['AI Tax Co-Pilot', 'product'], ['Agent Workforce', 'agents'], ['Workpaper Builder', 'product'], ['Compliance Calendar', 'product'], ['Tax Matrix', 'product']] },
   { head: 'Solutions', links: [['Tax & accounting firms', 'solutions'], ['Businesses', 'solutions'], ['Solo operators', 'solutions'], ['Security', 'security']] },
-  { head: 'Resources', links: [['Docs', 'docs'], ['Open the app', 'app'], ['Pricing', 'pricing'], ['Book a demo', 'contact']] },
+  { head: 'Resources', links: [['Docs', 'docs'], ['Methodology', 'methodology'], ['Open the app', 'app'], ['Pricing', 'pricing'], ['Book a demo', 'contact']] },
+  { head: 'Free tools', links: tools.map((t) => [t.short, `tools/${t.slug}`]) },
 ];
 ---
 
 <footer class="border-t border-border bg-base">
   <div class="mx-auto max-w-[1200px] px-5 py-14 sm:px-6">
-    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
       <div>
         <Logo />
         <p class="ds-small mt-4 max-w-xs">Agentic tax operations, from intake to reviewer-ready workpapers. A human approves before output ships.</p>
@@ -32,7 +34,7 @@ const cols = [
       <div class="flex flex-wrap items-center gap-4 font-mono text-xs">
         <a href={u('privacy')} class="text-fg-faint transition-colors hover:text-fg">Privacy</a>
         <a href={u('terms')} class="text-fg-faint transition-colors hover:text-fg">Terms</a>
-        <span class="text-fg-faint">human-in-the-loop · SOC 2</span>
+        <span class="text-fg-faint">human-in-the-loop · SOC 2 in progress</span>
       </div>
     </div>
   </div>

@@ -1,0 +1,179 @@
+---
+import ToolShell from '../../components/tools/ToolShell.astro';
+import Field from '../../components/tools/Field.astro';
+import Fieldset from '../../components/tools/Fieldset.astro';
+import Stat from '../../components/tools/Stat.astro';
+import Workpaper from '../../components/tools/Workpaper.astro';
+import Formula from '../../components/tools/Formula.astro';
+
+const plans = [
+  { value: '59', label: 'Team Plus · $59 / seat / mo' },
+  { value: '99', label: 'Team Pro · $99 / seat / mo' },
+  { value: '39', label: 'Pro · $39 / mo (solo)' },
+];
+
+const faqs = [
+  {
+    q: 'How do you calculate ROI for tax automation?',
+    a: 'Hours returned are returns × hours per return × the share of hours removed. Multiply by your loaded hourly cost for the labor value, subtract the subscription, and discount the monthly cash flows. The calculator reports payback month, NPV, IRR, and simple ROI over the horizon you choose.',
+  },
+  {
+    q: 'What reduction in hours should I assume?',
+    a: 'Use your own number. Start with the share of a return spent on intake, data entry, tie-outs, and first-pass review — the steps the fleet drafts — and leave review and sign-off time in place. Run a pilot on a sample of last season’s returns and replace the assumption with the measured figure.',
+  },
+  {
+    q: 'What is a loaded hourly cost?',
+    a: 'Salary plus payroll taxes, benefits, software, and overhead, divided by productive hours. A common shortcut is 1.25 to 1.4 times the base hourly wage.',
+  },
+  {
+    q: 'Why model an adoption ramp?',
+    a: 'Teams do not save full hours in week one. The ramp scales the labor value linearly from zero to full over the months you set, while the subscription is paid from month one, so payback is not overstated.',
+  },
+  {
+    q: 'What does the capacity figure mean?',
+    a: 'It converts the hours returned into additional returns at the new hours per return. If you would rather grow than cut hours, multiply by your average fee for the revenue that capacity could carry.',
+  },
+];
+
+const limits = [
+  'Your hours-reduction figure is an assumption until a pilot measures it',
+  'Changes in error rates, rework, or penalty exposure',
+  'Seasonal staffing, overtime premiums, and contractor savings',
+  'Taxes on the savings and the deductibility of the subscription',
+];
+---
+
+<ToolShell
+  slug="roi"
+  title="Tax Practice ROI Calculator — payback, NPV, IRR | Taxline"
+  description="Model the return on automating tax preparation: hours returned per season, labor value, payback month, net present value, IRR, and added capacity, with an adoption ramp. Uses your own assumptions."
+  h1="Tax practice ROI calculator"
+  lead="What running the season through the fleet is worth to your practice — in hours, payback months, NPV, and IRR. Every input is yours; nothing is assumed silently."
+  faqs={faqs}
+  limits={limits}
+>
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+    <form id="calc" class="grid gap-4" autocomplete="off">
+      <Fieldset legend="Your practice">
+        <Field name="returns" label="Returns per year" kind="number" value="600" min={0} step={1} />
+        <Field name="hours" label="Hours per return today" kind="number" value="6" min={0} step={0.25} hint="Prep through review." />
+        <Field name="cost" label="Loaded hourly cost" value="85" />
+        <Field name="fee" label="Average fee per return" value="650" />
+      </Fieldset>
+      <Fieldset legend="Assumption to test">
+        <Field name="reduction" label="Share of hours removed" kind="number" value="35" suffix="%" min={0} max={90} step={1} hint="Replace with a pilot measurement." />
+        <Field name="ramp" label="Adoption ramp" kind="number" value="3" suffix="mo" min={0} max={24} step={1} />
+      </Fieldset>
+      <Fieldset legend="Plan and money">
+        <Field name="plan" label="Plan" kind="select" options={plans} value="59" class="sm:col-span-2" />
+        <Field name="seats" label="Seats" kind="number" value="5" min={1} step={1} />
+        <Field name="onboarding" label="One-time setup cost" value="5000" />
+        <Field name="disc" label="Discount rate" kind="number" value="10" suffix="%" min={0} max={50} step={0.5} />
+        <Field name="years" label="Horizon" kind="number" value="3" suffix="yr" min={1} max={10} step={1} />
+      </Fieldset>
+      <div class="flex items-center justify-between gap-3">
+        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
+      </div>
+    </form>
+
+    <div class="grid min-w-0 grid-cols-1 gap-4 lg:sticky lg:top-[76px]">
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <Stat label="Net present value" out="npv" tone="accent" subOut="npvSub" />
+        <Stat label="Payback" out="payback" sub="months to break even" />
+        <Stat label="IRR" out="irr" subOut="roi" />
+        <Stat label="Hours returned" out="hours" subOut="capacity" />
+      </div>
+      <div class="rounded-lg border border-border bg-panel p-4">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="text-[13px] font-semibold text-fg">Cumulative net cash position</h2>
+          <span class="font-mono text-[11px] text-fg-faint">month 0 = setup · crosses zero at payback</span>
+        </div>
+        <div data-curve class="mt-3"></div>
+      </div>
+      <Workpaper title="Practice economics — annual run rate" subtitle="Steady state, after the adoption ramp" code="WP-ROI" id="wp" />
+    </div>
+  </div>
+
+  <Fragment slot="formulas">
+    <Formula title="Annual net benefit" plain="N = R h rho c minus 12 s p" note="R returns, h hours per return, ρ share removed, c loaded cost, s seats, p price per seat-month.">
+      <math display="block"><mrow><mi>N</mi><mo>=</mo><mi>R</mi><mo>·</mo><mi>h</mi><mo>·</mo><mi>ρ</mi><mo>·</mo><mi>c</mi><mo>−</mo><mn>12</mn><mo>·</mo><mi>s</mi><mo>·</mo><mi>p</mi></mrow></math>
+    </Formula>
+    <Formula title="Net present value" plain="NPV = minus C_0 + sum over t of N_t / (1 + i)^t" note="N_t is each year's net benefit after the ramp; C₀ is the setup cost; i the discount rate.">
+      <math display="block"><mrow><mi>NPV</mi><mo>=</mo><mo>−</mo><msub><mi>C</mi><mn>0</mn></msub><mo>+</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>N</mi><mi>t</mi></msub><msup><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>i</mi><mo>)</mo></mrow><mi>t</mi></msup></mfrac></mrow></math>
+    </Formula>
+    <Formula title="Internal rate of return" plain="IRR: the r where NPV(r) = 0, found by bisection" note="Bisection on [−99%, 1,000%] to a 1e-7 tolerance. Undefined when the flows never change sign.">
+      <math display="block"><mrow><mn>0</mn><mo>=</mo><mo>−</mo><msub><mi>C</mi><mn>0</mn></msub><mo>+</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>N</mi><mi>t</mi></msub><msup><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>IRR</mi><mo>)</mo></mrow><mi>t</mi></msup></mfrac></mrow></math>
+    </Formula>
+    <Formula title="Capacity" plain="K = floor(R h rho / (h (1 minus rho)))" note="Hours returned divided by the new hours per return: the extra returns the same team could carry.">
+      <math display="block"><mrow><mi>K</mi><mo>=</mo><mrow><mo>⌊</mo><mfrac><mrow><mi>R</mi><mi>h</mi><mi>ρ</mi></mrow><mrow><mi>h</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>ρ</mi><mo>)</mo></mrow></mfrac><mo>⌋</mo></mrow></mrow></math>
+    </Formula>
+  </Fragment>
+</ToolShell>
+
+<script>
+  import { firmRoi, fmtNum, fmtPct, fmtUsd, type RoiResult, type Trace } from '@taxline/tax-engine';
+  import { bindCalculator, num, pct } from '../../lib/tools/form';
+  import { renderTrace, setOutputs, setTone, traceToText, wireCopy } from '../../lib/tools/render';
+  import { compactUsd, lineChart, onResize } from '../../lib/tools/charts';
+
+  const form = document.getElementById('calc') as HTMLFormElement;
+  const curve = document.querySelector<HTMLElement>('[data-curve]')!;
+  let last: { r: RoiResult; trace: Trace } | null = null;
+
+  function draw() {
+    if (!last) return;
+    const { r } = last;
+    lineChart(curve, {
+      label: 'Cumulative net cash position by month',
+      points: r.cumulative.map((c, m) => [m, c]),
+      signed: true,
+      xFmt: (m) => `m${Math.round(m)}`,
+      yFmt: compactUsd,
+      marker: r.paybackMonths != null ? { x: Math.ceil(r.paybackMonths), label: `payback · ${r.paybackMonths.toFixed(1)} mo` } : undefined,
+      tipLines: (p) => [`${fmtUsd(p[1])} cumulative`, `month ${p[0]}`],
+    });
+  }
+
+  bindCalculator(form, (v) => {
+    const input = {
+      returnsPerYear: num(v.returns),
+      hoursPerReturn: num(v.hours),
+      reduction: pct(v.reduction),
+      loadedHourlyCost: num(v.cost),
+      seats: Math.max(1, Math.round(num(v.seats))),
+      pricePerSeatMonth: num(v.plan),
+      onboardingCost: num(v.onboarding),
+      discountRate: pct(v.disc),
+      years: num(v.years),
+      rampMonths: num(v.ramp),
+      feePerReturn: num(v.fee),
+    };
+    const r = firmRoi(input);
+    const trace: Trace = [
+      { id: 'roi.hours', label: 'Hours returned per year', value: r.hoursSaved, unit: 'count', ref: 'A', formula: `${fmtNum(input.returnsPerYear)} returns × ${input.hoursPerReturn} h × ${fmtPct(input.reduction, 0)}` },
+      { id: 'roi.labor', label: 'Labor value of those hours', value: r.laborValue, ref: 'B', formula: `${fmtNum(r.hoursSaved)} h × ${fmtUsd(input.loadedHourlyCost)}` },
+      { id: 'roi.sub', label: 'Subscription', value: -r.subscription, ref: 'C', formula: `${input.seats} seats × ${fmtUsd(input.pricePerSeatMonth)} × 12` },
+      { id: 'roi.net', label: 'Net annual benefit (steady state)', value: r.netAnnual, ref: 'B − C', emphasis: 'subtotal' },
+      { id: 'roi.setup', label: 'One-time setup', value: -input.onboardingCost, ref: 'C₀' },
+      { id: 'roi.npv', label: `NPV over ${input.years} years at ${fmtPct(input.discountRate, 1)}`, value: r.npv, ref: 'NPV', formula: `ramp ${input.rampMonths} mo, annual flows discounted`, emphasis: 'total' },
+      { id: 'roi.cap', label: 'Capacity: additional returns', value: r.capacityReturns, unit: 'count', ref: 'K', formula: `${fmtNum(r.hoursSaved)} h ÷ ${(input.hoursPerReturn * (1 - input.reduction)).toFixed(2)} h per return` },
+      { id: 'roi.rev', label: 'Revenue that capacity could carry', value: r.capacityRevenue, ref: 'K × fee', formula: `${fmtNum(r.capacityReturns)} × ${fmtUsd(input.feePerReturn)}` },
+    ];
+    last = { r, trace };
+    setOutputs(document, {
+      npv: fmtUsd(r.npv),
+      npvSub: `${input.years}-yr horizon at ${fmtPct(input.discountRate, 1)}`,
+      payback: r.paybackMonths == null ? 'none' : r.paybackMonths.toFixed(1),
+      irr: r.irr == null ? 'n/a' : r.irr > 9.99 ? '>1,000%' : fmtPct(r.irr, 0),
+      roi: `ROI ${fmtPct(r.roi, 0)} over horizon`,
+      hours: fmtNum(r.hoursSaved),
+      capacity: `≈ ${fmtNum(r.capacityReturns)} more returns`,
+    });
+    setTone(document, 'npv', r.npv >= 0 ? 'ok' : 'warn');
+    renderTrace(document.querySelector('[data-trace="wp"]')!, trace, { showZero: true });
+    draw();
+  });
+  onResize(curve, draw);
+  wireCopy(document.querySelector('[data-copy="wp"]'), () => (last ? traceToText('Practice economics', last.trace) : ''));
+</script>

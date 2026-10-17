@@ -1,0 +1,120 @@
+---
+import Base from '../../layouts/Base.astro';
+import TopNav from '../../components/TopNav.astro';
+import Footer from '../../components/Footer.astro';
+import Button from '../../components/Button.astro';
+import { Icon } from 'astro-icon/components';
+import { tools } from '../../lib/data/tools';
+import { breadcrumbs } from '../../lib/seo';
+import { absolute, u } from '../../lib/url';
+
+const schema = [
+  breadcrumbs(Astro.site, [
+    { name: 'Home', path: '' },
+    { name: 'Tools', path: 'tools/' },
+  ]),
+  {
+    '@type': 'ItemList',
+    name: 'Taxline free tax calculators',
+    itemListElement: tools.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: t.name, url: absolute(`tools/${t.slug}/`, Astro.site) })),
+  },
+];
+
+const figures = [
+  ['$16,100', 'standard deduction, single'],
+  ['$184,500', 'Social Security wage base'],
+  ['$2.56M', '§179 limit'],
+  ['$2,200', 'child tax credit per child'],
+];
+---
+
+<Base
+  title="Free 2026 Tax Calculators — income, SE, estimated, depreciation | Taxline"
+  description="Free 2026 federal tax calculators built on a tested engine: income tax with brackets and capital gains, self-employment tax, estimated tax safe harbor, depreciation with §179 and bonus, and practice ROI. Every line cited."
+  schema={schema}
+>
+  <TopNav />
+  <main id="main">
+    <section class="relative overflow-hidden border-b border-border">
+      <div class="pointer-events-none absolute inset-0 console-grid opacity-60"></div>
+      <div class="relative mx-auto grid max-w-[1200px] items-end gap-10 px-5 pb-14 pt-16 sm:px-6 lg:grid-cols-[1fr_420px]">
+        <div>
+          <p class="ds-eyebrow reveal">Free tools · tax year 2026</p>
+          <h1 class="ds-display reveal mt-4 max-w-3xl" style="animation-delay:.05s">Tax math you can audit.</h1>
+          <p class="ds-lead reveal mt-5 max-w-2xl" style="animation-delay:.1s">
+            Five calculators on the same engine the fleet uses. Pure functions, hand-worked tests, and
+            a workpaper on every result that shows the formula, the form line, and the IRS source.
+          </p>
+          <p class="reveal mt-5 inline-flex items-center gap-2 font-mono text-xs text-fg-faint" style="animation-delay:.15s">
+            <Icon name="lucide:lock" class="size-4" />Runs in your browser. Nothing you type is uploaded.
+          </p>
+        </div>
+        <dl class="reveal grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border" style="animation-delay:.2s">
+          {figures.map(([v, l]) => (
+            <div class="bg-panel px-4 py-3.5">
+              <dt class="sr-only">{l}</dt>
+              <dd class="font-mono text-xl font-semibold tabular-nums text-fg">{v}</dd>
+              <dd class="mt-1 text-[12px] text-fg-muted">{l}</dd>
+            </div>
+          ))}
+          <div class="col-span-2 bg-panel px-4 py-2.5 font-mono text-[10px] text-fg-faint">Source: IRS Rev. Proc. 2025-32 · SSA 2026 contribution base</div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-16 sm:px-6">
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {tools.map((t, i) => (
+            <a data-reveal style={`--reveal-delay:${i * 60}ms`} href={u(`tools/${t.slug}`)} class="lift group flex flex-col rounded-lg border border-border bg-panel p-5 hover:border-accent-line">
+              <div class="flex items-center justify-between">
+                <div class="grid size-9 place-items-center rounded-md border border-border bg-raised"><Icon name={t.icon} class="size-[18px] text-fg-muted group-hover:text-accent" /></div>
+                <Icon name="lucide:arrow-up-right" class="size-4 text-fg-faint group-hover:text-accent" />
+              </div>
+              <h2 class="mt-4 text-[16px] font-semibold text-fg">{t.name}</h2>
+              <p class="mt-1.5 flex-1 text-[13px] leading-relaxed text-fg-muted">{t.blurb}</p>
+              <div class="mt-4 flex flex-wrap gap-1.5">
+                {t.computes.map((c) => <span class="rounded-sm border border-border bg-inset px-1.5 py-0.5 font-mono text-[10px] text-fg-muted">{c}</span>)}
+              </div>
+            </a>
+          ))}
+          <a data-reveal style={`--reveal-delay:${tools.length * 60}ms`} href={u('methodology')} class="lift flex flex-col justify-between rounded-lg border border-dashed border-border bg-base p-5 hover:border-accent-line">
+            <span class="ds-eyebrow text-fg-faint">Methodology</span>
+            <p class="mt-3 text-[13px] leading-relaxed text-fg-muted">How the engine rounds, cites, and is tested — and how the same math routes low-confidence work to a person.</p>
+            <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent">Read the methodology <Icon name="lucide:arrow-right" class="size-4" /></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-b border-border bg-panel/30">
+      <div class="mx-auto grid max-w-[1200px] gap-10 px-5 py-16 sm:px-6 lg:grid-cols-3">
+        {[
+          ['lucide:function-square', 'Deterministic', 'The same inputs always give the same output. No model in the loop for arithmetic — the fleet calls this code through compute_tax.'],
+          ['lucide:quote', 'Cited to the line', 'Every figure carries its form line and its authority: Rev. Proc. 2025-32, the Code section, or the Pub 946 table.'],
+          ['lucide:flask-conical', 'Tested by hand', 'Expected values in the test suite are worked from the IRS tables, not copied from the engine’s own output.'],
+        ].map(([icon, t, d]) => (
+          <div data-reveal>
+            <Icon name={icon} class="size-5 text-accent" />
+            <h2 class="ds-h3 mt-4">{t}</h2>
+            <p class="ds-small mt-2">{d}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="border-b border-border">
+      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-14 sm:flex-row sm:items-center sm:px-6">
+        <div>
+          <h2 class="ds-h2 max-w-xl">Running these for a whole book of clients?</h2>
+          <p class="ds-small mt-2">The fleet extracts the inputs from source documents and drafts the workpaper. You approve.</p>
+        </div>
+        <div class="flex gap-3">
+          <Button href={u('contact')}>Book a demo</Button>
+          <Button href={u('app')} variant="ghost">See it run</Button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

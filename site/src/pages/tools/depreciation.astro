@@ -1,0 +1,196 @@
+---
+import ToolShell from '../../components/tools/ToolShell.astro';
+import Field from '../../components/tools/Field.astro';
+import Fieldset from '../../components/tools/Fieldset.astro';
+import Stat from '../../components/tools/Stat.astro';
+import Workpaper from '../../components/tools/Workpaper.astro';
+import Formula from '../../components/tools/Formula.astro';
+import { RECOVERY_CLASSES } from '@taxline/tax-engine';
+
+const classes = RECOVERY_CLASSES.map((c) => ({ value: c.key, label: `${c.label} · ${c.examples}` }));
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => ({ value: String(i + 1), label: m }));
+
+const faqs = [
+  {
+    q: 'What is the 2026 Section 179 limit?',
+    a: '$2,560,000, reduced dollar for dollar once total §179 property placed in service in 2026 exceeds $4,090,000. The deduction is also limited to taxable business income, and SUVs are capped at $32,000 (Rev. Proc. 2025-32 §4.24).',
+  },
+  {
+    q: 'Is bonus depreciation 100% in 2026?',
+    a: 'For qualified property acquired after January 19, 2025, the One Big Beautiful Bill Act restored 100% bonus depreciation permanently. Property acquired under a binding contract before that date follows the old phase-down. Set the bonus percentage to match the asset.',
+  },
+  {
+    q: 'How is MACRS depreciation calculated?',
+    a: 'Personal property uses the half-year convention: 200% declining balance for 3, 5, 7, and 10-year property and 150% for 15 and 20-year, switching to straight line when that is larger. The calculator uses the published Pub 946 Table A-1 rates, and its tests prove those rates follow from the formula.',
+  },
+  {
+    q: 'Can I take Section 179 or bonus on a rental building?',
+    a: 'No. Residential rental (27.5-year) and nonresidential (39-year) buildings are straight line with the mid-month convention. Qualified improvement property and some building components can qualify; model them as 15-year property.',
+  },
+  {
+    q: 'What is the tax shield, and why does present value matter?',
+    a: 'Each dollar deducted saves tax at your marginal rate. The total deducted is the same either way; what changes is when. The calculator discounts each year’s saving to show what accelerating the deduction is worth today.',
+  },
+];
+
+const limits = [
+  'The mid-quarter convention (over 40% of property placed in service in Q4)',
+  'ADS, listed-property recapture, and luxury-auto caps under §280F',
+  'State conformity — many states decouple from bonus and limit §179',
+  'Depreciation recapture on sale',
+];
+---
+
+<ToolShell
+  slug="depreciation"
+  title="2026 Depreciation Calculator — Section 179, bonus, MACRS | Taxline"
+  description="Build a 2026 depreciation schedule: Section 179 ($2,560,000 limit), 100% bonus depreciation, and MACRS half-year or mid-month rates from Pub 946, with the present value of the tax shield."
+  h1="2026 depreciation calculator"
+  lead="Section 179, bonus, and MACRS for one asset, year by year, with what the acceleration is worth in today’s dollars."
+  faqs={faqs}
+  limits={limits}
+>
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+    <form id="calc" class="grid gap-4" autocomplete="off">
+      <Fieldset legend="Asset">
+        <Field name="cost" label="Cost basis" value="85000" />
+        <Field name="month" label="Placed in service" kind="select" options={months} value="3" hint="Matters for real property." />
+        <Field name="cls" label="Recovery class" kind="select" options={classes} value="5" class="sm:col-span-2" />
+        <Field name="use" label="Business use" kind="number" value="100" suffix="%" min={0} max={100} step={1} />
+      </Fieldset>
+      <Fieldset legend="Elections">
+        <Field name="s179" label="§179 expense elected" value="0" />
+        <Field name="bonus" label="Bonus depreciation" kind="number" value="100" suffix="%" min={0} max={100} step={1} />
+        <Field name="limitOn" label="Apply business income limit" kind="toggle" class="sm:col-span-2" hint="§179 cannot create a loss." />
+        <Field name="income" label="Taxable business income" value="60000" class="sm:col-span-2" />
+      </Fieldset>
+      <Fieldset legend="Valuation">
+        <Field name="rate" label="Marginal tax rate" kind="number" value="24" suffix="%" min={0} max={60} step={0.1} />
+        <Field name="disc" label="Discount rate" kind="number" value="8" suffix="%" min={0} max={40} step={0.1} />
+      </Fieldset>
+      <div class="flex items-center justify-between gap-3">
+        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
+      </div>
+    </form>
+
+    <div class="grid min-w-0 grid-cols-1 gap-4 lg:sticky lg:top-[76px]">
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <Stat label="First-year deduction" out="first" tone="accent" subOut="firstPct" />
+        <Stat label="Tax shield (PV)" out="pv" subOut="pvSub" />
+        <Stat label="Value of acceleration" out="accel" sub="vs MACRS alone" />
+        <Stat label="Recovery period" out="years" subOut="method" />
+      </div>
+      <div class="rounded-lg border border-border bg-panel p-4">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="text-[13px] font-semibold text-fg">Deduction by tax year</h2>
+          <span class="font-mono text-[11px] text-fg-faint">§179 + bonus + MACRS · hover for the split</span>
+        </div>
+        <div data-bars class="mt-3"></div>
+      </div>
+      <div class="overflow-hidden rounded-lg border border-border bg-panel">
+        <div class="max-h-[340px] overflow-auto">
+          <table class="w-full min-w-[560px] text-left">
+            <caption class="sr-only">Depreciation schedule by year</caption>
+            <thead class="sticky top-0 bg-panel">
+              <tr class="border-b border-border">
+                {['Year', 'Rate', '§179', 'Bonus', 'MACRS', 'Deduction', 'Basis left'].map((c, i) => (
+                  <th scope="col" class:list={['px-3 py-2.5 font-mono text-[10px] font-medium uppercase tracking-wider text-fg-faint', i > 0 && 'text-right']}>{c}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody data-schedule class="font-mono text-[12px] tabular-nums"></tbody>
+          </table>
+        </div>
+      </div>
+      <Workpaper title="Form 4562 — depreciation and amortization" subtitle="Tax year 2026 · one asset" code="WP-4562" id="wp" />
+    </div>
+  </div>
+
+  <Fragment slot="formulas">
+    <Formula title="Cost recovery waterfall" plain="S = min(e, L, B, I); Bonus = b (B minus S); M_t = r_t (B minus S minus Bonus)" note="B = cost × business use; L = $2,560,000 − max(0, total §179 property − $4,090,000); I = business income; r_t from Pub 946.">
+      <math display="block"><mrow><mi>S</mi><mo>=</mo><mi>min</mi><mo>(</mo><mi>e</mi><mo>,</mo><mi>L</mi><mo>,</mo><mi>B</mi><mo>,</mo><mi>I</mi><mo>)</mo><mo>,</mo><mspace width="0.5em"/><mi>β</mi><mo>=</mo><mi>b</mi><mo>·</mo><mo>(</mo><mi>B</mi><mo>−</mo><mi>S</mi><mo>)</mo><mo>,</mo><mspace width="0.5em"/><msub><mi>M</mi><mi>t</mi></msub><mo>=</mo><msub><mi>r</mi><mi>t</mi></msub><mo>·</mo><mo>(</mo><mi>B</mi><mo>−</mo><mi>S</mi><mo>−</mo><mi>β</mi><mo>)</mo></mrow></math>
+    </Formula>
+    <Formula title="MACRS half-year rate" plain="r_1 = f / 2n; r_t = max(f/n times remaining, remaining / (n minus t + 1.5))" note="f = 2 (200% DB) or 1.5 (150% DB), n = recovery period. The switch to straight line happens when the right-hand term wins. The tests derive Table A-1 from this and match it to the hundredth.">
+      <math display="block"><mrow><msub><mi>r</mi><mn>1</mn></msub><mo>=</mo><mfrac><mi>f</mi><mrow><mn>2</mn><mi>n</mi></mrow></mfrac><mo>,</mo><mspace width="0.6em"/><msub><mi>r</mi><mi>t</mi></msub><mo>=</mo><mi>max</mi><mrow><mo>(</mo><mfrac><mi>f</mi><mi>n</mi></mfrac><msub><mi>R</mi><mi>t</mi></msub><mo>,</mo><mfrac><msub><mi>R</mi><mi>t</mi></msub><mrow><mi>n</mi><mo>−</mo><mi>t</mi><mo>+</mo><mn>1.5</mn></mrow></mfrac><mo>)</mo></mrow></mrow></math>
+    </Formula>
+    <Formula title="Real property, mid-month" plain="r_1 = (12 minus m + 0.5) / (12 n); r_t = 1 / n" note="m = month placed in service. Pub 946 Table A-7a rounds its steps, so its January figure reads 2.461% against the exact 2.457%.">
+      <math display="block"><mrow><msub><mi>r</mi><mn>1</mn></msub><mo>=</mo><mfrac><mrow><mn>12</mn><mo>−</mo><mi>m</mi><mo>+</mo><mn>0.5</mn></mrow><mrow><mn>12</mn><mi>n</mi></mrow></mfrac><mo>,</mo><mspace width="0.6em"/><msub><mi>r</mi><mi>t</mi></msub><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac></mrow></math>
+    </Formula>
+    <Formula title="Present value of the tax shield" plain="PV = sum over t of tau D_t / (1 + i)^t" note="τ = marginal rate, i = discount rate, D_t = total deduction in year t (year 1 discounted one period).">
+      <math display="block"><mrow><mi>PV</mi><mo>=</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mfrac><mrow><mi>τ</mi><mo>·</mo><msub><mi>D</mi><mi>t</mi></msub></mrow><msup><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>i</mi><mo>)</mo></mrow><mi>t</mi></msup></mfrac></mrow></math>
+    </Formula>
+  </Fragment>
+</ToolShell>
+
+<script>
+  import { depreciate, fmtPct, fmtUsd, taxShieldPv, type DepreciationResult, type RecoveryClass } from '@taxline/tax-engine';
+  import { bindCalculator, num, pct } from '../../lib/tools/form';
+  import { h, renderTrace, setOutputs, traceToText, wireCopy } from '../../lib/tools/render';
+  import { barChart, compactUsd, onResize } from '../../lib/tools/charts';
+
+  const form = document.getElementById('calc') as HTMLFormElement;
+  const bars = document.querySelector<HTMLElement>('[data-bars]')!;
+  const tbody = document.querySelector<HTMLElement>('[data-schedule]')!;
+  const income = form.querySelector<HTMLInputElement>('[name="income"]')!;
+  let last: DepreciationResult | null = null;
+
+  function draw() {
+    if (!last) return;
+    barChart(bars, {
+      label: 'Depreciation deduction by tax year',
+      bars: last.rows.map((r) => ({
+        label: String(r.year),
+        value: r.total,
+        tip: [`${r.year}: ${fmtUsd(r.total)}`, ...(r.section179 ? [`§179 ${fmtUsd(r.section179)}`] : []), ...(r.bonus ? [`bonus ${fmtUsd(r.bonus)}`] : []), `MACRS ${fmtUsd(r.macrs)}`],
+      })),
+      yFmt: compactUsd,
+      focus: 0,
+    });
+  }
+
+  bindCalculator(form, (v) => {
+    const cls = String(v.cls) as RecoveryClass;
+    const real = cls === '27.5' || cls === '39';
+    income.disabled = !v.limitOn;
+    income.closest('div')?.parentElement?.classList.toggle('opacity-50', !v.limitOn);
+    const base = { cost: num(v.cost), recoveryClass: cls, month: num(v.month), businessUsePct: pct(v.use) };
+    const r = depreciate({ ...base, section179: num(v.s179), bonusPct: pct(v.bonus), businessIncome: v.limitOn ? num(v.income) : null });
+    const plain = depreciate({ ...base, section179: 0, bonusPct: 0 });
+    const tau = pct(v.rate);
+    const i = pct(v.disc);
+    const pv = taxShieldPv(r.rows.map((x) => x.total), tau, i);
+    const pvPlain = taxShieldPv(plain.rows.map((x) => x.total), tau, i);
+    last = r;
+
+    setOutputs(document, {
+      first: fmtUsd(r.firstYear),
+      firstPct: r.basis ? `${fmtPct(r.firstYear / r.basis)} of basis` : '',
+      pv: fmtUsd(pv),
+      pvSub: `of ${fmtUsd(r.basis * tau)} nominal`,
+      accel: fmtUsd(pv - pvPlain),
+      years: `${cls} yr`,
+      method: real ? 'SL · mid-month' : ['15', '20'].includes(cls) ? '150% DB · half-year' : '200% DB · half-year',
+    });
+
+    tbody.replaceChildren();
+    for (const row of r.rows) {
+      const tr = h('tr', 'border-b border-border-faint last:border-0');
+      const cell = (t: string, cls2 = 'text-right text-fg-muted') => h('td', `px-3 py-2 ${cls2}`, t);
+      tr.append(
+        cell(String(row.year), 'text-fg'),
+        cell(`${row.rate.toFixed(3)}%`),
+        cell(row.section179 ? fmtUsd(row.section179) : '—'),
+        cell(row.bonus ? fmtUsd(row.bonus) : '—'),
+        cell(fmtUsd(row.macrs, true)),
+        cell(fmtUsd(row.total, true), 'text-right text-fg'),
+        cell(fmtUsd(row.endingBasis)),
+      );
+      tbody.append(tr);
+    }
+    renderTrace(document.querySelector('[data-trace="wp"]')!, r.trace, { showZero: true, cents: true });
+    draw();
+  });
+  onResize(bars, draw);
+  wireCopy(document.querySelector('[data-copy="wp"]'), () => (last ? traceToText('Form 4562 — TY2026', last.trace) : ''));
+</script>

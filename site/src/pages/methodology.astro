@@ -1,0 +1,223 @@
+---
+import Base from '../layouts/Base.astro';
+import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
+import Button from '../components/Button.astro';
+import Formula from '../components/tools/Formula.astro';
+import { Icon } from 'astro-icon/components';
+import { docs } from '../lib/data/app';
+import { breadcrumbs } from '../lib/seo';
+import { u } from '../lib/url';
+
+// The demo queue's extracted fields — the same records the app shows.
+const fields = docs.flatMap((d) => d.fields.map((f) => ({ doc: d.name, label: f.label, c: f.confidence })));
+
+const sources = [
+  ['Rev. Proc. 2025-32', 'Brackets, standard deduction, capital-gain bands, CTC, §179, §199A thresholds for 2026', 'https://www.irs.gov/pub/irs-drop/rp-25-32.pdf'],
+  ['SSA contribution and benefit base', '$184,500 Social Security wage base for 2026', 'https://www.ssa.gov/oact/cola/cbb.html'],
+  ['Pub 946', 'MACRS Table A-1 and the mid-month real-property tables', 'https://www.irs.gov/publications/p946'],
+  ['1040 instructions', 'Tax Table rows and the Qualified Dividends and Capital Gain Tax Worksheet', 'https://www.irs.gov/instructions/i1040gi'],
+  ['IRC §§1401, 1411, 3101(b)(2), 6654', 'SE tax, NIIT, Additional Medicare, estimated-tax safe harbor (fixed in statute)', 'https://www.law.cornell.edu/uscode/text/26'],
+];
+
+const rules = [
+  ['Pure functions', 'No I/O, no clock, no randomness. Same inputs, same outputs — in the browser, in the service, in tests.'],
+  ['One table per year', 'Every indexed figure lives in years/2026.ts with its citation. Adding a year is a data change, not a code change.'],
+  ['Round where the form rounds', 'Half away from zero to the cent at each published line; the Tax Table midpoint rule below $100,000; whole dollars where the IRS allows.'],
+  ['Coerce, never NaN', 'Bad or empty input becomes 0 and is shown as 0. A field the fleet could not extract stays null and blocks the computation instead.'],
+  ['Trace every line', 'Each result is a list of lines with value, operands, form line, and authority — the workpaper is the output, not a rendering of it.'],
+  ['Test against the source', 'Expected values are worked from the IRS tables by hand. The MACRS table is re-derived from first principles and checked to the hundredth.'],
+];
+---
+
+<Base
+  title="Methodology — how Taxline computes, cites, and routes | Taxline"
+  description="How the Taxline tax engine computes and rounds, where every 2026 figure comes from, how it is tested, and the confidence math that routes uncertain fields to a person before anything ships."
+  schema={[breadcrumbs(Astro.site, [{ name: 'Home', path: '' }, { name: 'Methodology', path: 'methodology/' }])]}
+  ogType="article"
+>
+  <TopNav />
+  <main id="main">
+    <section class="relative overflow-hidden border-b border-border">
+      <div class="pointer-events-none absolute inset-0 console-grid opacity-60"></div>
+      <div class="relative mx-auto max-w-[1200px] px-5 pb-14 pt-16 sm:px-6">
+        <p class="ds-eyebrow reveal">Methodology</p>
+        <h1 class="ds-display reveal mt-4 max-w-3xl" style="animation-delay:.05s">Models draft. Code computes. People approve.</h1>
+        <p class="ds-lead reveal mt-5 max-w-2xl" style="animation-delay:.1s">
+          Three boundaries keep the fleet defensible: arithmetic runs in a tested engine, uncertain
+          fields route to a person by a threshold enforced in code, and nothing ships without approval.
+        </p>
+      </div>
+    </section>
+
+    <!-- The pipeline -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-16 sm:px-6">
+        <p class="ds-eyebrow">Where each kind of work happens</p>
+        <div class="mt-8 grid gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-3">
+          {[
+            ['lucide:scan-line', 'Model', 'Reads documents, classifies, extracts, retrieves sources, writes prose.', 'Returns null rather than guess. Every field carries a confidence and a citation.'],
+            ['lucide:function-square', 'Engine', 'Every number: taxable income, SE tax, safe harbor, depreciation.', 'Called as compute_tax. Deterministic, cited, unit-tested. The model quotes it; it never recomputes it.'],
+            ['lucide:user-check', 'Person', 'Reviews routed fields, signs off on the workpaper.', 'requireHumanApproval is a code gate. No prompt can skip it.'],
+          ].map(([icon, t, what, how]) => (
+            <div class="bg-base p-6">
+              <Icon name={icon} class="size-5 text-accent" />
+              <h2 class="ds-h3 mt-4">{t}</h2>
+              <p class="mt-2 text-[14px] text-fg">{what}</p>
+              <p class="ds-small mt-2">{how}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Engine rules -->
+    <section class="border-b border-border bg-panel/30">
+      <div class="mx-auto max-w-[1200px] px-5 py-16 sm:px-6">
+        <p class="ds-eyebrow">The tax engine</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">Six rules for numbers a reviewer can trust.</h2>
+        <p class="ds-lead mt-3 max-w-2xl"><code class="font-mono text-fg">@taxline/tax-engine</code> is a dependency-free TypeScript package shared by the site’s calculators and the agent service.</p>
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {rules.map(([t, d], i) => (
+            <div data-reveal style={`--reveal-delay:${i * 50}ms`} class="rounded-lg border border-border bg-panel p-5">
+              <span class="font-mono text-[11px] text-fg-faint">0{i + 1}</span>
+              <h3 class="mt-2 text-[15px] font-semibold text-fg">{t}</h3>
+              <p class="mt-1.5 text-[13px] leading-relaxed text-fg-muted">{d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Confidence routing -->
+    <section class="border-b border-border">
+      <div class="mx-auto max-w-[1200px] px-5 py-16 sm:px-6">
+        <p class="ds-eyebrow">Confidence routing</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">The threshold is a line in code, not a request in a prompt.</h2>
+        <p class="ds-lead mt-3 max-w-2xl">Each extracted field carries a confidence <i>c</i> in [0, 1]. The routing rule is the same in the service (<code class="font-mono text-[15px] text-fg">assess_confidence</code>) and the offline demo.</p>
+
+        <div class="mt-10 grid gap-4 lg:grid-cols-2">
+          <Formula title="Routing rule" plain="route(f) = review if value is null or c is null or c < tau, else pass; tau = 0.85" note="A missing value or a missing score routes to review — absence is never treated as confidence.">
+            <math display="block"><mrow><mi>route</mi><mo>(</mo><mi>f</mi><mo>)</mo><mo>=</mo><mrow><mo>&#123;</mo><mtable columnalign="left left" columnspacing="1.2em" rowspacing="0.4em"><mtr><mtd><mtext>review</mtext></mtd><mtd><mi>v</mi><mo>=</mo><mi>∅</mi><mo>∨</mo><mi>c</mi><mo>=</mo><mi>∅</mi><mo>∨</mo><mi>c</mi><mo>&lt;</mo><mi>τ</mi></mtd></mtr><mtr><mtd><mtext>pass</mtext></mtd><mtd><mtext>otherwise</mtext></mtd></mtr></mtable></mrow><mo>,</mo><mspace width="0.5em"/><mi>τ</mi><mo>=</mo><mn>0.85</mn></mrow></math>
+          </Formula>
+          <Formula title="Review load" plain="L(tau) = count of fields with c < tau; share = L / N" note="Raising τ sends more to people and fewer errors through; lowering it does the reverse. The explorer below runs this on the demo queue.">
+            <math display="block"><mrow><mi>L</mi><mo>(</mo><mi>τ</mi><mo>)</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mn mathvariant="bold">1</mn><mo>[</mo><msub><mi>c</mi><mi>i</mi></msub><mo>&lt;</mo><mi>τ</mi><mo>]</mo></mrow></math>
+          </Formula>
+        </div>
+
+        <div class="mt-6 rounded-lg border border-border bg-panel p-5">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-[15px] font-semibold text-fg">Threshold explorer</h3>
+              <p class="mt-1 text-[13px] text-fg-muted">{fields.length} fields from the demo intake queue. Drag τ to see what routes to a person.</p>
+            </div>
+            <label class="flex items-center gap-3 font-mono text-[12px] text-fg-muted">
+              τ
+              <input id="tau" type="range" min="0.5" max="0.99" step="0.01" value="0.85" class="w-48 accent-[var(--color-accent)]" />
+              <output id="tau-out" class="w-10 text-fg">0.85</output>
+            </label>
+          </div>
+          <div class="mt-5 grid gap-5 lg:grid-cols-[1fr_260px]">
+            <div>
+              <div class="relative h-16 rounded-md border border-border-faint bg-inset" id="strip" aria-hidden="true">
+                <div id="tau-line" class="absolute inset-y-0 w-px bg-fg"></div>
+                {fields.map((f) => (
+                  <span
+                    class="field-dot absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-inset"
+                    data-c={f.c ?? ''}
+                    style={`left:${((f.c ?? 0) * 100).toFixed(1)}%`}
+                    title={`${f.label} · ${f.c?.toFixed(2) ?? '—'}`}
+                  />
+                ))}
+              </div>
+              <div class="mt-1.5 flex justify-between font-mono text-[10px] text-fg-faint"><span>0.00</span><span>0.50</span><span>1.00</span></div>
+            </div>
+            <dl class="grid grid-cols-2 gap-3">
+              <div class="rounded-md border border-border bg-base px-3 py-2.5"><dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-fg-faint">To review</dt><dd id="n-review" class="mt-1 font-mono text-xl font-semibold text-warn-bright">—</dd></div>
+              <div class="rounded-md border border-border bg-base px-3 py-2.5"><dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-fg-faint">Pass</dt><dd id="n-pass" class="mt-1 font-mono text-xl font-semibold text-ok-bright">—</dd></div>
+            </dl>
+          </div>
+          <div class="mt-5 overflow-x-auto">
+            <table class="w-full min-w-[520px] text-left">
+              <caption class="sr-only">Demo fields and their routing at the chosen threshold</caption>
+              <thead><tr class="border-b border-border">{['Document', 'Field', 'Confidence', 'Route'].map((c) => <th scope="col" class="py-2 pr-3 font-mono text-[10px] font-medium uppercase tracking-wider text-fg-faint">{c}</th>)}</tr></thead>
+              <tbody class="font-mono text-[12px]">
+                {fields.map((f) => (
+                  <tr class="border-b border-border-faint last:border-0" data-row={f.c ?? ''}>
+                    <td class="py-1.5 pr-3 text-fg-faint">{f.doc}</td>
+                    <td class="py-1.5 pr-3 font-sans text-[13px] text-fg">{f.label}</td>
+                    <td class="py-1.5 pr-3 tabular-nums text-fg-muted">{f.c?.toFixed(2) ?? '—'}</td>
+                    <td class="route py-1.5 pr-3">—</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sources -->
+    <section class="border-b border-border bg-panel/30">
+      <div class="mx-auto max-w-[1200px] px-5 py-16 sm:px-6">
+        <p class="ds-eyebrow">Sources</p>
+        <h2 class="ds-h2 mt-3 max-w-2xl">Where every figure comes from.</h2>
+        <div class="mt-8 overflow-hidden rounded-lg border border-border bg-panel">
+          {sources.map(([name, what, url]) => (
+            <a href={url} target="_blank" rel="noopener" class="group flex flex-col gap-1 border-b border-border-faint px-5 py-4 last:border-0 hover:bg-raised sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+              <span class="font-mono text-[13px] text-fg">{name}</span>
+              <span class="flex items-center gap-2 text-[13px] text-fg-muted">{what}<Icon name="lucide:arrow-up-right" class="size-3.5 shrink-0 text-fg-faint group-hover:text-accent" /></span>
+            </a>
+          ))}
+        </div>
+        <p class="mt-4 text-[12px] leading-relaxed text-fg-faint">Figures were transcribed from the primary source on 2026-10-17. The knowledge base re-reviews and content-hashes its sources on a monthly cadence (<code class="font-mono">npm run refresh-kb</code>).</p>
+      </div>
+    </section>
+
+    <section class="border-b border-border">
+      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-14 sm:flex-row sm:items-center sm:px-6">
+        <div>
+          <h2 class="ds-h2 max-w-xl">Check the math yourself.</h2>
+          <p class="ds-small mt-2">Every calculator shows its workpaper. Change an input and watch each line move.</p>
+        </div>
+        <div class="flex gap-3">
+          <Button href={u('tools')}>Open the calculators</Button>
+          <Button href={u('agents')} variant="ghost">Meet the fleet</Button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<script>
+  const tau = document.getElementById('tau') as HTMLInputElement;
+  const out = document.getElementById('tau-out')!;
+  const line = document.getElementById('tau-line')!;
+  const nReview = document.getElementById('n-review')!;
+  const nPass = document.getElementById('n-pass')!;
+  const update = () => {
+    const t = Number(tau.value);
+    out.textContent = t.toFixed(2);
+    line.style.left = `${t * 100}%`;
+    let review = 0;
+    document.querySelectorAll<HTMLElement>('.field-dot').forEach((d) => {
+      const c = d.dataset.c === '' ? null : Number(d.dataset.c);
+      const routed = c == null || c < t;
+      d.style.background = routed ? 'var(--color-warn)' : 'var(--color-accent)';
+    });
+    document.querySelectorAll<HTMLElement>('[data-row]').forEach((r) => {
+      const c = r.dataset.row === '' ? null : Number(r.dataset.row);
+      const routed = c == null || c < t;
+      if (routed) review++;
+      const cell = r.querySelector('.route')!;
+      cell.textContent = routed ? 'review' : 'pass';
+      cell.className = `route py-1.5 pr-3 ${routed ? 'text-warn-bright' : 'text-ok-bright'}`;
+    });
+    const total = document.querySelectorAll('[data-row]').length;
+    nReview.textContent = `${review}`;
+    nPass.textContent = `${total - review}`;
+  };
+  tau.addEventListener('input', update);
+  update();
+</script>

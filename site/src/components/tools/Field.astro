@@ -1,0 +1,61 @@
+---
+// One calculator input. `money` fields accept "$85,000" or "85000"; `select`
+// takes options; `toggle` is a checkbox. Values are read by name in form.ts.
+interface Props {
+  name: string;
+  label: string;
+  kind?: 'money' | 'number' | 'select' | 'toggle';
+  value?: string | number;
+  checked?: boolean;
+  options?: { value: string; label: string }[];
+  hint?: string;
+  suffix?: string;
+  min?: number;
+  max?: number;
+  step?: number | 'any';
+  class?: string;
+}
+const { name, label, kind = 'money', value = '', checked = false, options = [], hint, suffix, min, max, step = 'any', class: cls = '' } = Astro.props;
+const id = `f-${name}`;
+const input =
+  'w-full rounded-md border border-border bg-inset px-3 py-2 font-mono text-[13px] tabular-nums text-fg placeholder:text-fg-faint transition-colors hover:border-border-strong focus:border-accent-line focus:outline-none';
+---
+
+{kind === 'toggle' ? (
+  <label for={id} class:list={['flex cursor-pointer items-start gap-3 rounded-md border border-border bg-inset px-3 py-2.5 hover:border-border-strong', cls]}>
+    <input id={id} name={name} type="checkbox" checked={checked} class="mt-0.5 size-4 accent-[var(--color-accent)]" />
+    <span>
+      <span class="block text-[13px] text-fg">{label}</span>
+      {hint && <span class="mt-0.5 block text-[12px] text-fg-faint">{hint}</span>}
+    </span>
+  </label>
+) : (
+  <div class={cls}>
+    <label for={id} class="mb-1.5 block text-[12px] font-medium text-fg-muted">{label}</label>
+    <div class="relative">
+      {kind === 'money' && <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-mono text-[13px] text-fg-faint">$</span>}
+      {kind === 'select' ? (
+        <select id={id} name={name} class:list={[input, 'appearance-none pr-8']}>
+          {options.map((o) => <option value={o.value} selected={String(value) === o.value}>{o.label}</option>)}
+        </select>
+      ) : (
+        <input
+          id={id}
+          name={name}
+          type={kind === 'number' ? 'number' : 'text'}
+          inputmode="decimal"
+          autocomplete="off"
+          data-kind={kind}
+          value={value}
+          min={min}
+          max={max}
+          step={kind === 'number' ? step : undefined}
+          class:list={[input, kind === 'money' && 'pl-6', suffix && 'pr-10']}
+        />
+      )}
+      {suffix && <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[12px] text-fg-faint">{suffix}</span>}
+      {kind === 'select' && <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-fg-faint">▾</span>}
+    </div>
+    {hint && <p class="mt-1 text-[11px] leading-snug text-fg-faint">{hint}</p>}
+  </div>
+)}

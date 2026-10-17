@@ -1,0 +1,233 @@
+---
+import ToolShell from '../../components/tools/ToolShell.astro';
+import Field from '../../components/tools/Field.astro';
+import Fieldset from '../../components/tools/Fieldset.astro';
+import Stat from '../../components/tools/Stat.astro';
+import Workpaper from '../../components/tools/Workpaper.astro';
+import Formula from '../../components/tools/Formula.astro';
+import { FILING_STATUSES } from '@taxline/tax-engine';
+
+const statuses = FILING_STATUSES.map((s) => ({ value: s.key, label: s.label }));
+
+const faqs = [
+  {
+    q: 'What are the 2026 federal income tax brackets?',
+    a: 'Seven rates: 10%, 12%, 22%, 24%, 32%, 35%, and 37%. For a single filer in tax year 2026 the 12% rate starts above $12,400, 22% above $50,400, 24% above $105,700, 32% above $201,775, 35% above $256,225, and 37% above $640,600. Joint thresholds are double up to the 35% band, and 37% starts above $768,700 (Rev. Proc. 2025-32).',
+  },
+  {
+    q: 'What is the 2026 standard deduction?',
+    a: '$16,100 for single filers and married filing separately, $32,200 for married filing jointly, and $24,150 for head of household. The calculator takes the larger of the standard deduction and the itemized amount you enter.',
+  },
+  {
+    q: 'What is the difference between my marginal and effective tax rate?',
+    a: 'Your bracket rate is what the next dollar of ordinary taxable income pays under the rate schedule. The calculator also measures a true marginal rate by adding $100 of income and recomputing the whole return, so interactions like the QBI income limit or credit phase-outs show up. Your effective rate is total tax divided by total income.',
+  },
+  {
+    q: 'How are long-term capital gains and qualified dividends taxed in 2026?',
+    a: 'They stack on top of ordinary income and are taxed at 0%, 15%, or 20%. For a single filer the 0% band runs to $49,450 of taxable income and the 15% band to $545,500; for joint filers, $98,900 and $613,700. The calculator runs the IRS Qualified Dividends and Capital Gain Tax Worksheet.',
+  },
+  {
+    q: 'Why does my tax differ by a few dollars from the rate schedule?',
+    a: 'Below $100,000 of taxable income the IRS requires the Tax Table, which taxes the midpoint of a $50 row and rounds to the dollar. The calculator does the same by default; the workpaper line notes which method it used.',
+  },
+  {
+    q: 'Is the child tax credit $2,200 in 2026?',
+    a: 'Yes. The credit is $2,200 per qualifying child, reduced by $50 for each $1,000 of modified AGI above $200,000 ($400,000 joint). Up to $1,700 per child is refundable as the additional child tax credit, limited to 15% of earned income above $2,500.',
+  },
+];
+
+const limits = [
+  'Alternative minimum tax',
+  'Earned income, education, energy, and dependent-care credits',
+  'The OBBBA senior deduction and age-65 additional standard deduction',
+  'Tips and overtime deductions',
+  'State and local income tax',
+  'Multiple Schedule C activities, passive-loss limits, and §1250 recapture',
+];
+---
+
+<ToolShell
+  slug="income-tax"
+  title="2026 Federal Income Tax Calculator — brackets, capital gains, QBI | Taxline"
+  description="Estimate your 2026 federal income tax with the IRS brackets, standard deduction, capital gains worksheet, QBI deduction, child tax credit, SE tax, and NIIT. Line-by-line Form 1040 trace with citations."
+  h1="2026 federal income tax calculator"
+  lead="A Form 1040 estimate from income to refund, using the tax-year 2026 brackets. Every line shows its formula, its form line, and the IRS authority behind it."
+  faqs={faqs}
+  limits={limits}
+>
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+    <form id="calc" class="grid gap-4" autocomplete="off">
+      <Fieldset legend="Filing">
+        <Field name="status" label="Filing status" kind="select" options={statuses} value="single" class="sm:col-span-2" />
+        <Field name="children" label="Qualifying children under 17" kind="number" value="0" min={0} max={12} step={1} />
+      </Fieldset>
+      <Fieldset legend="Earned income">
+        <Field name="wages" label="W-2 wages (box 1)" value="85000" />
+        <Field name="se" label="Schedule C net profit" value="0" hint="Drives SE tax and the QBI deduction." />
+        <Field name="other" label="Other ordinary income" value="0" />
+        <Field name="sstb" label="Specified service business" kind="toggle" hint="Law, health, consulting, accounting… (QBI phase-out)" />
+      </Fieldset>
+      <Fieldset legend="Investments">
+        <Field name="interest" label="Taxable interest" value="0" />
+        <Field name="ordDiv" label="Ordinary dividends (1a)" value="0" />
+        <Field name="qualDiv" label="Qualified dividends (1b)" value="0" />
+        <Field name="ltcg" label="Net long-term gain" value="0" hint="Negative for a loss." />
+        <Field name="stcg" label="Net short-term gain" value="0" />
+      </Fieldset>
+      <Fieldset legend="Deductions and payments">
+        <Field name="adj" label="Other adjustments" value="0" hint="IRA, HSA, student loan interest." />
+        <Field name="itemized" label="Itemized deductions" value="0" hint="Leave 0 to take the standard." />
+        <Field name="withholding" label="Federal tax withheld" value="9000" />
+        <Field name="estimates" label="Estimated payments" value="0" />
+      </Fieldset>
+      <div class="flex items-center justify-between gap-3">
+        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
+      </div>
+    </form>
+
+    <div class="grid min-w-0 grid-cols-1 gap-4 lg:sticky lg:top-[76px]">
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <Stat label="Result" out="balanceLabel" tone="accent" sub="" subOut="balanceSub" />
+        <Stat label="Total tax" out="totalTax" subOut="taxable" />
+        <Stat label="Effective rate" out="effective" sub="of total income" />
+        <Stat label="Marginal rate" out="marginal" subOut="bracket" />
+      </div>
+
+      <div class="rounded-lg border border-border bg-panel p-4">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="text-[13px] font-semibold text-fg">Bracket fill</h2>
+          <span class="font-mono text-[11px] text-fg-faint">ordinary taxable income by rate · <span data-out="ordinary"></span></span>
+        </div>
+        <div data-fill class="mt-3 flex h-7 w-full gap-[2px] overflow-hidden rounded-sm"></div>
+        <div data-fill-legend class="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4"></div>
+      </div>
+
+      <div class="rounded-lg border border-border bg-panel p-4">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="text-[13px] font-semibold text-fg">Effective income-tax rate by taxable income</h2>
+          <span class="font-mono text-[11px] text-fg-faint">shaded bands = brackets · hover for values</span>
+        </div>
+        <div data-curve class="mt-3"></div>
+      </div>
+
+      <Workpaper title="Form 1040 — federal estimate" subtitle="Tax year 2026" code="WP-1040" id="wp" />
+    </div>
+  </div>
+
+  <Fragment slot="formulas">
+    <Formula title="Progressive tax (1040 L16)" plain="tax(T) = sum over brackets of r_i times max(0, min(T, f_(i+1)) minus f_i)" note="f are the bracket floors and r the rates from Rev. Proc. 2025-32 §4.01. Below $100,000 the Tax Table evaluates this at the midpoint of a $50 row.">
+      <math display="block"><mrow><mi>tax</mi><mo>(</mo><mi>T</mi><mo>)</mo><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder><msub><mi>r</mi><mi>i</mi></msub><mo>·</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>min</mi><mo>(</mo><mi>T</mi><mo>,</mo><msub><mi>f</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>)</mo><mo>−</mo><msub><mi>f</mi><mi>i</mi></msub><mo>)</mo></mrow></math>
+    </Formula>
+    <Formula title="Taxable income (1040 L15)" plain="T = max(0, AGI minus max(standard, itemized) minus QBI)" note="AGI = total income − ½ SE tax − other adjustments. QBI is the §199A deduction, limited to 20% of taxable income before it, less net capital gain.">
+      <math display="block"><mrow><mi>T</mi><mo>=</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>AGI</mi><mo>−</mo><mi>max</mi><mo>(</mo><msub><mi>D</mi><mi>std</mi></msub><mo>,</mo><msub><mi>D</mi><mi>item</mi></msub><mo>)</mo><mo>−</mo><mi>QBI</mi><mo>)</mo></mrow></math>
+    </Formula>
+    <Formula title="Preferential income stacking" plain="z = max(0, min(T, cap0) minus O); f = max(0, min(T, cap15) minus O minus z); tax = tax(O) + 0.15 f + 0.20 (P minus z minus f)" note="P = qualified dividends + net long-term gain, O = T − P. The result is capped at the regular tax on T.">
+      <math display="block"><mrow><mi>tax</mi><mo>=</mo><mi>tax</mi><mo>(</mo><mi>O</mi><mo>)</mo><mo>+</mo><mn>0.15</mn><mo>·</mo><msub><mi>P</mi><mn>15</mn></msub><mo>+</mo><mn>0.20</mn><mo>·</mo><msub><mi>P</mi><mn>20</mn></msub><mo>,</mo><mspace width="0.6em"/><msub><mi>P</mi><mn>15</mn></msub><mo>=</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>min</mi><mo>(</mo><mi>T</mi><mo>,</mo><msub><mi>c</mi><mn>15</mn></msub><mo>)</mo><mo>−</mo><mi>O</mi><mo>−</mo><msub><mi>P</mi><mn>0</mn></msub><mo>)</mo></mrow></math>
+    </Formula>
+    <Formula title="True marginal rate" plain="m = (L(I + 100) minus L(I)) / 100" note="L is net liability (total tax less refundable credits) from a full recomputation. It captures phase-outs and limits a bracket table cannot.">
+      <math display="block"><mrow><mi>m</mi><mo>=</mo><mfrac><mrow><mi>L</mi><mo>(</mo><mi>I</mi><mo>+</mo><mn>100</mn><mo>)</mo><mo>−</mo><mi>L</mi><mo>(</mo><mi>I</mi><mo>)</mo></mrow><mn>100</mn></mfrac></mrow></math>
+    </Formula>
+  </Fragment>
+</ToolShell>
+
+<script>
+  import { TY2026, computeReturn, fmtPct, fmtUsd, scheduleTax, type FilingStatus, type ReturnResult } from '@taxline/tax-engine';
+  import { bindCalculator, num } from '../../lib/tools/form';
+  import { h, renderTrace, setOutputs, setTone, traceToText, wireCopy } from '../../lib/tools/render';
+  import { compactUsd, lineChart, onResize } from '../../lib/tools/charts';
+
+  const form = document.getElementById('calc') as HTMLFormElement;
+  const fill = document.querySelector<HTMLElement>('[data-fill]')!;
+  const legend = document.querySelector<HTMLElement>('[data-fill-legend]')!;
+  const curve = document.querySelector<HTMLElement>('[data-curve]')!;
+  let last: { r: ReturnResult; status: FilingStatus } | null = null;
+
+  function drawFill(r: ReturnResult) {
+    fill.replaceChildren();
+    legend.replaceChildren();
+    const used = r.slices.filter((x) => x.amount > 0);
+    const total = used.reduce((a, x) => a + x.amount, 0);
+    if (total === 0) {
+      fill.append(h('div', 'h-full w-full bg-inset'));
+    }
+    r.slices.forEach((x, i) => {
+      const weight = (i + 1) / r.slices.length;
+      if (x.amount > 0) {
+        const seg = h('div', 'h-full', undefined, { title: `${fmtPct(x.rate, 0)}: ${fmtUsd(x.amount)} taxed ${fmtUsd(x.tax)}` });
+        seg.style.flex = `${x.amount} 0 0`;
+        seg.style.background = 'var(--color-accent)';
+        seg.style.opacity = String(0.25 + weight * 0.75);
+        fill.append(seg);
+      }
+      const row = h('div', 'flex items-center gap-2 font-mono text-[11px]');
+      const sw = h('span', 'size-2.5 shrink-0 rounded-[2px]');
+      sw.style.background = x.amount > 0 ? 'var(--color-accent)' : 'var(--color-border)';
+      sw.style.opacity = x.amount > 0 ? String(0.25 + weight * 0.75) : '1';
+      row.append(sw, h('span', x.amount > 0 ? 'text-fg' : 'text-fg-faint', fmtPct(x.rate, 0)), h('span', 'text-fg-muted', x.amount > 0 ? fmtUsd(x.tax) : '—'));
+      legend.append(row);
+    });
+  }
+
+  function drawCurve() {
+    if (!last) return;
+    const { r, status } = last;
+    const b = TY2026.brackets[status];
+    const xMax = Math.max(250_000, Math.ceil((r.preferential.ordinary * 1.6) / 50_000) * 50_000);
+    const pts: [number, number][] = [];
+    for (let k = 1; k <= 160; k++) {
+      const t = (xMax * k) / 160;
+      pts.push([t, scheduleTax(t, b) / t]);
+    }
+    const bands = b.map((x, i) => ({ from: x.floor, to: b[i + 1]?.floor ?? xMax, label: fmtPct(x.rate, 0), weight: (i + 1) / b.length }));
+    const you = Math.max(r.preferential.ordinary, xMax / 160);
+    lineChart(curve, {
+      label: 'Effective income-tax rate by taxable income',
+      points: pts,
+      bands,
+      xFmt: compactUsd,
+      yFmt: (y) => `${Math.round(y * 100)}%`,
+      marker: r.preferential.ordinary > 0 ? { x: you, label: `you · ${fmtPct(scheduleTax(you, b) / you)}` } : undefined,
+      tipLines: (p) => [`${fmtPct(p[1])} effective`, `${fmtUsd(p[0])} taxable · tax ${fmtUsd(scheduleTax(p[0], b))}`],
+    });
+  }
+
+  bindCalculator(form, (v) => {
+    const status = String(v.status) as FilingStatus;
+    const r = computeReturn({
+      status,
+      children: num(v.children),
+      wages: num(v.wages),
+      selfEmploymentProfit: num(v.se),
+      otherIncome: num(v.other),
+      sstb: Boolean(v.sstb),
+      interest: num(v.interest),
+      ordinaryDividends: Math.max(num(v.ordDiv), num(v.qualDiv)),
+      qualifiedDividends: num(v.qualDiv),
+      longTermGain: num(v.ltcg),
+      shortTermGain: num(v.stcg),
+      adjustments: num(v.adj),
+      itemized: num(v.itemized),
+      federalWithholding: num(v.withholding),
+      estimatedPayments: num(v.estimates),
+    });
+    last = { r, status };
+    setOutputs(document, {
+      balanceLabel: fmtUsd(Math.abs(r.balance)),
+      balanceSub: r.balance >= 0 ? 'refund' : 'balance due',
+      totalTax: fmtUsd(r.totalTax),
+      taxable: `taxable ${fmtUsd(r.taxable)}`,
+      effective: fmtPct(r.effectiveRate),
+      marginal: fmtPct(r.marginalRate),
+      bracket: `bracket ${fmtPct(r.bracketRate, 0)}`,
+      ordinary: fmtUsd(r.preferential.ordinary),
+    });
+    setTone(document, 'balanceLabel', r.balance >= 0 ? 'ok' : 'warn');
+    renderTrace(document.querySelector('[data-trace="wp"]')!, r.lines);
+    drawFill(r);
+    drawCurve();
+  });
+
+  onResize(curve, drawCurve);
+  wireCopy(document.querySelector('[data-copy="wp"]'), () => (last ? traceToText('Form 1040 — federal estimate, TY2026', last.r.lines) : ''));
+</script>
