@@ -19,7 +19,8 @@ accountants" or "fully autonomous".
 ## Repository map
 
 ```
-site/               Astro 5 static site — marketing + the product app shell (the GUI)
+site/               Astro 5 static site — marketing, free calculators (/tools), the product app shell (the GUI)
+packages/tax-engine/ Deterministic federal tax math (TY2026), shared by site + service — pure TS, no deps
 service/            Node + TypeScript agent fleet (Anthropic SDK) — the backend
 knowledge-base/     Markdown corpus (tax/ + practices/) + manifest.json + ingest/
 workers/contact/    Cloudflare Worker — the demo/contact form backend
@@ -40,7 +41,8 @@ npm run dev            # Astro dev server → http://localhost:4321
 npm run dev:service    # agent fleet     → http://localhost:8787
 npm run build          # static build    → site/dist (fingerprinted assets in _assets/)
 npm run check          # astro check (typecheck .astro)
-npm run typecheck      # site + service + worker typecheck
+npm run typecheck      # site + tax-engine + service + worker typecheck
+npm test               # tax-engine unit tests (node:test via tsx)
 npm run lint           # eslint (flat config)
 npm run format         # prettier --write
 npm run refresh-kb     # re-review the knowledge base + restamp the manifest
@@ -50,7 +52,7 @@ npm run refresh-kb     # re-review the knowledge base + restamp the manifest
 inside each. The service needs `service/.env` → `ANTHROPIC_API_KEY`; without it the
 fleet stays offline-deterministic.
 
-**Full validation before completion:** `npm run check && npm run lint && npm run typecheck`
+**Full validation before completion:** `npm run check && npm run lint && npm run typecheck && npm test`
 
 ## Deployment
 
@@ -84,6 +86,19 @@ fleet stays offline-deterministic.
   (`errorCategory` / `isRetryable`); a **programmatic** `requireHumanApproval` gate
   (not a prompt); nullable tool-output fields to prevent fabrication; provenance and
   confidence preserved; confidence `<0.85` routes to human review.
+- **The math is code, never a prompt.** `packages/tax-engine` holds every tax
+  computation (Form 1040 path, Schedule SE, §6654 safe harbor, §179/bonus/MACRS,
+  practice ROI). Indexed figures live only in `src/years/2026.ts`, each cited to
+  Rev. Proc. 2025-32 / SSA / Pub 946 — add a year as data, not code. Every result is a
+  `Trace` (value, operands, form line, authority). The site's `/tools/*` calculators
+  import it directly; the Workpaper agent reaches it through the `compute_tax` tool
+  (`service/src/tools/tax-calc.ts`, imported by relative path; the Dockerfile copies
+  `packages/tax-engine/src`). Test expectations are worked by hand from the IRS
+  tables, never copied from engine output.
+- **SEO lives in `Base.astro` + `lib/seo.ts`.** Canonical/OG/Twitter tags and one JSON-LD
+  `@graph` per page (pages pass extra nodes via `schema`). `sitemap.xml`, `robots.txt`,
+  and `llms.txt` are generated endpoints in `site/src/pages/`; the sitemap derives from
+  the pages directory and excludes `app/*` (the demo app is `noindex`).
 - **Knowledge base** is retrieved over by the Research agent
   (`service/src/kb/retrieve.ts`), which delegates to the **vector memory**
   (`service/src/memory/`, cosine over a persistent flat-file store) with a

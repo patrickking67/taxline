@@ -7,7 +7,9 @@ This is an npm-workspaces monorepo. The site is static-first and honest about Gi
 
 ```
 taxline/
-├── site/              # Astro 5 static site — marketing + the product app shell (the GUI)
+├── site/              # Astro 5 static site — marketing, free calculators, the product app shell (the GUI)
+├── packages/
+│   └── tax-engine/    # deterministic 2026 federal tax math, shared by site + service (tested)
 ├── service/           # Node + TS agent fleet (Anthropic SDK) — runnable with an API key
 ├── knowledge-base/    # markdown corpus (tax/ + practices/) + manifest.json + ingest/
 ├── workers/contact/   # Cloudflare Worker — the demo/contact form backend
@@ -23,11 +25,24 @@ npm run dev          # Astro dev server → http://localhost:4321
 npm run build        # static build → site/dist  (fingerprinted assets in _assets/)
 npm run check        # astro check (typecheck)
 npm run lint         # eslint (flat config, whole repo)
-npm run typecheck    # astro check + service + worker
+npm run typecheck    # astro check + tax-engine + service + worker
+npm test             # tax-engine unit tests (hand-worked from the IRS tables)
 npm run format       # prettier --write
 ```
 
 The product app is at **`/app`** (intake queue → document → extraction review → approve). It is GUI-first; no command line is required to use the product.
+
+### Free calculators and the tax engine
+
+`/tools` hosts five calculators — federal income tax (Form 1040 path), self-employment tax,
+estimated tax safe harbor, depreciation (§179 / bonus / MACRS with tax-shield PV), and
+practice ROI (payback, NPV, IRR). Each runs in the browser on `@taxline/tax-engine` and
+renders a cited, line-by-line workpaper; inputs sync to the URL so results are shareable.
+
+The engine is the same code the Workpaper agent calls through `compute_tax`, so the model
+never does arithmetic. Every 2026 figure is transcribed from IRS Rev. Proc. 2025-32 (plus the
+SSA wage base and Pub 946) in `packages/tax-engine/src/years/2026.ts`. `/methodology`
+documents rounding, sources, testing, and the confidence-routing math.
 
 ### Agent fleet (backend)
 

@@ -21,6 +21,20 @@ jobs:
       - run: npm run check --workspace site
       - run: npm run build --workspace site
 
+  engine:
+    name: Tax engine — test + typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm --prefix packages/tax-engine run typecheck
+
   lint:
     name: Lint (eslint)
     runs-on: ubuntu-latest

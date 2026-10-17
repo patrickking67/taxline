@@ -16,4 +16,5 @@ Critical non-negotiables (repeated here because they must be direct):
 
 Before completion:
 
-- Run `npm run check`, `npm run lint`, and `npm run typecheck`.
+- Run `npm run check`, `npm run lint`, `npm run typecheck`, and `npm test`.
+- Tax figures are computed only in `packages/tax-engine`; never hardcode tax math elsewhere.

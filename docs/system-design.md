@@ -129,6 +129,9 @@ fleet/Worker is a rebuild, not a code change.
   never committed. `ANTHROPIC_API_KEY`, `VOYAGE/OPENAI_API_KEY`, `SLACK_WEBHOOK`.
 - **CORS** on both backends is restricted to the site origin (`SITE_ORIGIN` /
   `ALLOWED_ORIGIN`).
+- **Deterministic math**: the Workpaper agent's `compute_tax` tool runs `packages/tax-engine`
+  (the same code as the site's `/tools` calculators) and returns a cited trace; agents never
+  compute tax figures in a prompt.
 - **Least privilege**: each agent gets only the tools its role needs; tool descriptions are
   the selection mechanism.
 - **No training on client data**; documents stay in the workspace; no autonomous filing.
