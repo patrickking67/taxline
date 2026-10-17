@@ -20,6 +20,8 @@ export default [
       '**/.data/**',
       '**/.wrangler/**',
       'site/astro.config.mjs',
+      'cms/astro.config.mjs',
+      'cms/emdash-env.d.ts',
       'eslint.config.js',
     ],
   },
@@ -28,7 +30,7 @@ export default [
   ...astro.configs.recommended,
   {
     // Backend + tooling: Node runtime, console logging is expected.
-    files: ['service/**/*.ts', 'workers/**/*.ts', 'knowledge-base/**/*.ts'],
+    files: ['service/**/*.ts', 'workers/**/*.ts', 'knowledge-base/**/*.ts', 'scripts/**/*.mjs', 'packages/**/*.ts'],
     languageOptions: { globals: globals.node },
     rules: { 'no-console': 'off' },
   },

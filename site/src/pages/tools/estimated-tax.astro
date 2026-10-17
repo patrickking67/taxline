@@ -1,0 +1,150 @@
+---
+import ToolShell from '../../components/tools/ToolShell.astro';
+import Field from '../../components/tools/Field.astro';
+import Fieldset from '../../components/tools/Fieldset.astro';
+import Stat from '../../components/tools/Stat.astro';
+import Workpaper from '../../components/tools/Workpaper.astro';
+import Formula from '../../components/tools/Formula.astro';
+import { FILING_STATUSES } from '@taxline/tax-engine';
+import { u } from '../../lib/url';
+
+const statuses = FILING_STATUSES.map((s) => ({ value: s.key, label: s.label }));
+
+const faqs = [
+  {
+    q: 'When are 2026 estimated tax payments due?',
+    a: 'April 15, 2026; June 15, 2026; September 15, 2026; and January 15, 2027. A date that falls on a weekend or legal holiday moves to the next business day.',
+  },
+  {
+    q: 'What is the estimated tax safe harbor?',
+    a: 'You generally avoid the underpayment penalty if withholding plus timely estimates cover the smaller of 90% of this year’s tax or 100% of last year’s tax. If last year’s AGI was over $150,000 ($75,000 married filing separately), the prior-year test is 110% (IRC §6654(d)).',
+  },
+  {
+    q: 'Do I have to pay estimated tax?',
+    a: 'Not if this year’s tax after withholding is under $1,000, or if you had no tax liability for a full 12-month prior year. Otherwise, pay enough in four installments to meet the safe harbor.',
+  },
+  {
+    q: 'Is it better to use the prior-year or current-year test?',
+    a: 'The prior-year test is certain: you know last year’s tax today. The current-year test is cheaper when income falls, but it depends on an estimate. The calculator shows both and uses the smaller.',
+  },
+  {
+    q: 'Why does withholding count differently from estimates?',
+    a: 'Withholding is treated as paid evenly through the year unless you elect otherwise, so extra withholding in December can cover an earlier shortfall. An estimate counts only from the day it is paid.',
+  },
+];
+
+const limits = [
+  'The annualized income installment method (Form 2210 Schedule AI)',
+  'The underpayment penalty amount (interest at the federal short-term rate + 3%)',
+  'Farmers and fishermen (66⅔% test, single January 15 payment)',
+  'State estimated tax',
+];
+---
+
+<ToolShell
+  slug="estimated-tax"
+  title="2026 Estimated Tax Calculator: safe harbor and 1040-ES due dates | Taxline"
+  description="Find the 2026 estimated tax you need to pay to avoid the underpayment penalty. Applies the 90% / 100% / 110% safe harbor and splits it into the four 1040-ES installments with due dates."
+  h1="2026 estimated tax calculator"
+  lead="The smallest amount that keeps you clear of the underpayment penalty, and how to split it across the four 1040-ES due dates."
+  faqs={faqs}
+  limits={limits}
+>
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+    <form id="calc" class="grid gap-4" autocomplete="off">
+      <Fieldset legend="This year (2026)">
+        <Field name="status" label="Filing status" kind="select" options={statuses} value="single" class="sm:col-span-2" />
+        <Field name="tax" label="Expected total tax" value="32000" hint="Form 1040 line 24." />
+        <Field name="withholding" label="Expected withholding" value="6000" />
+        <Field name="paid" label="Estimates paid so far" value="0" class="sm:col-span-2" hint="Applied to installments in order." />
+      </Fieldset>
+      <Fieldset legend="Last year (2025)">
+        <Field name="priorTax" label="Total tax" value="26000" />
+        <Field name="priorAgi" label="Adjusted gross income" value="165000" />
+        <Field name="priorFull" label="Filed a full 12-month return" kind="toggle" checked class="sm:col-span-2" />
+      </Fieldset>
+      <p class="text-[12px] leading-relaxed text-fg-faint">
+        Not sure of this year’s tax? Run the <a class="text-accent hover:text-accent-hover" href={u('tools/income-tax')}>income tax calculator</a> and use its total tax.
+      </p>
+      <div class="flex items-center justify-between gap-3">
+        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
+      </div>
+    </form>
+
+    <div class="grid min-w-0 grid-cols-1 gap-4 lg:sticky lg:top-[76px]">
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <Stat label="Pay through estimates" out="due" tone="accent" subOut="reason" />
+        <Stat label="Per installment" out="per" sub="four equal payments" />
+        <Stat label="Safe harbor" out="safe" subOut="basis" />
+        <Stat label="Still to pay" out="remaining" subOut="next" />
+      </div>
+      <div class="rounded-lg border border-border bg-panel p-4">
+        <h2 class="text-[13px] font-semibold text-fg">1040-ES installments</h2>
+        <ol data-timeline class="mt-4 grid gap-3 sm:grid-cols-4"></ol>
+      </div>
+      <Workpaper title="Form 1040-ES: required annual payment" subtitle="Tax year 2026 · IRC §6654(d)" code="WP-ES" id="wp" />
+    </div>
+  </div>
+
+  <Fragment slot="formulas">
+    <Formula title="Safe harbor (1040-ES L12c)" plain="R = min(0.90 T_2026, k T_2025), k = 1.10 if AGI_2025 > 150,000 else 1.00" note="The prior-year test applies only when last year was a full 12-month return. MFS uses a $75,000 AGI threshold.">
+      <math display="block"><mrow><mi>R</mi><mo>=</mo><mi>min</mi><mo>(</mo><mn>0.90</mn><mo>·</mo><msub><mi>T</mi><mn>2026</mn></msub><mo>,</mo><mi>k</mi><mo>·</mo><msub><mi>T</mi><mn>2025</mn></msub><mo>)</mo><mo>,</mo><mspace width="0.6em"/><mi>k</mi><mo>=</mo><mrow><mo>&#123;</mo><mtable columnalign="left left" columnspacing="1.2em" rowspacing="0.4em"><mtr><mtd><mn>1.10</mn></mtd><mtd><msub><mi>AGI</mi><mn>2025</mn></msub><mo>&gt;</mo><mn>150,000</mn></mtd></mtr><mtr><mtd><mn>1.00</mn></mtd><mtd><mtext>otherwise</mtext></mtd></mtr></mtable></mrow></mrow></math>
+    </Formula>
+    <Formula title="Installments" plain="E = max(0, R minus W); q_i = E / 4" note="W = expected withholding. The fourth installment absorbs rounding so the four sum to E exactly. No estimates are required when T − W < $1,000.">
+      <math display="block"><mrow><mi>E</mi><mo>=</mo><msup><mrow><mo>(</mo><mi>R</mi><mo>−</mo><mi>W</mi><mo>)</mo></mrow><mo>+</mo></msup><mo>,</mo><mspace width="0.6em"/><msub><mi>q</mi><mi>i</mi></msub><mo>=</mo><mfrac><mi>E</mi><mn>4</mn></mfrac></mrow></math>
+    </Formula>
+  </Fragment>
+</ToolShell>
+
+<script>
+  import { estimatedTax, fmtUsd, type EstimatedResult, type FilingStatus } from '@taxline/tax-engine';
+  import { bindCalculator, num } from '../../lib/tools/form';
+  import { h, renderTrace, setOutputs, traceToText, wireCopy } from '../../lib/tools/render';
+
+  const form = document.getElementById('calc') as HTMLFormElement;
+  const timeline = document.querySelector<HTMLElement>('[data-timeline]')!;
+  const today = new Date().toISOString().slice(0, 10);
+  const longDate = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  let last: EstimatedResult | null = null;
+
+  bindCalculator(form, (v) => {
+    const r = estimatedTax({
+      status: String(v.status) as FilingStatus,
+      currentYearTax: num(v.tax),
+      withholding: num(v.withholding),
+      priorYearTax: num(v.priorTax),
+      priorYearAgi: num(v.priorAgi),
+      priorYearFull: Boolean(v.priorFull),
+      paidToDate: num(v.paid),
+    });
+    last = r;
+    const remaining = r.installments.reduce((s, x) => s + x.remaining, 0);
+    const next = r.installments.find((x) => x.remaining > 0 && x.due >= today);
+    setOutputs(document, {
+      due: fmtUsd(r.dueFromEstimates),
+      reason: r.required ? 'to meet the safe harbor' : r.reason,
+      per: fmtUsd(r.installments[0]?.amount ?? 0),
+      safe: fmtUsd(r.safeHarbor),
+      basis: r.basis === 'prior-year' ? 'prior-year test' : r.basis === 'current-year' ? '90% current-year test' : 'not required',
+      remaining: fmtUsd(remaining),
+      next: next ? `next ${longDate(next.due)}` : remaining > 0 ? 'past due — pay now' : 'all covered',
+    });
+
+    timeline.replaceChildren();
+    for (const x of r.installments) {
+      const past = x.due < today;
+      const state = x.amount === 0 ? 'none' : x.remaining === 0 ? 'paid' : past ? 'late' : 'open';
+      const li = h('li', `rounded-md border p-3 ${state === 'late' ? 'border-warn/50' : state === 'paid' ? 'border-accent-line' : 'border-border'} bg-base`);
+      li.append(
+        h('div', 'font-mono text-[10px] uppercase tracking-[0.14em] text-fg-faint', `Q${x.n} · ${longDate(x.due)}`),
+        h('div', 'mt-1.5 font-mono text-[17px] font-semibold tabular-nums text-fg', fmtUsd(x.amount)),
+        h('div', `mt-1 font-mono text-[11px] ${state === 'late' ? 'text-warn-bright' : state === 'paid' ? 'text-ok-bright' : 'text-fg-muted'}`,
+          state === 'none' ? 'nothing due' : state === 'paid' ? 'paid' : state === 'late' ? `due date passed · ${fmtUsd(x.remaining)} open` : `${fmtUsd(x.remaining)} open`),
+      );
+      timeline.append(li);
+    }
+    renderTrace(document.querySelector('[data-trace="wp"]')!, r.trace, { showZero: true });
+  });
+  wireCopy(document.querySelector('[data-copy="wp"]'), () => (last ? traceToText('Form 1040-ES — TY2026', last.trace) : ''));
+</script>

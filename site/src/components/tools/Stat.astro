@@ -1,0 +1,11 @@
+---
+// A headline figure. The value is filled client-side through data-out.
+interface Props { label: string; out: string; sub?: string; subOut?: string; tone?: 'default' | 'accent'; class?: string }
+const { label, out, sub, subOut, tone = 'default', class: cls = '' } = Astro.props;
+---
+
+<div class:list={['min-w-0 rounded-lg border bg-panel px-4 py-3.5', tone === 'accent' ? 'border-accent-line' : 'border-border', cls]}>
+  <div class="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-fg-faint">{label}</div>
+  <div data-out={out} aria-live="polite" class:list={['mt-1.5 font-mono text-[22px] font-semibold leading-none tabular-nums', tone === 'accent' ? 'text-ok-bright' : 'text-fg']}>—</div>
+  {(sub || subOut) && <div class="mt-1.5 text-[12px] text-fg-muted">{sub}{subOut && <span data-out={subOut} class="font-mono" />}</div>}
+</div>

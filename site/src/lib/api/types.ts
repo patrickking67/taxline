@@ -125,6 +125,10 @@ export interface MemoryHit {
   score: number;
 }
 
+/** Plain-English intake result: validated, confidence-scored calculator inputs. */
+import type { ScenarioExtraction } from '@taxline/tax-engine';
+export type { ScenarioExtraction, ScenarioField } from '@taxline/tax-engine';
+
 export interface FleetService {
   readonly name: string;
   /** Liveness + config snapshot (no secrets). */
@@ -137,4 +141,10 @@ export interface FleetService {
   run(input: RunInput): Promise<RunResult>;
   /** Cosine search over the vector memory (indexed KB + approved findings). */
   memorySearch(query: string, k?: number): Promise<MemoryHit[]>;
+  /**
+   * Describe a tax situation in plain English → calculator inputs, each with a
+   * confidence and an evidence quote checked against the text. Never applied
+   * automatically: the person approves which fields to use.
+   */
+  scenario(text: string): Promise<ScenarioExtraction>;
 }

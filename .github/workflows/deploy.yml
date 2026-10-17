@@ -36,6 +36,15 @@ jobs:
 
       - run: npm ci
 
+      # Refresh Insights from the EmDash CMS when the repository variable
+      # EMDASH_URL is set. Without it (or if the CMS is unreachable) the build
+      # uses the committed snapshot, so a CMS outage never blocks a deploy.
+      - name: Pull Insights from EmDash (optional)
+        continue-on-error: true
+        env:
+          EMDASH_URL: ${{ vars.EMDASH_URL }}
+        run: node scripts/pull-insights.mjs
+
       - name: Build
         env:
           SITE_URL: 'https://patrickking67.github.io'

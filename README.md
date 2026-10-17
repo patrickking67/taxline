@@ -1,83 +1,117 @@
 # Taxline
 
-**Agentic tax operations — from intake to reviewer-ready workpapers.**
-A fleet of five AI agents (Intake · Extraction · Research · Workpaper · Compliance) works behind an orchestrator to remove manual tax operations for firms, businesses, and solo preparers — with a confidence score and a citation on every field, and **a human approving before anything ships.**
+**Agentic tax operations with a tested engine and a human in the loop.**
 
-This is an npm-workspaces monorepo. The site is static-first and honest about GitHub Pages: **Pages serves static files only — no server runs there.** The backend is a separate Node service the site talks to through an adapter boundary.
+Five AI agents move tax work from a pile of documents to a reviewer-ready workpaper. Every extracted field carries a confidence score and a citation. Every number comes from a deterministic, unit-tested 2026 tax engine, not from a model. Anything uncertain routes to a person, and nothing ships until someone approves it.
 
+[![CI](https://github.com/patrickking67/taxline/actions/workflows/ci.yml/badge.svg)](https://github.com/patrickking67/taxline/actions/workflows/ci.yml)
+[![Deploy](https://github.com/patrickking67/taxline/actions/workflows/deploy.yml/badge.svg)](https://github.com/patrickking67/taxline/actions/workflows/deploy.yml)
+
+**Live site:** [patrickking67.github.io/taxline](https://patrickking67.github.io/taxline/) · [Calculators](https://patrickking67.github.io/taxline/tools/) · [Product console](https://patrickking67.github.io/taxline/app/) · [Methodology](https://patrickking67.github.io/taxline/methodology/)
+
+---
+
+## What is in the box
+
+| Piece | What it does | Where |
+| --- | --- | --- |
+| **Agent fleet** | Relay (intake), Lens (extraction), Atlas (research), Ledger (workpapers), and Sentry (compliance) behind a hub-and-spoke orchestrator on the Anthropic API. The agentic loop stops on `stop_reason`, errors are structured, and `requireHumanApproval` is a code gate. | `service/` |
+| **Tax engine** | Pure TypeScript for tax year 2026. Covers the Form 1040 path (Tax Table midpoint rule, capital-gains worksheet, QBI with phase-in and SSTB, CTC/ACTC), Schedule SE, NIIT, Additional Medicare, the §6654 safe harbor, §179/bonus/MACRS, S-corp vs. sole prop, and practice ROI (NPV, IRR, payback). Every result is a trace: value, operands, form line, and IRS authority. | `packages/tax-engine/` |
+| **AI intake** | Describe your situation in plain English and get calculator inputs back. Claude extracts each figure with an exact evidence quote; code then checks that the quote is in your text and states the amount. Fields under 0.85 confidence stay unchecked until you approve them. | `service/src/scenario.ts`, `packages/tax-engine/src/scenario.ts` |
+| **Free calculators** | Six tools: income tax, self-employment tax, estimated tax, S-corp election, depreciation, and firm ROI. Each one recomputes live, keeps its state in the URL, has SVG charts, typesets its formulas in MathML, and produces a copyable cited workpaper. | `site/src/pages/tools/` |
+| **Product console** | Intake queue, extraction review with confidence meters, a gated `compute_tax` preview, research, workpapers, and compliance. Fully functional on static hosting through an offline adapter. | `site/src/pages/app/` |
+| **CMS** | [EmDash](https://github.com/emdash-cms/emdash) (Astro, SQLite locally, D1/R2 on Cloudflare) for Insights articles. The static site pulls published entries at build time and falls back to a committed snapshot. | `cms/`, `scripts/pull-insights.mjs` |
+| **Contact Worker** | Cloudflare Worker for demo requests, with honeypot and email validation. | `workers/contact/` |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Static["GitHub Pages (static)"]
+    Site["Astro site<br/>marketing · /tools · /app · /insights"]
+  end
+  subgraph Engine["@taxline/tax-engine"]
+    TE["pure functions<br/>TY2026 tables · cited traces"]
+  end
+  subgraph Service["Node service (Fly.io)"]
+    O["Conductor<br/>orchestrator"] --> A["5 agents"]
+    A -->|compute_tax| TE
+    S["/scenario<br/>Claude tool use"] -->|validateScenario| TE
+  end
+  CMS["EmDash CMS<br/>SQLite or D1 + R2"] -->|"/api/insights.json<br/>at build time"| Site
+  Site -->|imports| TE
+  Site -->|"adapter: mock or service"| Service
+  Site -->|contact| W["Cloudflare Worker"]
 ```
-taxline/
-├── site/              # Astro 5 static site — marketing + the product app shell (the GUI)
-├── service/           # Node + TS agent fleet (Anthropic SDK) — runnable with an API key
-├── knowledge-base/    # markdown corpus (tax/ + practices/) + manifest.json + ingest/
-├── workers/contact/   # Cloudflare Worker — the demo/contact form backend
-├── .github/workflows/ # deploy.yml (→ GitHub Pages) + ci.yml
-└── docs/              # design.md (spec) + design-contract.md (page-build rules)
-```
+
+**The site never assumes a server exists.** `site/src/lib/api/` has two seams (`fleet` and `api`). Both default to offline implementations, so every page works on static Pages, and any backend that honors the contract drops in through environment variables.
+
+## Design principles
+
+- **Models draft, code computes, people approve.** No tax figure is produced by a prompt. The Workpaper agent calls `compute_tax` and quotes its trace.
+- **Verify model output in code.** Extraction results are validated before they reach the calculator: known key, typed value, and an evidence quote that must appear in the input and state the value. Failures are capped below the review threshold with the reason attached, never dropped silently.
+- **Cite everything.** Every 2026 figure lives in `packages/tax-engine/src/years/2026.ts` with its source, transcribed from [Rev. Proc. 2025-32](https://www.irs.gov/pub/irs-drop/rp-25-32.pdf), the SSA wage base, and Pub 946.
+- **Test against the source, not the implementation.** Expected values are worked by hand from the IRS tables. The MACRS table is re-derived from first principles, and the S-corp comparison is checked line by line.
+- **Confidence below 0.85 routes to a person.** The same threshold applies in the service, the offline demo, the intake panel, and the app.
 
 ## Quick start
 
 ```bash
-npm install          # installs the site workspace
-npm run dev          # Astro dev server → http://localhost:4321
-npm run build        # static build → site/dist  (fingerprinted assets in _assets/)
-npm run check        # astro check (typecheck)
-npm run lint         # eslint (flat config, whole repo)
-npm run typecheck    # astro check + service + worker
-npm run format       # prettier --write
+npm install            # site + tax-engine workspaces + lint toolchain
+npm run dev            # site            http://localhost:4321
+npm run dev:service    # agent fleet     http://localhost:8787  (cd service && npm install first)
+npm run dev:cms        # EmDash CMS      http://localhost:4322/_emdash/admin  (cd cms && npm install && npm run seed first)
 ```
 
-The product app is at **`/app`** (intake queue → document → extraction review → approve). It is GUI-first; no command line is required to use the product.
-
-### Agent fleet (backend)
+Validate everything before a commit:
 
 ```bash
-cd service
-cp .env.example .env          # add ANTHROPIC_API_KEY
-npm install
-npm run dev                   # JSON API → http://localhost:8787
+npm run check && npm run lint && npm run typecheck && npm test
 ```
 
-Five agents behind an orchestrator, retrieving over `knowledge-base/`. Architecture is deliberate (agentic loop on `stop_reason`, hub-and-spoke, structured errors, a programmatic human-approval gate, no fabrication, confidence→human routing) — see `.claude/rules/agent-architecture.md`. The service can't run on static Pages; deploy it as a Node service or port tool-light calls to a Worker (see `service/README.md`).
+The service reads `service/.env` (`ANTHROPIC_API_KEY`). Without a key, the fleet and the `/scenario` endpoint run in a clearly labeled deterministic offline mode.
 
-## Backend adapter boundary
+## Using the engine
 
-`site/src/lib/api/` is the seam between the static frontend and any backend. There are **two
-independent seams**, both defaulting to a fully offline mock so the site works with no server:
+```ts
+import { computeReturn, compareEntity } from '@taxline/tax-engine';
 
-**`fleet`** — the agent backend (queue · document · run · memory search):
+const r = computeReturn({ status: 'mfj', wages: 142_000, selfEmploymentProfit: 38_000, children: 2, federalWithholding: 16_500 });
+r.totalTax;        // 20764.74
+r.marginalRate;    // true marginal rate from a full recompute, not just the bracket
+r.lines;           // [{ ref: '1040 L15', label: 'Taxable income', formula: '…', authority: {…} }, …]
 
-| Adapter | When | Config |
-| --- | --- | --- |
-| `mockFleet` (default) | static Pages, offline, demos — simulates the orchestrator **and the human-approval gate** in the browser | none |
-| `serviceFleet` | the real Node fleet (`service/`) | `PUBLIC_API_ADAPTER`≠`mock` + `PUBLIC_SERVICE_ENDPOINT=<service url>` |
+compareEntity({ status: 'single', profit: 150_000, salary: 60_000, overhead: 2_000 }).savings; // 7275.61
+```
 
-**`api`** — the demo/contact form:
+## Repository map
 
-| Adapter | When | Config |
-| --- | --- | --- |
-| `mock` (default) | static Pages, offline | none |
-| `cloudflare` | real form backend | `PUBLIC_API_ADAPTER=cloudflare` + `PUBLIC_CONTACT_ENDPOINT=<worker url>` |
+```
+site/                 Astro 5 static site: marketing, /tools, /insights, /methodology, the /app console
+packages/tax-engine/  2026 federal tax math + scenario validation (29 tests, node:test via tsx)
+service/              Node + TypeScript agent fleet on the Anthropic SDK; /agents/run, /scenario, memory
+cms/                  EmDash CMS (Astro 7) for Insights; export endpoint at /api/insights.json
+scripts/              pull-insights.mjs: CMS to static snapshot, atomic and validated
+knowledge-base/       Markdown corpus the Research agent retrieves over, with a content-hash manifest
+workers/contact/      Cloudflare Worker for the demo form
+docs/                 design spec, design contract, system design and deploy runbook
+```
 
-Any endpoint honoring the same contract (Azure Functions / Supabase / Formspree) drops in
-without touching components. The Cloudflare Worker lives in `workers/contact/` (honeypot +
-email validation, optional KV + Slack notify; `wrangler deploy`). The Node fleet ships as a
-container — `Dockerfile` + `fly.toml` at the repo root (`fly deploy`). Full topology and the
-deploy runbook: **`docs/system-design.md`**.
+## Deployment
 
-## Build, cache & deploy
+| Target | How |
+| --- | --- |
+| Site | GitHub Actions to Pages on push to `main`. Set the repository variable `EMDASH_URL` to pull fresh Insights before each build. |
+| Agent service | Root `Dockerfile` + `fly.toml` (`fly deploy`). |
+| CMS | Node standalone (`cms/`, SQLite) or Cloudflare Workers with D1 + R2. See `cms/README.md`. |
+| Contact Worker | `wrangler deploy` in `workers/contact/`. |
 
-Deployment is **GitHub Actions → GitHub Pages** on push to `main` (`.github/workflows/deploy.yml`):
+Full runbook: `docs/system-design.md`.
 
-- **npm dependency caching** via `actions/setup-node` (`cache: npm`).
-- **Fingerprinted, cache-friendly assets** — Astro emits hashed files under `_assets/` (immutable, long-cache).
-- **Configurable base path** — `BASE_PATH=/taxline` for a GitHub project page (`username.github.io/taxline`), or `/` for a custom domain. `SITE_URL` sets the canonical origin.
+## Scope and honesty
 
-> **Heads-up:** GitHub Pages from a **private** repo requires a paid plan (Pro/Team/Enterprise). If the repo is private on a free plan, either make it public, or host the static build on **Cloudflare Pages** instead (point it at `site/` with build `npm run build` and output `site/dist`).
+Figures are federal only for tax year 2026. Each calculator lists what it does not model (AMT, EITC, state tax, the mid-quarter convention, and so on). Pricing on the site is representative, and the SOC 2 audit is marked in progress. Taxline never files autonomously and never trains on client data.
 
-## Notes
+## License
 
-- **Design system** is the source of truth: `site/src/styles/global.css` `@theme` tokens (graphite shell, warm-white text, one green accent, IBM Plex Sans/Mono, 8px max radius, warm "paper" document surface). Rules in `docs/design-contract.md`.
-- **Knowledge base** tax figures are domain-knowledge seeds **flagged for source verification**; `knowledge-base/ingest/` is the live-refresh path.
-- **No secrets in git** — `.env` is ignored; use `.env.example`, Wrangler secrets, and Actions secrets.
-- No autonomous filing. No training on client data. Nothing ships unreviewed.
+MIT. See `LICENSE`.

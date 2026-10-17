@@ -10,10 +10,17 @@ import AgentCard from '../components/AgentCard.astro';
 import { Icon } from 'astro-icon/components';
 import { fleet } from '../lib/data/fleet';
 import { u } from '../lib/url';
+import { tools } from '../lib/data/tools';
+import { softwareApp } from '../lib/seo';
+import { computeReturn, fmtUsd } from '@taxline/tax-engine';
+
+// A real engine run, computed at build time — the home page shows output, not a mock.
+const sample = computeReturn({ status: 'mfj', wages: 142_000, selfEmploymentProfit: 38_000, qualifiedDividends: 4_000, ordinaryDividends: 4_000, children: 2, federalWithholding: 16_500 });
+const sampleLines = sample.lines.filter((l) => ['agi', 'deduction', 'qbi', 'taxable', 'tax', 'ctc', 'setax', 'totaltax', 'balance'].includes(l.id));
 
 
 const trust = [
-  ['lucide:shield-check', 'SOC 2'],
+  ['lucide:shield-check', 'SOC 2 in progress'],
   ['lucide:lock', 'No training on your data'],
   ['lucide:quote', 'Citation-backed'],
   ['lucide:user-check', 'Human-approved'],
@@ -34,9 +41,13 @@ const steps = [
 ];
 ---
 
-<Base>
+<Base
+  title="Taxline: AI tax operations with a tested engine and human approval"
+  description="Five AI agents move tax work from intake to reviewer-ready workpapers. Every field carries a confidence score and a citation, a tested 2026 engine does the math, and a person approves before anything ships."
+  schema={[softwareApp(Astro.site)]}
+>
   <TopNav />
-  <main>
+  <main id="main">
     <!-- Hero -->
     <section class="relative overflow-hidden border-b border-border">
       <div class="pointer-events-none absolute inset-0 console-grid opacity-60"></div>
@@ -128,6 +139,55 @@ const steps = [
             <span class="ds-eyebrow text-fg-faint">Conductor</span>
             <span class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent">See how routing works <Icon name="lucide:arrow-right" class="size-4" /></span>
           </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- The math is code -->
+    <section class="border-b border-border">
+      <div class="mx-auto grid max-w-[1200px] items-start gap-12 px-5 py-20 sm:px-6 lg:grid-cols-[1fr_1.05fr]">
+        <div data-reveal>
+          <p class="ds-eyebrow">The math is code</p>
+          <h2 class="ds-h2 mt-3 max-w-xl">Models draft. A tested engine computes. You approve.</h2>
+          <p class="ds-lead mt-3 max-w-xl">
+            Ledger never does arithmetic in a prompt. It calls <code class="font-mono text-[16px] text-fg">compute_tax</code> — a
+            deterministic engine with 2026 figures from Rev. Proc. 2025-32 — and quotes the trace: operands,
+            form line, authority.
+          </p>
+          <ul class="mt-7 grid gap-2 sm:grid-cols-2">
+            {tools.map((t) => (
+              <li>
+                <a href={u(`tools/${t.slug}`)} class="group flex items-center gap-2.5 rounded-md border border-border bg-panel px-3 py-2.5 text-[13px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg">
+                  <Icon name={t.icon} class="size-4 text-fg-faint group-hover:text-accent" />{t.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a href={u('methodology')} class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover">How the engine is tested <Icon name="lucide:arrow-right" class="size-4" /></a>
+        </div>
+        <div data-reveal style="--reveal-delay:80ms" class="rounded-md border border-paper-border bg-paper text-paper-ink shadow-2">
+          <div class="flex items-center justify-between border-b border-paper-border px-5 py-3">
+            <div>
+              <div class="font-mono text-[10px] uppercase tracking-[0.14em] text-paper-ink-muted">compute_tax · return · TY2026</div>
+              <div class="mt-0.5 text-[14px] font-semibold">Joint filers · W-2 + Schedule C · 2 children</div>
+            </div>
+            <span class="font-mono text-[11px] text-paper-ink-muted">WP-1040</span>
+          </div>
+          <table class="w-full border-collapse text-left">
+            <tbody>
+              {sampleLines.map((l) => (
+                <tr class:list={['border-t', l.emphasis ? 'border-paper-border' : 'border-paper-border/50']}>
+                  <td class="w-[88px] whitespace-nowrap py-2 pl-5 pr-2 align-top font-mono text-[10px] text-paper-ink-muted">{l.ref}</td>
+                  <td class="py-2 pr-2 align-top">
+                    <div class:list={['text-[13px]', l.emphasis && 'font-semibold']}>{l.label}</div>
+                    {l.formula && <div class="mt-0.5 font-mono text-[10px] text-paper-ink-muted">{l.formula}</div>}
+                  </td>
+                  <td class:list={['whitespace-nowrap py-2 pr-5 text-right align-top font-mono text-[13px] tabular-nums', l.emphasis && 'font-semibold']}>{l.value < 0 ? `(${fmtUsd(-l.value)})` : fmtUsd(l.value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p class="border-t border-paper-border px-5 py-2.5 font-mono text-[10px] text-paper-ink-muted">Computed at build time by @taxline/tax-engine · draft for reviewer sign-off</p>
         </div>
       </div>
     </section>

@@ -8,17 +8,32 @@ import '@fontsource/ibm-plex-mono/500.css';
 import '@fontsource/ibm-plex-mono/600.css';
 import '../styles/global.css';
 import { absolute, u } from '../lib/url';
+import { organization, website } from '../lib/seo';
 
 interface Props {
   title?: string;
   description?: string;
+  /** Keep a page out of search (the demo app, the 404). */
+  noindex?: boolean;
+  /** Extra JSON-LD nodes for this page, merged into one @graph. */
+  schema?: Record<string, unknown>[];
+  ogType?: 'website' | 'article';
 }
 
 const {
-  title = 'Taxline — agentic tax operations',
-  description = 'Remove manual tax operations. Keep the human approval. A fleet of specialized AI agents triages, extracts, researches, and assembles tax work — with confidence scores and citations on every field.',
+  title = 'Taxline: agentic tax operations with human approval',
+  description = 'AI agents extract, research, and draft tax workpapers with a confidence score and citation on every field. A tested 2026 tax engine does the math. You approve.',
+  noindex = false,
+  schema = [],
+  ogType = 'website',
 } = Astro.props;
 
+// Canonical is the deployed URL with a trailing slash (Pages serves /x/ for x.astro).
+const path = Astro.url.pathname.replace(/\/?$/, '/');
+const canonical = new URL(path, Astro.site).href;
+const ogImage = absolute('social-preview.png', Astro.site);
+// CMS text reaches this graph; escape "<" so a "</script>" in a title cannot end the block.
+const graph = JSON.stringify({ '@context': 'https://schema.org', '@graph': [organization(Astro.site), website(Astro.site), ...schema] }).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>
@@ -28,20 +43,32 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#0e0f10" />
+    <meta property="og:site_name" content="Taxline" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="en_US" />
     {/* Absolute, because a crawler resolves og:image against nothing. */}
-    <meta property="og:image" content={absolute('social-preview.png', Astro.site)} />
+    <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1280" />
     <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="Taxline operations console: queue, agent activity, and extraction confidence" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content={absolute('social-preview.png', Astro.site)} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
     <link rel="icon" href={u('favicon.svg')} type="image/svg+xml" />
+    <link rel="sitemap" type="application/xml" href={u('sitemap.xml')} />
+    {/* Reveal animations only hide content once JS is known to run: no-JS readers and crawlers see everything. */}
+    <script is:inline>document.documentElement.classList.add('js')</script>
+    <script is:inline type="application/ld+json" set:html={graph} />
   </head>
   <body class="min-h-screen bg-base text-fg antialiased">
+    <a href="#main" class="sr-only z-[100] rounded-md bg-accent px-3 py-2 text-sm font-medium text-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-3">Skip to content</a>
     <slot />
     <script>
       // Scroll-reveal: rise + fade elements tagged [data-reveal] as they enter view.

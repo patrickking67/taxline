@@ -1,0 +1,942 @@
+{
+  "source": "seed",
+  "generatedAt": "2026-10-17",
+  "entries": [
+    {
+      "slug": "2026-federal-tax-brackets",
+      "title": "2026 federal tax brackets and standard deduction, line by line",
+      "excerpt": "The seven 2026 rates, every threshold for every filing status, and the new standard deduction, transcribed from Rev. Proc. 2025-32 and checked against the IRS base amounts.",
+      "category": "tax-year-2026",
+      "tool": "income-tax",
+      "readingMinutes": 5,
+      "publishedAt": "2026-10-17",
+      "content": [
+        {
+          "_type": "block",
+          "_key": "k121",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k122",
+              "text": "The IRS published the tax-year 2026 inflation adjustments in ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k123",
+              "text": "Rev. Proc. 2025-32",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k124",
+              "text": ", which also reflects the One Big Beautiful Bill Act. These figures apply to returns filed in 2027.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k125",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k126",
+              "text": "The seven rates",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k127",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k128",
+              "text": "The structure is unchanged: 10%, 12%, 22%, 24%, 32%, 35%, and 37%. What moves is where each band starts.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k129",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k130",
+              "text": "Single: 12% above $12,400 · 22% above $50,400 · 24% above $105,700 · 32% above $201,775 · 35% above $256,225 · 37% above $640,600",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k131",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k132",
+              "text": "Married filing jointly: 12% above $24,800 · 22% above $100,800 · 24% above $211,400 · 32% above $403,550 · 35% above $512,450 · 37% above $768,700",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k133",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k134",
+              "text": "Head of household: 12% above $17,700 · 22% above $67,450 · 24% above $105,700 · 32% above $201,750 · 35% above $256,200 · 37% above $640,600",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k135",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k136",
+              "text": "Married filing separately: the single bands, except 37% starts above $384,350",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k137",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k138",
+              "text": "Standard deduction",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k139",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k140",
+              "text": "$16,100",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k141",
+              "text": " single or married filing separately, ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k142",
+              "text": "$32,200",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k143",
+              "text": " married filing jointly, and ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k144",
+              "text": "$24,150",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k145",
+              "text": " head of household.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k146",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k147",
+              "text": "How we verify a table",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k148",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k149",
+              "text": "A bracket table can be checked against itself. The IRS publishes each band as \"base plus rate on the excess\", and every base must equal the tax on all the bands below it. For single filers that gives $1,240, $5,800, $17,966, $41,024, $58,448, and $192,979.25, exactly what the Rev. Proc. prints. The Taxline engine's test suite asserts this for every filing status, so a transcription error fails the build.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k150",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k151",
+              "text": "Marginal is not effective",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k152",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k153",
+              "text": "A filer at $100,000 of taxable income is in the 22% bracket but pays $16,712, an effective 16.7%. The income tax calculator plots both and marks where you sit on the curve.",
+              "marks": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "estimated-tax-safe-harbor",
+      "title": "The estimated tax safe harbor, with the math",
+      "excerpt": "Pay the smaller of 90% of this year's tax or 100% of last year's (110% above $150,000 of AGI), and the underpayment penalty does not apply. Here is how to compute it and when to pay.",
+      "category": "planning",
+      "tool": "estimated-tax",
+      "readingMinutes": 4,
+      "publishedAt": "2026-10-17",
+      "content": [
+        {
+          "_type": "block",
+          "_key": "k154",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k155",
+              "text": "Withholding covers most W-2 earners. Freelancers, business owners, and investors usually need ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k156",
+              "text": "quarterly estimates",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k157",
+              "text": ", and the cheapest way to avoid the underpayment penalty is to hit the safe harbor in IRC §6654(d).",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k158",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k159",
+              "text": "The rule",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k160",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k161",
+              "text": "Required annual payment = the smaller of ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k162",
+              "text": "90% of this year's tax",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k163",
+              "text": " or ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k164",
+              "text": "100% of last year's tax",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k165",
+              "text": ". If last year's AGI was over $150,000 ($75,000 married filing separately), the prior-year test is ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k166",
+              "text": "110%",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k167",
+              "text": ".",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k168",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k169",
+              "text": "A worked example",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k170",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k171",
+              "text": "Expected 2026 tax is $32,000 and withholding will be $6,000. Last year's tax was $26,000 on $165,000 of AGI.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k172",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k173",
+              "text": "90% of this year: $28,800",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k174",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k175",
+              "text": "110% of last year: $28,600",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k176",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k177",
+              "text": "Safe harbor: $28,600, less $6,000 withholding = ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k178",
+              "text": "$22,600",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k179",
+              "text": " through estimates, or $5,650 per installment",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k180",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k181",
+              "text": "The 2026 due dates",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k182",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k183",
+              "text": "April 15, 2026 · June 15, 2026 · September 15, 2026 · January 15, 2027.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k184",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k185",
+              "text": "Two details that matter",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k186",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k187",
+              "text": "No estimates are required when this year's tax after withholding is under $1,000.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k188",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k189",
+              "text": "Withholding counts as paid evenly through the year, so extra withholding in December can cover an earlier shortfall. An estimate counts only from the day it is paid.",
+              "marks": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "s-corp-election-worked-example",
+      "title": "When an S corporation election pays: a worked example at $150,000",
+      "excerpt": "At $150,000 of profit and a $60,000 salary, the election saves a single filer $7,275.61 in 2026. The reasonable-compensation rule is why the salary is not zero.",
+      "category": "planning",
+      "tool": "s-corp",
+      "readingMinutes": 6,
+      "publishedAt": "2026-10-17",
+      "content": [
+        {
+          "_type": "block",
+          "_key": "k190",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k191",
+              "text": "A sole proprietor pays self-employment tax on 92.35% of profit. An S corporation owner pays FICA only on salary; the rest arrives on a K-1 with no self-employment tax. That is the whole saving, and also the whole risk.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k192",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k193",
+              "text": "The numbers",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k194",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k195",
+              "text": "Single filer, $150,000 of profit, $60,000 salary, $2,000 a year of payroll and entity overhead, tax year 2026:",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k196",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k197",
+              "text": "Sole prop: self-employment tax $21,194.33 plus income tax $16,410 = ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k198",
+              "text": "$37,604.33",
+              "marks": [
+                "strong"
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k199",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k200",
+              "text": "S corp: income tax $19,148.72, employee and employer FICA $9,180, overhead $2,000 = ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k201",
+              "text": "$30,328.72",
+              "marks": [
+                "strong"
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k202",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k203",
+              "text": "Difference: ",
+              "marks": []
+            },
+            {
+              "_type": "span",
+              "_key": "k204",
+              "text": "$7,275.61",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k205",
+              "text": " a year",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k206",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k207",
+              "text": "What moves the answer",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k208",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k209",
+              "text": "QBI.",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k210",
+              "text": " The K-1 is qualified business income, but salary is not, so the §199A deduction shrinks as salary grows.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k211",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k212",
+              "text": "The wage base.",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k213",
+              "text": " Social Security stops at $184,500 of wages in 2026; above it the gap narrows.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k214",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k215",
+              "text": "Overhead.",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k216",
+              "text": " Payroll service, a second return, and state entity fees are real costs; a few thousand dollars erases the benefit at lower profit.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k217",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k218",
+              "text": "Reasonable compensation",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k219",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k220",
+              "text": "The IRS requires an S corporation to pay its working owner reasonable compensation for the services performed. A salary chosen to minimize tax rather than to reflect the work invites reclassification of distributions as wages, with back taxes and penalties. The calculator sweeps salary so you can see the trade-off; it does not pick a salary for you.",
+              "marks": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "why-agents-never-do-arithmetic",
+      "title": "Why our agents never do arithmetic",
+      "excerpt": "Language models draft and extract. A tested engine computes. A person approves. How Taxline splits the work, and the checks that sit at each boundary.",
+      "category": "product",
+      "tool": "income-tax",
+      "readingMinutes": 4,
+      "publishedAt": "2026-10-17",
+      "content": [
+        {
+          "_type": "block",
+          "_key": "k221",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k222",
+              "text": "Tax work has two kinds of steps: reading and judging, and computing. Models are strong at the first. They are the wrong tool for the second, because a number that is almost right is wrong.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k223",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k224",
+              "text": "Three boundaries",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k225",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k226",
+              "text": "Models draft.",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k227",
+              "text": " Extraction and research agents read documents and sources, and return null rather than guess. Every field carries a confidence and a citation.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k228",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k229",
+              "text": "Code computes.",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k230",
+              "text": " The Workpaper agent calls compute_tax, a deterministic engine with 2026 figures from Rev. Proc. 2025-32. It quotes the engine's trace (operands, form line, authority) and never recomputes it.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k231",
+          "style": "normal",
+          "listItem": "bullet",
+          "level": 1,
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k232",
+              "text": "People approve.",
+              "marks": [
+                "strong"
+              ]
+            },
+            {
+              "_type": "span",
+              "_key": "k233",
+              "text": " Fields under 0.85 confidence route to a reviewer, and requireHumanApproval is a code gate no prompt can skip.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k234",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k235",
+              "text": "Checking the model's work in code",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k236",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k237",
+              "text": "Plain-English intake is the clearest example. When you describe your situation, the model returns each figure with an exact quote from your text. Before anything reaches the calculator, code checks that the quote appears in what you wrote and that it states the amount. A field that fails is not dropped silently. It is capped below the review threshold with the reason attached, and you decide.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k238",
+          "style": "h2",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k239",
+              "text": "Why it matters",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "k240",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "k241",
+              "text": "A reviewer can trust a workpaper only if every number traces to a source and a formula. Splitting the work this way is what makes that possible.",
+              "marks": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+// @ts-check
+// Taxline editorial CMS. EmDash runs as an Astro integration with its admin at
+// /_emdash/admin. Locally it uses SQLite + the filesystem; in production swap to
+// D1 + R2 on Cloudflare Workers (see cms/README.md) without touching the schema.
+import node from '@astrojs/node';
+import react from '@astrojs/react';
+import { defineConfig } from 'astro/config';
+import emdash, { local } from 'emdash/astro';
+import { sqlite } from 'emdash/db';
+
+export default defineConfig({
+  output: 'server',
+  adapter: node({ mode: 'standalone' }),
+  integrations: [
+    react(),
+    emdash({
+      database: sqlite({ url: process.env.EMDASH_DATABASE_URL ?? 'file:./data.db' }),
+      storage: local({ directory: './uploads', baseUrl: '/_emdash/api/media/file' }),
+    }),
+  ],
+  devToolbar: { enabled: false },
+});

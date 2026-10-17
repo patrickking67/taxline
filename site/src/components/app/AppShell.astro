@@ -14,7 +14,7 @@ interface Props {
 const { title = '', active = 'app', breadcrumb } = Astro.props;
 ---
 
-<Base title={`${title} · Taxline`}>
+<Base title={`${title} · Taxline`} noindex>
   <div class="flex min-h-screen">
     <!-- sidebar -->
     <aside class="hidden w-64 shrink-0 flex-col border-r border-border bg-base md:flex">
@@ -69,7 +69,7 @@ const { title = '', active = 'app', breadcrumb } = Astro.props;
           <span class="grid size-8 place-items-center rounded-md border border-border bg-raised font-mono text-xs text-fg-muted">PK</span>
         </div>
       </header>
-      <main class="flex-1 overflow-auto"><slot /></main>
+      <main id="main" class="flex-1 overflow-auto"><slot /></main>
     </div>
   </div>
 </Base>

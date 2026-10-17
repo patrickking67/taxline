@@ -5,6 +5,8 @@ import EvidenceChip from '../../components/EvidenceChip.astro';
 import Button from '../../components/Button.astro';
 import { Icon } from 'astro-icon/components';
 import { docs, docById } from '../../lib/data/app';
+import { computeReturn, fmtPct, fmtUsd, type ReturnInput } from '@taxline/tax-engine';
+import { u } from '../../lib/url';
 
 export function getStaticPaths() {
   return docs.map((d) => ({ params: { id: d.id } }));
@@ -17,6 +19,24 @@ const reviewCount = doc.fields.filter((f) => f.confidence != null && f.confidenc
 // Tint a value cell on the light "paper" surface when confidence is low.
 const tint = (c: number | null) =>
   c == null || c >= 0.85 ? '' : c >= 0.6 ? 'background:rgba(201,162,39,0.20)' : 'background:rgba(216,88,78,0.18)';
+
+// Ledger's compute_tax preview: which extracted fields feed which engine input.
+// Computation is gated the same way shipping is — an input under 0.85 blocks it.
+const feeds: Record<string, { field: string; input: keyof ReturnInput }[]> = {
+  'W-2': [
+    { field: 'Wages · box 1', input: 'wages' },
+    { field: 'Federal w/h · box 2', input: 'federalWithholding' },
+  ],
+  '1099-NEC': [{ field: 'Nonemployee comp · box 1', input: 'selfEmploymentProfit' }],
+};
+const money = (v: string) => Number(v.replace(/[$,]/g, '')) || 0;
+const mapping = (feeds[doc.type] ?? []).map((m) => ({ ...m, f: doc.fields.find((x) => x.label === m.field) }));
+const blockers = mapping.filter((m) => !m.f || m.f.confidence == null || m.f.confidence < 0.85);
+const preview =
+  mapping.length > 0 && blockers.length === 0
+    ? computeReturn(Object.fromEntries([['status', 'single'], ...mapping.map((m) => [m.input, money(m.f!.value)])]) as unknown as ReturnInput)
+    : null;
+const previewLines = preview?.lines.filter((l) => ['agi', 'taxable', 'tax', 'setax', 'totaltax', 'balance'].includes(l.id) && (l.value !== 0 || l.emphasis)) ?? [];
 ---
 
 <AppShell active="app" breadcrumb={[{ label: 'Intake queue', href: 'app' }, { label: doc.name }]}>
@@ -54,7 +74,7 @@ const tint = (c: number | null) =>
       <!-- extraction panel -->
       <div class="bg-base p-6">
         <div class="mb-4 flex items-center justify-between">
-          <a href="app" class="inline-flex items-center gap-1.5 font-mono text-[12px] text-fg-muted hover:text-fg"><Icon name="lucide:arrow-left" class="size-4" />Back to queue</a>
+          <a href={u('app')} class="inline-flex items-center gap-1.5 font-mono text-[12px] text-fg-muted hover:text-fg"><Icon name="lucide:arrow-left" class="size-4" />Back to queue</a>
         </div>
         <div class="flex items-baseline justify-between">
           <span class="ds-eyebrow">Extraction</span>
@@ -72,6 +92,33 @@ const tint = (c: number | null) =>
                 <EvidenceChip icon={e.icon}>{e.strong ? <Fragment><span>{e.label}</span> <b class="font-medium text-fg">{e.strong}</b></Fragment> : <b class="font-medium text-fg">{e.label}</b>}</EvidenceChip>
               ))}
             </div>
+          </div>
+        )}
+
+        {mapping.length > 0 && (
+          <div class="mt-6 rounded-md border border-border bg-panel p-4">
+            <div class="flex items-center justify-between">
+              <span class="ds-eyebrow text-fg-faint">Ledger · compute_tax</span>
+              <span class="font-mono text-[10px] text-fg-faint">TY2026 · single · this doc only</span>
+            </div>
+            {preview ? (
+              <>
+                <dl class="mt-3 space-y-1.5">
+                  {previewLines.map((l) => (
+                    <div class="flex items-baseline justify-between gap-3">
+                      <dt class="text-[12px] text-fg-muted">{l.label} <span class="font-mono text-[10px] text-fg-faint">{l.ref}</span></dt>
+                      <dd class:list={['font-mono text-[12px] tabular-nums', l.emphasis === 'total' ? 'font-semibold text-fg' : 'text-fg']}>{fmtUsd(l.value)}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p class="mt-3 border-t border-border-faint pt-2 font-mono text-[10px] text-fg-faint">effective {fmtPct(preview.effectiveRate)} · marginal {fmtPct(preview.marginalRate)} · draft, not shipped</p>
+              </>
+            ) : (
+              <div class="mt-3 rounded-sm bg-warn-soft px-3 py-2 text-[12px] leading-relaxed text-warn-bright">
+                <span class="font-medium">Blocked by the confidence gate.</span> {blockers.map((b) => `${b.field} (${b.f?.confidence?.toFixed(2) ?? 'missing'})`).join(', ')} must be reviewed before Ledger computes.
+              </div>
+            )}
+            <a href={u('tools/income-tax')} class="mt-3 inline-flex items-center gap-1.5 font-mono text-[11px] text-accent hover:text-accent-hover">Open the full calculator <Icon name="lucide:arrow-up-right" class="size-3.5" /></a>
           </div>
         )}
 

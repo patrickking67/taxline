@@ -4,14 +4,33 @@
     {
       "name": "Taxline Site (Astro dev)",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 4321
     },
     {
       "name": "Taxline Service (agent fleet)",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "service", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "service",
+        "run",
+        "dev"
+      ],
       "port": 8787
+    },
+    {
+      "name": "Taxline CMS (EmDash)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "cms",
+        "run",
+        "dev"
+      ],
+      "port": 4322
     }
   ]
 }

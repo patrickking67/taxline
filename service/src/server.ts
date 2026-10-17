@@ -9,6 +9,7 @@
 //   POST /memory/index      rebuild the vector memory from the knowledge base
 //   POST /memory/remember   {text, source} append one finding to continuous memory
 //   GET  /memory/search     ?q=&k= cosine search over the vector memory
+//   POST /scenario          {text} plain-English situation → validated return inputs
 //
 // CORS is restricted to the configured site origin(s).
 
@@ -17,6 +18,7 @@ import { PORT, SITE_ORIGINS, hasApiKey, MODEL_DEFAULT, MODEL_FAST } from './conf
 import { queueSummary, docById } from './seed/queue.js';
 import { orchestrate, type AgentName } from './orchestrator.js';
 import { memory } from './memory/index.js';
+import { extractScenarioLive } from './scenario.js';
 
 /** Resolve the Access-Control-Allow-Origin value for a request. */
 function corsOrigin(reqOrigin: string | undefined): string {
@@ -178,6 +180,20 @@ const server = http.createServer(async (req, res) => {
       const k = Number.isFinite(kRaw) && kRaw > 0 ? Math.min(Math.floor(kRaw), 20) : 5;
       const results = await memory.retrieve(q, k);
       return sendJson(res, 200, { ok: true, results, empty: results.length === 0 });
+    }
+
+    // --- POST /scenario ----------------------------------------------------
+    // Extract calculator inputs from a description. Every field comes back with
+    // a confidence and an evidence quote checked against the text; the person
+    // approves which fields to apply. Nothing is stored.
+    if (req.method === 'POST' && path === '/scenario') {
+      const body = (await readJsonBody(req, 16_000)) as { text?: unknown };
+      const result = await extractScenarioLive(typeof body.text === 'string' ? body.text : '');
+      if (!result.ok) {
+        const status = result.errorCategory === 'validation' ? 400 : result.errorCategory === 'transient' ? 503 : 502;
+        return sendJson(res, status, { ok: false, errorCategory: result.errorCategory, isRetryable: result.isRetryable, error: result.message });
+      }
+      return sendJson(res, 200, { ok: true, ...result.data });
     }
 
     // --- POST /demo --------------------------------------------------------

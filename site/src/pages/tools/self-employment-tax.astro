@@ -1,0 +1,157 @@
+---
+import ToolShell from '../../components/tools/ToolShell.astro';
+import Field from '../../components/tools/Field.astro';
+import Fieldset from '../../components/tools/Fieldset.astro';
+import Stat from '../../components/tools/Stat.astro';
+import Workpaper from '../../components/tools/Workpaper.astro';
+import Formula from '../../components/tools/Formula.astro';
+import { FILING_STATUSES } from '@taxline/tax-engine';
+
+const statuses = FILING_STATUSES.map((s) => ({ value: s.key, label: s.label }));
+
+const faqs = [
+  {
+    q: 'What is the self-employment tax rate for 2026?',
+    a: '15.3% of net earnings from self-employment: 12.4% Social Security on earnings up to the $184,500 wage base and 2.9% Medicare on all of it. Net earnings are 92.35% of net profit, which mirrors the employer half of FICA that an employee never sees.',
+  },
+  {
+    q: 'Why is self-employment tax calculated on 92.35% of profit?',
+    a: 'An employer deducts its 7.65% share of FICA before paying wages. Multiplying profit by 1 − 0.0765 = 0.9235 puts the self-employed on the same footing (IRC §1402(a)(12)).',
+  },
+  {
+    q: 'How do W-2 wages affect self-employment tax?',
+    a: 'Social Security wages from a job use up the wage base first. If you earned $180,000 in W-2 wages in 2026, only $4,500 of self-employment earnings can still be hit by the 12.4% portion. The 2.9% Medicare portion has no cap.',
+  },
+  {
+    q: 'Can I deduct self-employment tax?',
+    a: 'Half of it. The deductible half reduces adjusted gross income on Schedule 1 line 15, which also lowers the base for the QBI deduction. It does not reduce the self-employment tax itself.',
+  },
+  {
+    q: 'When does the 0.9% Additional Medicare tax apply?',
+    a: 'When Medicare wages plus self-employment earnings exceed $200,000 single or head of household, $250,000 joint, or $125,000 married filing separately. The thresholds are fixed in the Code and not indexed for inflation.',
+  },
+  {
+    q: 'Is there a minimum before self-employment tax applies?',
+    a: 'Yes. If net earnings from self-employment are under $400, no self-employment tax is due (IRC §1402(b)).',
+  },
+];
+
+const limits = [
+  'Church employee income and the optional farm and nonfarm methods',
+  'Tips subject to Social Security reported on Form 4137',
+  'Multiple Schedule C or F activities combined with losses',
+  'Income tax on the profit (use the income tax calculator)',
+];
+---
+
+<ToolShell
+  slug="self-employment-tax"
+  title="2026 Self-Employment Tax Calculator: Schedule SE, $184,500 wage base | Taxline"
+  description="Calculate 2026 self-employment tax: 92.35% net earnings, 12.4% Social Security up to the $184,500 wage base, 2.9% Medicare, W-2 wage coordination, the deductible half, and the 0.9% Additional Medicare tax."
+  h1="2026 self-employment tax calculator"
+  lead="Schedule SE for tax year 2026, including the $184,500 Social Security wage base, the wages you already earned on a W-2, and the 0.9% Additional Medicare tax."
+  faqs={faqs}
+  limits={limits}
+>
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+    <form id="calc" class="grid gap-4" autocomplete="off">
+      <Fieldset legend="Self-employment">
+        <Field name="profit" label="Net profit (Schedule C)" value="120000" class="sm:col-span-2" />
+        <Field name="status" label="Filing status" kind="select" options={statuses} value="single" class="sm:col-span-2" hint="Only affects the Additional Medicare threshold." />
+      </Fieldset>
+      <Fieldset legend="W-2 job, if any">
+        <Field name="ssWages" label="Social Security wages (box 3)" value="0" />
+        <Field name="medWages" label="Medicare wages (box 5)" value="0" />
+      </Fieldset>
+      <div class="flex items-center justify-between gap-3">
+        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
+      </div>
+    </form>
+
+    <div class="grid min-w-0 grid-cols-1 gap-4 lg:sticky lg:top-[76px]">
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <Stat label="SE tax" out="total" tone="accent" subOut="ne" />
+        <Stat label="Deductible half" out="deduction" sub="Schedule 1 line 15" />
+        <Stat label="Rate on profit" out="rate" sub="SE tax ÷ net profit" />
+        <Stat label="Addl. Medicare" out="addl" sub="Form 8959, 0.9%" />
+      </div>
+      <div class="rounded-lg border border-border bg-panel p-4">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="text-[13px] font-semibold text-fg">Self-employment tax by net profit</h2>
+          <span class="font-mono text-[11px] text-fg-faint">the kink is the wage base · hover for values</span>
+        </div>
+        <div data-curve class="mt-3"></div>
+      </div>
+      <Workpaper title="Schedule SE: self-employment tax" subtitle="Tax year 2026" code="WP-SE" id="wp" />
+    </div>
+  </div>
+
+  <Fragment slot="formulas">
+    <Formula title="Net earnings (Sch SE L6)" plain="NE = 0.9235 times profit" note="1 − 0.0765: the employer half of FICA, removed before tax as an employer would deduct it.">
+      <math display="block"><mrow><mi>NE</mi><mo>=</mo><mn>0.9235</mn><mo>·</mo><mi>π</mi></mrow></math>
+    </Formula>
+    <Formula title="SE tax (Sch SE L12)" plain="SE = 0.124 min(NE, max(0, B minus W)) + 0.029 NE" note="B = $184,500 wage base (SSA). W = Social Security wages already taxed on a W-2.">
+      <math display="block"><mrow><mi>SE</mi><mo>=</mo><mn>0.124</mn><mo>·</mo><mi>min</mi><mo>(</mo><mi>NE</mi><mo>,</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>B</mi><mo>−</mo><mi>W</mi><mo>)</mo><mo>)</mo><mo>+</mo><mn>0.029</mn><mo>·</mo><mi>NE</mi></mrow></math>
+    </Formula>
+    <Formula title="Additional Medicare (Form 8959)" plain="A = 0.009 (max(0, M minus t) + max(0, NE minus max(0, t minus M)))" note="M = Medicare wages, t = threshold by filing status. Wages use the threshold first; SE earnings take what is left.">
+      <math display="block"><mrow><mi>A</mi><mo>=</mo><mn>0.009</mn><mo>·</mo><mo>[</mo><msup><mrow><mo>(</mo><mi>M</mi><mo>−</mo><mi>t</mi><mo>)</mo></mrow><mo>+</mo></msup><mo>+</mo><msup><mrow><mo>(</mo><mi>NE</mi><mo>−</mo><msup><mrow><mo>(</mo><mi>t</mi><mo>−</mo><mi>M</mi><mo>)</mo></mrow><mo>+</mo></msup><mo>)</mo></mrow><mo>+</mo></msup><mo>]</mo></mrow></math>
+    </Formula>
+    <Formula title="Deduction (Sch 1 L15)" plain="D = SE / 2" note="Above the line: it lowers AGI, and with it the QBI deduction base.">
+      <math display="block"><mrow><mi>D</mi><mo>=</mo><mfrac><mi>SE</mi><mn>2</mn></mfrac></mrow></math>
+    </Formula>
+  </Fragment>
+</ToolShell>
+
+<script>
+  import { TY2026, additionalMedicare, fmtPct, fmtUsd, selfEmploymentTax, type FilingStatus, type SeResult, type Trace } from '@taxline/tax-engine';
+  import { bindCalculator, num } from '../../lib/tools/form';
+  import { renderTrace, setOutputs, traceToText, wireCopy } from '../../lib/tools/render';
+  import { compactUsd, lineChart, onResize } from '../../lib/tools/charts';
+
+  const form = document.getElementById('calc') as HTMLFormElement;
+  const curve = document.querySelector<HTMLElement>('[data-curve]')!;
+  let state: { profit: number; ss: number; r: SeResult; trace: Trace } | null = null;
+
+  function draw() {
+    if (!state) return;
+    const { profit, ss } = state;
+    const kink = Math.max(0, TY2026.fica.wageBase - ss) / TY2026.fica.seNetFactor;
+    const xMax = Math.max(300_000, Math.ceil((Math.max(profit, kink) * 1.3) / 50_000) * 50_000);
+    const pts: [number, number][] = [];
+    for (let k = 0; k <= 150; k++) {
+      const x = (xMax * k) / 150;
+      pts.push([x, selfEmploymentTax({ netProfit: x, w2SsWages: ss }).total]);
+    }
+    lineChart(curve, {
+      label: 'Self-employment tax by net profit',
+      points: pts,
+      xFmt: compactUsd,
+      yFmt: compactUsd,
+      marker: profit > 0 ? { x: profit, label: `you · ${fmtUsd(state.r.total)}` } : undefined,
+      tipLines: (p) => [`${fmtUsd(p[1])} SE tax`, `on ${fmtUsd(p[0])} profit · ${p[0] ? fmtPct(p[1] / p[0]) : '—'}`],
+    });
+  }
+
+  bindCalculator(form, (v) => {
+    const profit = num(v.profit);
+    const ss = num(v.ssWages);
+    const r = selfEmploymentTax({ netProfit: profit, w2SsWages: ss });
+    const addl = additionalMedicare(String(v.status) as FilingStatus, num(v.medWages), r.netEarnings);
+    const trace = addl
+      ? [...r.trace, { id: 'se.addl', label: 'Additional Medicare tax (separate, Form 8959)', value: addl, ref: 'Sch 2 L11', formula: `0.9% over ${fmtUsd(TY2026.addlMedicare.threshold[String(v.status) as FilingStatus])}` }]
+      : r.trace;
+    state = { profit, ss, r, trace };
+    setOutputs(document, {
+      total: fmtUsd(r.total),
+      ne: `on ${fmtUsd(r.netEarnings)} net earnings`,
+      deduction: fmtUsd(r.deduction),
+      rate: profit > 0 ? fmtPct(r.total / profit) : '—',
+      addl: fmtUsd(addl),
+    });
+    renderTrace(document.querySelector('[data-trace="wp"]')!, trace, { cents: true });
+    draw();
+  });
+  onResize(curve, draw);
+  wireCopy(document.querySelector('[data-copy="wp"]'), () => (state ? traceToText('Schedule SE, TY2026', state.trace) : ''));
+</script>

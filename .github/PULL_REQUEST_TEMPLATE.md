@@ -8,6 +8,7 @@
 - [ ] `npm run build` (site) passes
 - [ ] `npm run typecheck` (service + worker) passes, if touched
 - [ ] `npm run lint` passes
+- [ ] `npm test` (tax engine) passes, if touched
 - [ ] Verified in the browser preview, if UI-observable
 
 ## Checklist

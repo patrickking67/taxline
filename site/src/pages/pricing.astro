@@ -5,6 +5,11 @@ import Footer from '../components/Footer.astro';
 import Button from '../components/Button.astro';
 import { Icon } from 'astro-icon/components';
 import { u } from '../lib/url';
+import { faqPage, softwareApp } from '../lib/seo';
+import { firmRoi, fmtUsd } from '@taxline/tax-engine';
+
+// The ROI calculator's defaults, run at build time so the teaser matches the tool.
+const roi = firmRoi({ returnsPerYear: 600, hoursPerReturn: 6, reduction: 0.35, loadedHourlyCost: 85, seats: 5, pricePerSeatMonth: 59, onboardingCost: 5_000, discountRate: 0.1, years: 3, rampMonths: 3, feePerReturn: 650 });
 
 
 const personalPlans = [
@@ -130,9 +135,9 @@ const faqs = [
 ];
 ---
 
-<Base title="Pricing — Taxline" description="Priced for the work, not the seat. A Personal line for solo operators and a Business line for firms — confidence scores and citations on every field, a human approval before output ships.">
+<Base schema={[softwareApp(Astro.site), faqPage(faqs)]} title="Pricing — Taxline plans for solo preparers and tax firms" description="Priced for the work, not the seat. A Personal line for solo operators and a Business line for firms — confidence scores and citations on every field, a human approval before output ships.">
   <TopNav />
-  <main>
+  <main id="main">
     <!-- Hero -->
     <section class="border-b border-border">
       <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
@@ -269,6 +274,35 @@ const faqs = [
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROI band -->
+    <section class="border-b border-border">
+      <div class="mx-auto grid max-w-[1200px] items-center gap-10 px-5 py-16 sm:px-6 lg:grid-cols-[1fr_1fr]">
+        <div>
+          <p class="ds-eyebrow">Does it pay for itself?</p>
+          <h2 class="ds-h2 mt-3 max-w-xl">Run the numbers on your own practice.</h2>
+          <p class="ds-lead mt-3 max-w-xl">Hours returned, payback month, NPV, and IRR — from your volume, your hourly cost, and a reduction you set and then measure in a pilot.</p>
+          <div class="mt-6"><Button href={u('tools/roi')}>Open the ROI calculator</Button></div>
+        </div>
+        <div class="rounded-lg border border-border bg-panel p-5">
+          <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-fg-faint">Example · 5 seats Team Plus · 600 returns · 6 h each · 35% assumed</p>
+          <dl class="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border">
+            {[
+              ['Hours returned / yr', roi.hoursSaved.toLocaleString('en-US')],
+              ['Net annual benefit', fmtUsd(roi.netAnnual)],
+              ['3-yr NPV at 10%', fmtUsd(roi.npv)],
+              ['Payback', `${roi.paybackMonths?.toFixed(1) ?? '—'} months`],
+            ].map(([k, v]) => (
+              <div class="bg-base px-4 py-3">
+                <dt class="text-[12px] text-fg-muted">{k}</dt>
+                <dd class="mt-1 font-mono text-lg font-semibold tabular-nums text-fg">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          <p class="mt-3 text-[11px] leading-relaxed text-fg-faint">Illustrative. The 35% reduction is an input, not a claim — replace it with your pilot result.</p>
         </div>
       </div>
     </section>

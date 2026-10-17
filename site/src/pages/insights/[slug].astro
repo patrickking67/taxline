@@ -1,0 +1,103 @@
+---
+import Base from '../../layouts/Base.astro';
+import TopNav from '../../components/TopNav.astro';
+import Footer from '../../components/Footer.astro';
+import Button from '../../components/Button.astro';
+import PortableText from '../../components/PortableText.astro';
+import { Icon } from 'astro-icon/components';
+import { insights, categoryLabel, plainText, type Insight } from '../../lib/content/insights';
+import { tools } from '../../lib/data/tools';
+import { breadcrumbs } from '../../lib/seo';
+import { absolute, u } from '../../lib/url';
+
+export function getStaticPaths() {
+  return insights.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props as { post: Insight };
+const tool = tools.find((t) => t.slug === post.tool);
+const others = insights.filter((p) => p.slug !== post.slug).slice(0, 3);
+const words = plainText(post.content).split(/\s+/).filter(Boolean).length;
+const longDate = new Date(`${post.publishedAt}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+const schema = [
+  breadcrumbs(Astro.site, [
+    { name: 'Home', path: '' },
+    { name: 'Insights', path: 'insights/' },
+    { name: post.title, path: `insights/${post.slug}/` },
+  ]),
+  {
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.publishedAt,
+    dateModified: post.publishedAt,
+    wordCount: words,
+    articleSection: categoryLabel[post.category ?? ''] ?? undefined,
+    mainEntityOfPage: absolute(`insights/${post.slug}/`, Astro.site),
+    image: absolute('social-preview.png', Astro.site),
+    author: { '@type': 'Organization', name: 'Taxline' },
+    publisher: { '@id': `${absolute('', Astro.site)}#org` },
+  },
+];
+---
+
+<Base title={`${post.title} | Taxline`} description={post.excerpt} schema={schema} ogType="article">
+  <TopNav />
+  <main id="main">
+    <article>
+      <header class="relative overflow-hidden border-b border-border">
+        <div class="pointer-events-none absolute inset-0 console-grid opacity-50"></div>
+        <div class="relative mx-auto max-w-[760px] px-5 pb-10 pt-12 sm:px-6">
+          <nav aria-label="Breadcrumb" class="font-mono text-[11px] text-fg-faint">
+            <a href={u('insights')} class="inline-flex items-center gap-1.5 hover:text-fg"><Icon name="lucide:arrow-left" class="size-3.5" />Insights</a>
+          </nav>
+          <div class="mt-6 flex flex-wrap items-center gap-2 font-mono text-[11px] text-fg-faint">
+            <span class="rounded-sm bg-accent-soft px-2 py-0.5 text-accent">{categoryLabel[post.category ?? ''] ?? 'Insight'}</span>
+            <time datetime={post.publishedAt}>{longDate}</time>
+            {post.readingMinutes && <span>· {post.readingMinutes} min read</span>}
+          </div>
+          <h1 class="ds-h1 mt-4">{post.title}</h1>
+          <p class="ds-lead mt-4">{post.excerpt}</p>
+        </div>
+      </header>
+
+      <div class="mx-auto max-w-[760px] px-5 py-10 sm:px-6">
+        <PortableText value={post.content} />
+
+        {tool && (
+          <aside class="mt-12 flex flex-col gap-4 rounded-lg border border-accent-line bg-panel p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-start gap-3">
+              <div class="grid size-9 shrink-0 place-items-center rounded-md border border-border bg-raised"><Icon name={tool.icon} class="size-[18px] text-accent" /></div>
+              <div>
+                <p class="text-[15px] font-semibold text-fg">Run your own numbers</p>
+                <p class="text-[13px] text-fg-muted">{tool.name} — the same engine, with a cited workpaper.</p>
+              </div>
+            </div>
+            <Button href={u(`tools/${tool.slug}`)} size="sm">Open the calculator</Button>
+          </aside>
+        )}
+
+        <p class="mt-8 border-t border-border-faint pt-4 text-[12px] leading-relaxed text-fg-faint">
+          General information for tax year 2026, not tax advice. Figures from IRS Rev. Proc. 2025-32 unless noted; worked examples computed by @taxline/tax-engine.
+        </p>
+      </div>
+    </article>
+
+    {others.length > 0 && (
+      <section class="border-t border-border bg-panel/30">
+        <div class="mx-auto max-w-[1200px] px-5 py-12 sm:px-6">
+          <p class="ds-eyebrow">Keep reading</p>
+          <div class="mt-6 grid gap-4 md:grid-cols-3">
+            {others.map((p) => (
+              <a href={u(`insights/${p.slug}`)} class="lift group rounded-lg border border-border bg-panel p-5 hover:border-accent-line">
+                <span class="font-mono text-[11px] text-fg-faint">{categoryLabel[p.category ?? ''] ?? 'Insight'}</span>
+                <h2 class="mt-2 text-[15px] font-semibold leading-snug text-fg group-hover:text-accent-hover">{p.title}</h2>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+  </main>
+  <Footer />
+</Base>

@@ -18,6 +18,8 @@ RUN npm --prefix service ci
 # Application code + the knowledge base it reads.
 COPY service/ ./service/
 COPY knowledge-base/ ./knowledge-base/
+# compute_tax imports the shared engine by relative path (no deps of its own).
+COPY packages/tax-engine/src/ ./packages/tax-engine/src/
 
 ENV PORT=8787
 EXPOSE 8787
