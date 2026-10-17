@@ -7,4 +7,5 @@ Full contract: `docs/design-contract.md`. Essentials:
 - **Type.** IBM Plex Sans (human) + IBM Plex Mono (machine: values, timestamps, eyebrows, code). Use `.ds-display/.ds-h1/.ds-h2/.ds-h3/.ds-lead/.ds-body/.ds-small/.ds-eyebrow`.
 - **Reuse components**: `StatusPill`, `ConfidenceMeter`, `EvidenceChip`, `AgentCard`, `Button`, `Logo`, `AppShell`. Icons via `astro-icon` Lucide (`<Icon name="lucide:…"/>`), ~1.75 stroke, currentColor.
 - **Voice.** Short, certain, technical. Sentence case. Address the reader as "you"; product is "Taxline" / "the fleet". No emoji. Quantify with confidence %/dates. Never: "replace accountants", "fully autonomous", "set it and forget it", "revolutionary/AI-powered/next-gen".
+- **Accessibility.** Text tokens hold ≥4.5:1 contrast on every surface (WCAG AA); underline links inside prose; scrollable regions get `tabindex="0"`. `npm run test:e2e` enforces this with axe.
 - **Confidence bands:** green ≥0.85, amber 0.6–0.85, red <0.6. Low confidence routes to human review.

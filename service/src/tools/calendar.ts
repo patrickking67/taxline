@@ -111,7 +111,7 @@ export const calendar: Tool<DeadlineInput, DeadlineOutput> = {
     }
 
     // Resolve year-end. Default to Dec 31 of taxYear (calendar-year filer).
-    let yEnd: { y: number; m: number; d: number } | null = null;
+    let yEnd: { y: number; m: number; d: number } | null;
     if (input.yearEnd) {
       yEnd = isoToParts(input.yearEnd);
       if (!yEnd) return fail('validation', '`yearEnd` must be YYYY-MM-DD.');

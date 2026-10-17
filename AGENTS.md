@@ -19,7 +19,7 @@ accountants" or "fully autonomous".
 ## Repository map
 
 ```
-site/               Astro 5 static site — marketing, free calculators (/tools), the product app shell (the GUI)
+site/               Astro 7 static site — marketing, free calculators (/tools), the product app shell (the GUI)
 packages/tax-engine/ Deterministic federal tax math (TY2026) + scenario validation, shared by site + service
 service/            Node + TypeScript agent fleet (Anthropic SDK) — the backend
 cms/                EmDash CMS (Astro 7, own lockfile) for Insights; NOT a root workspace
@@ -37,6 +37,8 @@ host, and the site talks to it through the adapter layer.
 
 ## Setup and validation
 
+Node `^22.22.3 || ^24.16.0 || >=26.3.0` (root `engines`; `.nvmrc` pins 22).
+
 ```bash
 npm install            # root (installs the site workspace + lint toolchain)
 npm run dev            # Astro dev server → http://localhost:4321
@@ -47,6 +49,7 @@ npm run build          # static build    → site/dist (fingerprinted assets in 
 npm run check          # astro check (typecheck .astro)
 npm run typecheck      # site + tax-engine + service + worker typecheck
 npm test               # tax-engine unit tests (node:test via tsx)
+npm run test:e2e       # Playwright + axe against the production build under /taxline
 npm run lint           # eslint (flat config)
 npm run format         # prettier --write
 npm run refresh-kb     # re-review the knowledge base + restamp the manifest
@@ -57,6 +60,7 @@ inside each. The service needs `service/.env` → `ANTHROPIC_API_KEY`; without i
 fleet stays offline-deterministic.
 
 **Full validation before completion:** `npm run check && npm run lint && npm run typecheck && npm test`
+(plus `npm run test:e2e` for any site change; set `CHROMIUM_PATH` to use an existing Chromium).
 
 ## Deployment
 
@@ -107,11 +111,17 @@ fleet stays offline-deterministic.
   validator. The UI (`components/tools/ScenarioIntake.astro`) applies only fields the
   person checks; fields under 0.85 start unchecked.
 - **EmDash is the CMS; the site stays static.** `cms/` is a separate EmDash app (Astro 7,
-  React, SQLite locally, D1/R2 on Cloudflare) because EmDash needs Astro 6+ and a server
+  React, SQLite locally, D1/R2 on Cloudflare) because EmDash needs a server
   runtime. It exports published Insights at `/api/insights.json`;
   `scripts/pull-insights.mjs` validates and atomically writes the committed snapshot the
   site builds from. The deploy pulls only when the `EMDASH_URL` repository variable is set
   and continues on failure. Schema of record: `cms/seed/seed.json`.
+- **The deployed shape is tested, not assumed.** `site/e2e/` runs Playwright against the
+  production build served under `/taxline` (`e2e/serve.mjs` mimics Pages, including the 404).
+  It walks the sitemap: one `<h1>`, canonical, valid JSON-LD, no console errors or failed
+  requests, no serious/critical axe WCAG 2.1 AA violations, and every internal link resolves.
+  Calculator specs assert hand-worked figures on screen. Text tokens must hold ≥4.5:1 on
+  every surface; prose links are underlined.
 - **SEO lives in `Base.astro` + `lib/seo.ts`.** Canonical/OG/Twitter tags and one JSON-LD
   `@graph` per page (pages pass extra nodes via `schema`). `sitemap.xml`, `robots.txt`,
   and `llms.txt` are generated endpoints in `site/src/pages/`; the sitemap derives from

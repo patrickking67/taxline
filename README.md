@@ -21,6 +21,7 @@ Five AI agents move tax work from a pile of documents to a reviewer-ready workpa
 | **Free calculators** | Six tools: income tax, self-employment tax, estimated tax, S-corp election, depreciation, and firm ROI. Each one recomputes live, keeps its state in the URL, has SVG charts, typesets its formulas in MathML, and produces a copyable cited workpaper. | `site/src/pages/tools/` |
 | **Product console** | Intake queue, extraction review with confidence meters, a gated `compute_tax` preview, research, workpapers, and compliance. Fully functional on static hosting through an offline adapter. | `site/src/pages/app/` |
 | **CMS** | [EmDash](https://github.com/emdash-cms/emdash) (Astro, SQLite locally, D1/R2 on Cloudflare) for Insights articles. The static site pulls published entries at build time and falls back to a committed snapshot. | `cms/`, `scripts/pull-insights.mjs` |
+| **Quality gates** | 35 hand-worked engine tests, plus Playwright end-to-end tests against the production build under the real `/taxline` base path. Every page in the sitemap must pass axe WCAG 2.1 AA (serious and critical), load with no console errors, and link only to pages that exist. | `packages/tax-engine/test/`, `site/e2e/` |
 | **Contact Worker** | Cloudflare Worker for demo requests, with honeypot and email validation. | `workers/contact/` |
 
 ## Architecture
@@ -56,6 +57,8 @@ flowchart LR
 
 ## Quick start
 
+Requires Node `^22.22.3`, `^24.16.0`, or `>=26.3.0` (Astro 7 and the ESLint 10 toolchain; `.nvmrc` pins 22).
+
 ```bash
 npm install            # site + tax-engine workspaces + lint toolchain
 npm run dev            # site            http://localhost:4321
@@ -67,6 +70,7 @@ Validate everything before a commit:
 
 ```bash
 npm run check && npm run lint && npm run typecheck && npm test
+npm run test:e2e       # builds the site, then runs Playwright + axe (CHROMIUM_PATH=… to reuse a local Chromium)
 ```
 
 The service reads `service/.env` (`ANTHROPIC_API_KEY`). Without a key, the fleet and the `/scenario` endpoint run in a clearly labeled deterministic offline mode.
@@ -87,7 +91,7 @@ compareEntity({ status: 'single', profit: 150_000, salary: 60_000, overhead: 2_0
 ## Repository map
 
 ```
-site/                 Astro 5 static site: marketing, /tools, /insights, /methodology, the /app console
+site/                 Astro 7 static site: marketing, /tools, /insights, /methodology, the /app console
 packages/tax-engine/  2026 federal tax math + scenario validation (29 tests, node:test via tsx)
 service/              Node + TypeScript agent fleet on the Anthropic SDK; /agents/run, /scenario, memory
 cms/                  EmDash CMS (Astro 7) for Insights; export endpoint at /api/insights.json

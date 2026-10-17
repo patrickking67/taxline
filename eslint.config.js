@@ -40,6 +40,12 @@ export default [
     languageOptions: { globals: globals.browser },
   },
   {
+    // Playwright specs, config, and the dist server run in Node.
+    files: ['site/e2e/**', 'site/playwright.config.ts'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+    rules: { 'no-console': 'off' },
+  },
+  {
     linterOptions: { reportUnusedDisableDirectives: false },
   },
 ];

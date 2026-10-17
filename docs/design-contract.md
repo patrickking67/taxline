@@ -1,6 +1,6 @@
 # Taxline — page-build contract (read before creating any site page)
 
-You are adding pages to an existing **Astro 5 + Tailwind v4** site for **Taxline** (agentic tax operations). The design system already exists — **reuse it, do not reinvent it**. Do **not** modify existing components, `global.css`, or `astro.config.mjs`. Do **not** add dependencies. Your page must build cleanly (`astro build`).
+You are adding pages to an existing **Astro 7 + Tailwind v4** site for **Taxline** (agentic tax operations). The design system already exists — **reuse it, do not reinvent it**. Do **not** modify existing components, `global.css`, or `astro.config.mjs`. Do **not** add dependencies. Your page must build cleanly (`astro build`).
 
 Repo root: `/Users/patrickking/Code/taxline`  ·  site: `site/`  ·  pages: `site/src/pages/`
 
