@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import TopNav from '../components/TopNav.astro';
+import Footer from '../components/Footer.astro';
+import Button from '../components/Button.astro';
+import { u } from '../lib/url';
+---
+
+<Base title="Not found — Taxline" description="This page does not exist." noindex>
+  <TopNav />
+  <main id="main" class="relative overflow-hidden border-b border-border">
+    <div class="pointer-events-none absolute inset-0 console-grid opacity-60"></div>
+    <div class="relative mx-auto max-w-[1200px] px-5 py-28 sm:px-6">
+      <p class="ds-eyebrow">Error 404 · route not found</p>
+      <h1 class="ds-display mt-4 max-w-2xl">No document at this path.</h1>
+      <p class="ds-lead mt-5 max-w-xl">Relay checked the queue. Nothing here matched, at any confidence. Pick a known route below.</p>
+      <div class="mt-6 max-w-md rounded-md border border-border bg-inset px-4 py-3 font-mono text-xs leading-relaxed text-fg-muted">
+        <div><span class="text-fg-faint">route</span> <span class="text-danger-bright" data-path>unknown</span></div>
+        <div><span class="text-fg-faint">match</span> null · confidence 0.00</div>
+        <div><span class="text-fg-faint">action</span> routed to human</div>
+      </div>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <Button href={u('')}>Go home</Button>
+        <Button href={u('tools')} variant="ghost">Free tax tools</Button>
+        <Button href={u('app')} variant="ghost">Open the app</Button>
+      </div>
+    </div>
+  </main>
+  <Footer />
+  <script>
+    const el = document.querySelector('[data-path]');
+    if (el) el.textContent = location.pathname;
+  </script>
+</Base>

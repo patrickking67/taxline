@@ -152,14 +152,14 @@ body {
 .reveal { animation: ds-fadeup 0.5s var(--ease-ds) both; }
 
 /* Scroll-reveal — elements rise + fade as they enter the viewport */
-[data-reveal] {
+.js [data-reveal] {
   opacity: 0;
   transform: translateY(16px);
   transition: opacity 0.7s var(--ease-ds), transform 0.7s var(--ease-ds);
   transition-delay: var(--reveal-delay, 0ms);
   will-change: opacity, transform;
 }
-[data-reveal].revealed { opacity: 1; transform: none; }
+.js [data-reveal].revealed { opacity: 1; transform: none; }
 
 /* Hero graphic — breathing accent glow, node pulse, flowing connectors, slow ring */
 @keyframes ds-breathe { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.05); } }
@@ -184,3 +184,18 @@ body {
   .lift:hover { transform: none; }
   * { scroll-behavior: auto !important; }
 }
+
+/* ============================================================================
+   Formulas — native MathML, typeset in a math face with Plex as the fallback
+   ============================================================================ */
+.formula math {
+  font-family: "STIX Two Math", "Cambria Math", "Latin Modern Math", math, var(--font-sans);
+  font-size: 1.15rem;
+  color: var(--color-fg);
+}
+.formula math[display="block"] { display: block; text-align: left; }
+.formula mi, .formula mn { color: var(--color-fg); }
+.formula mo { color: var(--color-fg-muted); }
+
+/* Visually hidden until focused (skip link) */
+.sr-only:not(:focus):not(:focus-within) { clip-path: inset(50%); }
