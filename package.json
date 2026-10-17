@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "license": "UNLICENSED",
-  "description": "Taxline \u2014 AI tax operations, from intake to reviewer-ready workpapers.",
+  "description": "Taxline \u2014 agentic tax operations: an AI agent fleet, a tested 2026 tax engine, free calculators, and human approval before anything ships.",
   "workspaces": [
     "site",
     "packages/*"
@@ -21,7 +21,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "refresh-kb": "npm --prefix service run refresh-kb",
-    "test": "npm test --workspace @taxline/tax-engine"
+    "test": "npm test --workspace @taxline/tax-engine",
+    "pull-insights": "node scripts/pull-insights.mjs",
+    "dev:cms": "npm --prefix cms run dev"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

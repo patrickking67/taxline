@@ -1,0 +1,61 @@
+---
+// Renders EmDash Portable Text with the design system's type scale. Handles the
+// blocks Insights uses — paragraphs, h2/h3, blockquotes, bullet and numbered
+// lists, strong/em/code marks, and links. Unknown block types render nothing
+// rather than raw JSON.
+import type { PtBlock, PtSpan } from '../lib/content/insights';
+
+interface Props { value: PtBlock[] }
+const { value } = Astro.props;
+
+type Group = { list: 'bullet' | 'number'; items: PtBlock[] } | { block: PtBlock };
+const groups: Group[] = [];
+for (const b of value) {
+  const last = groups[groups.length - 1];
+  if (b.listItem) {
+    if (last && 'list' in last && last.list === b.listItem) last.items.push(b);
+    else groups.push({ list: b.listItem, items: [b] });
+  } else groups.push({ block: b });
+}
+
+const href = (b: PtBlock, s: PtSpan) => {
+  const def = b.markDefs?.find((d) => s.marks?.includes(d._key) && d._type === 'link');
+  const url = def?.href;
+  return url && /^(https?:|\/|#|mailto:)/.test(url) ? url : undefined;
+};
+const cls = (s: PtSpan) =>
+  [s.marks?.includes('strong') && 'font-semibold text-fg', s.marks?.includes('em') && 'italic', s.marks?.includes('code') && 'rounded-xs bg-inset px-1 font-mono text-[0.9em]']
+    .filter(Boolean)
+    .join(' ');
+---
+
+<div class="insight-body">
+  {groups.map((g) =>
+    'list' in g ? (
+      g.list === 'bullet' ? (
+        <ul class="my-5 space-y-2 pl-0">
+          {g.items.map((it) => (
+            <li class="flex gap-3 text-[16px] leading-relaxed text-fg-muted">
+              <span class="mt-[0.7em] size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
+              <span>{(it.children ?? []).map((s) => (href(it, s) ? <a href={href(it, s)} class="text-accent underline underline-offset-2">{s.text}</a> : <span class={cls(s)}>{s.text}</span>))}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ol class="my-5 list-decimal space-y-2 pl-5 text-[16px] leading-relaxed text-fg-muted marker:font-mono marker:text-fg-faint">
+          {g.items.map((it) => <li>{(it.children ?? []).map((s) => <span class={cls(s)}>{s.text}</span>)}</li>)}
+        </ol>
+      )
+    ) : g.block._type !== 'block' ? null : g.block.style === 'h2' ? (
+      <h2 class="ds-h3 mb-3 mt-10">{(g.block.children ?? []).map((s) => s.text).join('')}</h2>
+    ) : g.block.style === 'h3' ? (
+      <h3 class="mb-2 mt-8 text-[17px] font-semibold text-fg">{(g.block.children ?? []).map((s) => s.text).join('')}</h3>
+    ) : g.block.style === 'blockquote' ? (
+      <blockquote class="my-6 border-l-2 border-accent pl-4 text-[16px] italic text-fg-muted">{(g.block.children ?? []).map((s) => s.text).join('')}</blockquote>
+    ) : (
+      <p class="my-4 text-[16px] leading-[1.75] text-fg-muted">
+        {(g.block.children ?? []).map((s) => (href(g.block, s) ? <a href={href(g.block, s)} class="text-accent underline underline-offset-2">{s.text}</a> : <span class={cls(s)}>{s.text}</span>))}
+      </p>
+    ),
+  )}
+</div>

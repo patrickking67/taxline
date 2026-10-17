@@ -1,0 +1,81 @@
+---
+import Base from '../../layouts/Base.astro';
+import TopNav from '../../components/TopNav.astro';
+import Footer from '../../components/Footer.astro';
+import { Icon } from 'astro-icon/components';
+import { insights, categoryLabel } from '../../lib/content/insights';
+import { breadcrumbs } from '../../lib/seo';
+import { absolute, u } from '../../lib/url';
+
+const [lead, ...rest] = insights;
+const longDate = (iso: string) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+const schema = [
+  breadcrumbs(Astro.site, [
+    { name: 'Home', path: '' },
+    { name: 'Insights', path: 'insights/' },
+  ]),
+  {
+    '@type': 'Blog',
+    name: 'Taxline Insights',
+    url: absolute('insights/', Astro.site),
+    blogPost: insights.map((p) => ({ '@type': 'BlogPosting', headline: p.title, url: absolute(`insights/${p.slug}/`, Astro.site), datePublished: p.publishedAt })),
+  },
+];
+---
+
+<Base
+  title="Insights: 2026 tax math, planning, and how the fleet works | Taxline"
+  description="Guides on 2026 federal tax figures, estimated tax, S corporation elections, and how Taxline keeps AI output auditable. Every number checked against the IRS source and the tested engine."
+  schema={schema}
+>
+  <TopNav />
+  <main id="main">
+    <section class="relative overflow-hidden border-b border-border">
+      <div class="pointer-events-none absolute inset-0 console-grid opacity-60"></div>
+      <div class="relative mx-auto max-w-[1200px] px-5 pb-12 pt-16 sm:px-6">
+        <p class="ds-eyebrow reveal">Insights</p>
+        <h1 class="ds-display reveal mt-4 max-w-3xl" style="animation-delay:.05s">Tax math, shown.</h1>
+        <p class="ds-lead reveal mt-5 max-w-2xl" style="animation-delay:.1s">Guides with the figures checked against the IRS source and the numbers run through the same engine as the calculators.</p>
+      </div>
+    </section>
+
+    {lead && (
+      <section class="border-b border-border">
+        <div class="mx-auto max-w-[1200px] px-5 py-12 sm:px-6">
+          <a href={u(`insights/${lead.slug}`)} class="lift group grid gap-6 rounded-lg border border-border bg-panel p-6 hover:border-accent-line lg:grid-cols-[1.4fr_1fr] lg:p-8">
+            <div>
+              <div class="flex flex-wrap items-center gap-2 font-mono text-[11px] text-fg-faint">
+                <span class="rounded-sm bg-accent-soft px-2 py-0.5 text-accent">{categoryLabel[lead.category ?? ''] ?? 'Insight'}</span>
+                <span>{longDate(lead.publishedAt)}</span>
+                {lead.readingMinutes && <span>· {lead.readingMinutes} min read</span>}
+              </div>
+              <h2 class="ds-h2 mt-4 group-hover:text-accent-hover">{lead.title}</h2>
+              <p class="ds-lead mt-3">{lead.excerpt}</p>
+            </div>
+            <div class="flex items-end justify-start lg:justify-end">
+              <span class="inline-flex items-center gap-1.5 text-sm font-medium text-accent">Read the guide <Icon name="lucide:arrow-right" class="size-4" /></span>
+            </div>
+          </a>
+        </div>
+      </section>
+    )}
+
+    <section class="border-b border-border">
+      <div class="mx-auto grid max-w-[1200px] gap-4 px-5 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-3">
+        {rest.map((p, i) => (
+          <a data-reveal style={`--reveal-delay:${i * 60}ms`} href={u(`insights/${p.slug}`)} class="lift group flex flex-col rounded-lg border border-border bg-panel p-5 hover:border-accent-line">
+            <div class="flex flex-wrap items-center gap-2 font-mono text-[11px] text-fg-faint">
+              <span class="rounded-sm bg-raised px-2 py-0.5 text-fg-muted">{categoryLabel[p.category ?? ''] ?? 'Insight'}</span>
+              {p.readingMinutes && <span>{p.readingMinutes} min</span>}
+            </div>
+            <h2 class="mt-3 text-[17px] font-semibold leading-snug text-fg group-hover:text-accent-hover">{p.title}</h2>
+            <p class="mt-2 flex-1 text-[13px] leading-relaxed text-fg-muted">{p.excerpt}</p>
+            <span class="mt-4 font-mono text-[11px] text-fg-faint">{longDate(p.publishedAt)}</span>
+          </a>
+        ))}
+      </div>
+      <p class="mx-auto max-w-[1200px] px-5 pb-10 font-mono text-[11px] text-fg-faint sm:px-6">Written in the Taxline CMS (EmDash) · published to this static site at build time</p>
+    </section>
+  </main>
+  <Footer />
+</Base>

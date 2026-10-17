@@ -35,6 +35,23 @@ jobs:
       - run: npm test
       - run: npm --prefix packages/tax-engine run typecheck
 
+  cms:
+    name: CMS (EmDash) — typecheck + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: cms/package-lock.json
+      - run: npm ci
+        working-directory: cms
+      - run: npm run typecheck
+        working-directory: cms
+      - run: npm run build
+        working-directory: cms
+
   lint:
     name: Lint (eslint)
     runs-on: ubuntu-latest
