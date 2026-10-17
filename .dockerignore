@@ -12,6 +12,8 @@
 site
 # packages/ is kept: the service imports packages/tax-engine/src.
 workers
+cms
+scripts
 docs
 **/.env
 **/.env.*
