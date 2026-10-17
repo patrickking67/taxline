@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import TopNav from '../components/TopNav.astro';
 import Footer from '../components/Footer.astro';
+import { u } from '../lib/url';
 ---
 
 <Base
@@ -86,7 +87,7 @@ import Footer from '../components/Footer.astro';
         You retain ownership of the documents and data you submit. You grant us the rights needed to
         process that data to provide the service. We do not train models on your client data. Our
         handling of personal information is described in the
-        <a href="/privacy" class="text-accent transition-colors hover:text-accent-hover">Privacy Policy</a>.
+        <a href={u('privacy')} class="text-accent underline decoration-accent-line underline-offset-2 transition-colors hover:text-accent-hover">Privacy Policy</a>.
         Each party will protect the other's confidential information and use it only as needed to
         perform under these terms.
       </p>
@@ -142,7 +143,7 @@ import Footer from '../components/Footer.astro';
       <h2 class="mt-10 text-xl font-semibold text-fg">Contact</h2>
       <p class="mt-3 text-fg-muted leading-relaxed">
         Questions about these terms? Email us at
-        <a href="mailto:legal@taxline.example" class="text-accent transition-colors hover:text-accent-hover">legal@taxline.example</a>.
+        <a href="mailto:legal@taxline.example" class="text-accent underline decoration-accent-line underline-offset-2 transition-colors hover:text-accent-hover">legal@taxline.example</a>.
       </p>
     </section>
   </main>

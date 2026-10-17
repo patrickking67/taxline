@@ -6,7 +6,7 @@ _Last updated: 2026-05-30_
 
 ```
 taxline/
-├── site/              # Astro 5 — marketing + product shell (8 pages)  ← heart
+├── site/              # Astro 7 — marketing + product shell (8 pages)  ← heart
 ├── service/           # Claude Agent SDK workforce — 5 agents, deployable
 ├── knowledge-base/    # markdown KB + manifest + refresh ingest (the "living" KB)
 ├── workers/contact/   # Cloudflare Worker — primary form backend

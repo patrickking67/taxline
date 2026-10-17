@@ -1,7 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
-import mdx from '@astrojs/mdx';
 import icon from 'astro-icon';
 
 // GitHub Pages is static hosting. `base` is configurable so the same build
@@ -14,7 +13,7 @@ export default defineConfig({
   base: BASE,
   output: 'static',
   trailingSlash: 'ignore',
-  integrations: [icon(), mdx()],
+  integrations: [icon()],
   server: { port: 4321, host: true },
   build: {
     // Hashed, fingerprinted, cache-friendly asset directory.

@@ -49,16 +49,17 @@ const figures = [
             <Icon name="lucide:lock" class="size-4" />Calculations run in your browser; the numbers you enter are not sent anywhere. Plain-English intake says where your text goes before you use it.
           </p>
         </div>
-        <dl class="reveal grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border" style="animation-delay:.2s">
-          {figures.map(([v, l]) => (
-            <div class="bg-panel px-4 py-3.5">
-              <dt class="sr-only">{l}</dt>
-              <dd class="font-mono text-xl font-semibold tabular-nums text-fg">{v}</dd>
-              <dd class="mt-1 text-[12px] text-fg-muted">{l}</dd>
-            </div>
-          ))}
-          <div class="col-span-2 bg-panel px-4 py-2.5 font-mono text-[10px] text-fg-faint">Source: IRS Rev. Proc. 2025-32 · SSA 2026 contribution base</div>
-        </dl>
+        <div class="reveal overflow-hidden rounded-lg border border-border bg-border" style="animation-delay:.2s">
+          <dl class="grid grid-cols-2 gap-px">
+            {figures.map(([v, l]) => (
+              <div class="flex flex-col-reverse bg-panel px-4 py-3.5">
+                <dt class="mt-1 text-[12px] text-fg-muted">{l}</dt>
+                <dd class="font-mono text-xl font-semibold tabular-nums text-fg">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          <p class="mt-px bg-panel px-4 py-2.5 font-mono text-[10px] text-fg-faint">Source: IRS Rev. Proc. 2025-32 · SSA 2026 contribution base</p>
+        </div>
       </div>
     </section>
 

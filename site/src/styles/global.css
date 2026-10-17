@@ -20,7 +20,7 @@
   /* Warm-white text */
   --color-fg: #ece8e0;
   --color-fg-muted: #a6a29a;
-  --color-fg-faint: #6e6b65;
+  --color-fg-faint: #8c8983; /* ≥4.5:1 on raised (WCAG AA small text) */
   --color-on-accent: #07140e;
 
   /* Thin borders */
