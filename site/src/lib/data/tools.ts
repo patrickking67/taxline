@@ -36,6 +36,14 @@ export const tools: ToolMeta[] = [
     computes: ['safe harbor', '4 installments', 'due dates'],
   },
   {
+    slug: 's-corp',
+    name: 'S corporation election calculator',
+    short: 'S-corp election',
+    icon: 'lucide:scale',
+    blurb: 'Sole proprietor vs. S corp on the same profit: SE tax vs. payroll FICA, QBI, overhead, and a salary sweep.',
+    computes: ['SE vs FICA', 'K-1 + QBI', 'salary sweep'],
+  },
+  {
     slug: 'depreciation',
     name: 'Depreciation calculator',
     short: 'Depreciation',

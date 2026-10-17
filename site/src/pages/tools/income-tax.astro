@@ -5,6 +5,7 @@ import Fieldset from '../../components/tools/Fieldset.astro';
 import Stat from '../../components/tools/Stat.astro';
 import Workpaper from '../../components/tools/Workpaper.astro';
 import Formula from '../../components/tools/Formula.astro';
+import ScenarioIntake from '../../components/tools/ScenarioIntake.astro';
 import { FILING_STATUSES } from '@taxline/tax-engine';
 
 const statuses = FILING_STATUSES.map((s) => ({ value: s.key, label: s.label }));
@@ -48,14 +49,23 @@ const limits = [
 
 <ToolShell
   slug="income-tax"
-  title="2026 Federal Income Tax Calculator — brackets, capital gains, QBI | Taxline"
+  title="2026 Federal Income Tax Calculator: brackets, capital gains, QBI | Taxline"
   description="Estimate your 2026 federal income tax with the IRS brackets, standard deduction, capital gains worksheet, QBI deduction, child tax credit, SE tax, and NIIT. Line-by-line Form 1040 trace with citations."
   h1="2026 federal income tax calculator"
-  lead="A Form 1040 estimate from income to refund, using the tax-year 2026 brackets. Every line shows its formula, its form line, and the IRS authority behind it."
+  lead="A Form 1040 estimate from income to refund, using the tax-year 2026 brackets. Describe your situation in plain English or fill the form; every line shows its formula, its form line, and the IRS authority behind it."
   faqs={faqs}
   limits={limits}
 >
-  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+  <ScenarioIntake
+    form="calc"
+    map={{
+      status: 'status', children: 'children', wages: 'wages', federalWithholding: 'withholding', selfEmploymentProfit: 'se',
+      interest: 'interest', ordinaryDividends: 'ordDiv', qualifiedDividends: 'qualDiv', longTermGain: 'ltcg', shortTermGain: 'stcg',
+      otherIncome: 'other', adjustments: 'adj', itemized: 'itemized', estimatedPayments: 'estimates',
+    }}
+  />
+
+  <div class="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
     <form id="calc" class="grid gap-4" autocomplete="off">
       <Fieldset legend="Filing">
         <Field name="status" label="Filing status" kind="select" options={statuses} value="single" class="sm:col-span-2" />
@@ -111,7 +121,7 @@ const limits = [
         <div data-curve class="mt-3"></div>
       </div>
 
-      <Workpaper title="Form 1040 — federal estimate" subtitle="Tax year 2026" code="WP-1040" id="wp" />
+      <Workpaper title="Form 1040: federal estimate" subtitle="Tax year 2026" code="WP-1040" id="wp" />
     </div>
   </div>
 

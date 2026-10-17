@@ -1,0 +1,147 @@
+---
+import ToolShell from '../../components/tools/ToolShell.astro';
+import Field from '../../components/tools/Field.astro';
+import Fieldset from '../../components/tools/Fieldset.astro';
+import Stat from '../../components/tools/Stat.astro';
+import Workpaper from '../../components/tools/Workpaper.astro';
+import Formula from '../../components/tools/Formula.astro';
+import { FILING_STATUSES } from '@taxline/tax-engine';
+
+const statuses = FILING_STATUSES.map((s) => ({ value: s.key, label: s.label }));
+
+const faqs = [
+  {
+    q: 'How does an S corporation save self-employment tax?',
+    a: 'A sole proprietor pays 15.3% self-employment tax on 92.35% of profit (Social Security capped at $184,500 for 2026). An S corporation owner pays FICA only on the salary the company pays them; the remaining profit flows through on a K-1 without self-employment tax. The saving is the FICA avoided on that remainder, less the cost of running payroll and the entity.',
+  },
+  {
+    q: 'At what profit does an S corp election make sense?',
+    a: 'There is no single number. It depends on a reasonable salary for your work, your overhead (payroll service, a second return, state entity fees), and how the QBI deduction changes. Enter your figures — the calculator compares both structures on the same profit and shows the break-even across salaries.',
+  },
+  {
+    q: 'What is reasonable compensation?',
+    a: 'The IRS requires an S corporation to pay a working shareholder reasonable wages for the services they perform before taking distributions. A salary set only to minimize tax can be reclassified as wages, with back payroll taxes and penalties. Use what you would pay someone else to do the job.',
+  },
+  {
+    q: 'How does the QBI deduction change under an S corp?',
+    a: 'Your salary is not qualified business income, but the K-1 income is. Paying more salary lowers the K-1 and the 20% deduction with it. Above the 2026 threshold ($201,750 single, $403,500 joint) the W-2 wages the S corp pays also set the wage limit on the deduction.',
+  },
+  {
+    q: 'Is the employer half of FICA deductible?',
+    a: 'Yes. The S corporation deducts the employer share and payroll costs before computing the K-1, which is why the comparison counts both halves of FICA as cost but only the K-1 as income.',
+  },
+];
+
+const limits = [
+  'State taxes, franchise taxes, and state S-corp recognition',
+  'Health insurance and retirement plan contributions through payroll',
+  'Unemployment taxes (FUTA/SUTA) beyond the overhead you enter',
+  'Basis, distributions in excess of basis, and built-in gains',
+];
+---
+
+<ToolShell
+  slug="s-corp"
+  title="S Corp Tax Savings Calculator 2026: sole prop vs S corporation | Taxline"
+  description="Compare a sole proprietorship and an S corporation on the same 2026 profit: self-employment tax vs. payroll FICA, the QBI deduction, overhead, and a salary sweep with the reasonable-compensation trade-off."
+  h1="S corporation election calculator"
+  lead="The same profit, two structures, every 2026 rule applied: self-employment tax or payroll FICA, the QBI deduction on the K-1, and what payroll costs to run."
+  faqs={faqs}
+  limits={limits}
+>
+  <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+    <form id="calc" class="grid gap-4" autocomplete="off">
+      <Fieldset legend="The business">
+        <Field name="profit" label="Net profit before owner pay" value="150000" class="sm:col-span-2" />
+        <Field name="salary" label="Owner salary (W-2)" value="60000" hint="Must be reasonable for the work." />
+        <Field name="overhead" label="Annual overhead" value="2000" hint="Payroll service, 1120-S prep, state fees." />
+      </Fieldset>
+      <Fieldset legend="The household">
+        <Field name="status" label="Filing status" kind="select" options={statuses} value="single" class="sm:col-span-2" />
+        <Field name="otherWages" label="Other W-2 wages" value="0" />
+        <Field name="children" label="Qualifying children" kind="number" value="0" min={0} max={12} step={1} />
+      </Fieldset>
+      <div class="flex items-center justify-between gap-3">
+        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
+      </div>
+    </form>
+
+    <div class="grid min-w-0 grid-cols-1 gap-4 lg:sticky lg:top-[76px]">
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <Stat label="Annual difference" out="savings" tone="accent" subOut="savingsSub" />
+        <Stat label="Sole prop total" out="sole" sub="income tax + SE tax" />
+        <Stat label="S corp total" out="scorp" sub="tax + FICA + overhead" />
+        <Stat label="K-1 income" out="k1" subOut="qbi" />
+      </div>
+      <div class="rounded-lg border border-border bg-panel p-4">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="text-[13px] font-semibold text-fg">Savings by owner salary</h2>
+          <span class="font-mono text-[11px] text-fg-faint">above zero, the election saves · hover for values</span>
+        </div>
+        <div data-curve class="mt-3"></div>
+        <p class="mt-2 text-[11px] leading-relaxed text-fg-faint">The low-salary end is where the IRS looks hardest. Read the chart as a trade-off, not a target.</p>
+      </div>
+      <Workpaper title="Entity comparison: sole proprietor vs. S corporation" subtitle="Tax year 2026 · federal" code="WP-ENT" id="wp" />
+    </div>
+  </div>
+
+  <Fragment slot="formulas">
+    <Formula title="Sole proprietor" plain="C_SP = tax(profit as Schedule C) + SE(0.9235 profit)" note="SE = 12.4% Social Security up to the $184,500 base + 2.9% Medicare; half of SE is deductible above the line.">
+      <math display="block"><mrow><msub><mi>C</mi><mi>SP</mi></msub><mo>=</mo><mi>tax</mi><mo>(</mo><mi>π</mi><mo>)</mo><mo>+</mo><mi>SE</mi><mo>(</mo><mn>0.9235</mn><mo>·</mo><mi>π</mi><mo>)</mo></mrow></math>
+    </Formula>
+    <Formula title="S corporation" plain="K1 = profit minus S minus F_er minus O; C_SC = tax(S + K1) + F_ee + F_er + O" note="S = salary, F = FICA (7.65% each side, Social Security capped), O = overhead. K-1 income is QBI; salary is not.">
+      <math display="block"><mrow><msub><mi>C</mi><mi>SC</mi></msub><mo>=</mo><mi>tax</mi><mo>(</mo><mi>S</mi><mo>+</mo><mi>K</mi><mo>)</mo><mo>+</mo><msub><mi>F</mi><mi>ee</mi></msub><mo>+</mo><msub><mi>F</mi><mi>er</mi></msub><mo>+</mo><mi>O</mi><mo>,</mo><mspace width="0.5em"/><mi>K</mi><mo>=</mo><mi>π</mi><mo>−</mo><mi>S</mi><mo>−</mo><msub><mi>F</mi><mi>er</mi></msub><mo>−</mo><mi>O</mi></mrow></math>
+    </Formula>
+  </Fragment>
+</ToolShell>
+
+<script>
+  import { compareEntity, fmtUsd, salarySweep, type EntityInput, type EntityResult, type FilingStatus } from '@taxline/tax-engine';
+  import { bindCalculator, num } from '../../lib/tools/form';
+  import { renderTrace, setOutputs, setTone, traceToText, wireCopy } from '../../lib/tools/render';
+  import { compactUsd, lineChart, onResize } from '../../lib/tools/charts';
+
+  const form = document.getElementById('calc') as HTMLFormElement;
+  const curve = document.querySelector<HTMLElement>('[data-curve]')!;
+  let last: { input: EntityInput; r: EntityResult } | null = null;
+
+  function draw() {
+    if (!last) return;
+    const pts = salarySweep(last.input, 80);
+    lineChart(curve, {
+      label: 'Annual savings from the S corporation election by owner salary',
+      points: pts,
+      signed: true,
+      xFmt: compactUsd,
+      yFmt: compactUsd,
+      marker: { x: last.r.scorp.salary, label: `your salary · ${fmtUsd(last.r.savings)}` },
+      tipLines: (p) => [`${p[1] >= 0 ? 'saves' : 'costs'} ${fmtUsd(Math.abs(p[1]))}`, `at ${fmtUsd(p[0])} salary`],
+    });
+  }
+
+  bindCalculator(form, (v) => {
+    const input: EntityInput = {
+      status: String(v.status) as FilingStatus,
+      profit: num(v.profit),
+      salary: num(v.salary),
+      overhead: num(v.overhead),
+      household: { wages: num(v.otherWages), children: num(v.children) },
+    };
+    const r = compareEntity(input);
+    last = { input, r };
+    setOutputs(document, {
+      savings: fmtUsd(Math.abs(r.savings)),
+      savingsSub: r.savings >= 0 ? 'saved with the election' : 'more with the election',
+      sole: fmtUsd(r.sole.total),
+      scorp: fmtUsd(r.scorp.total),
+      k1: fmtUsd(r.scorp.k1),
+      qbi: `QBI ${fmtUsd(r.scorp.ret.qbi.deduction)} vs ${fmtUsd(r.sole.ret.qbi.deduction)}`,
+    });
+    setTone(document, 'savings', r.savings >= 0 ? 'ok' : 'warn');
+    renderTrace(document.querySelector('[data-trace="wp"]')!, r.trace, { showZero: true, cents: true });
+    draw();
+  });
+  onResize(curve, draw);
+  wireCopy(document.querySelector('[data-copy="wp"]'), () => (last ? traceToText('Entity comparison — TY2026', last.r.trace) : ''));
+</script>

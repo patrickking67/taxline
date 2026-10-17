@@ -1,0 +1,192 @@
+---
+// "Describe your situation" — plain English in, reviewed calculator inputs out.
+// The fleet (Claude on the service, or the offline extractor on static Pages)
+// returns each figure with a confidence and an exact quote; code has already
+// checked the quote against the text. Nothing is applied until the person
+// approves: fields under 0.85 start unchecked and say why.
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  /** id of the calculator <form> to fill. */
+  form: string;
+  /** Scenario key → form field name. */
+  map: Record<string, string>;
+}
+const { form, map } = Astro.props;
+
+const examples = [
+  'Married filing jointly, two kids. I make $142k salary with $16,500 withheld; my wife freelances, about $38,000 profit after expenses. $4,000 in qualified dividends.',
+  'Single, earned 85k at my job with $9k taken out for federal tax. Sold stock for a $12,000 long-term gain and a short-term loss of $3,000.',
+  'Single mom, 1 kid. Freelance designer, clients paid me $60k. Put $7,000 in my IRA.',
+];
+---
+
+<section class="rounded-lg border border-border bg-panel" data-intake data-form={form} data-map={JSON.stringify(map)} aria-labelledby="intake-h">
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
+    <div class="flex items-center gap-2.5">
+      <span class="grid size-7 place-items-center rounded-md border border-border bg-raised"><Icon name="lucide:sparkles" class="size-4 text-accent" /></span>
+      <h2 id="intake-h" class="text-[14px] font-semibold text-fg">Describe your situation</h2>
+      <span class="rounded-sm border border-border px-1.5 py-0.5 font-mono text-[10px] text-fg-faint">Relay · intake</span>
+    </div>
+    <span data-intake-mode class="font-mono text-[11px] text-fg-faint"></span>
+  </div>
+  <div class="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+    <div>
+      <label for="intake-text" class="sr-only">Describe your tax situation in plain English</label>
+      <textarea
+        id="intake-text"
+        rows="5"
+        maxlength="4000"
+        class="w-full resize-y rounded-md border border-border bg-inset px-3 py-2.5 text-[14px] leading-relaxed text-fg placeholder:text-fg-faint focus:border-accent-line focus:outline-none"
+        placeholder="e.g. Single, $95k salary with $11,000 withheld, plus about $20k net profit from freelance consulting."></textarea>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <button type="button" data-intake-run class="inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-[7px] text-[13px] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
+          <Icon name="lucide:scan-line" class="size-4" />Extract fields
+        </button>
+        <span class="font-mono text-[11px] text-fg-faint">or try:</span>
+        {examples.map((ex, i) => (
+          <button type="button" data-intake-example={ex} class="rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg">example {i + 1}</button>
+        ))}
+      </div>
+      <p class="mt-3 text-[11px] leading-relaxed text-fg-faint">Each figure comes back with the exact words it came from. Code checks the quote is in your text and states the amount; anything uncertain stays unchecked until you confirm it.</p>
+    </div>
+    <div aria-live="polite">
+      <div data-intake-empty class="grid h-full min-h-[150px] place-items-center rounded-md border border-dashed border-border px-4 text-center text-[12px] text-fg-faint">Extracted fields appear here for your review.</div>
+      <div data-intake-result hidden>
+        <ul data-intake-fields class="divide-y divide-border-faint rounded-md border border-border bg-base"></ul>
+        <p data-intake-unplaced class="mt-2 hidden text-[11px] text-warn-bright"></p>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <p class="text-[11px] text-fg-faint">Applying replaces the calculator inputs. Fields you did not describe are set to 0.</p>
+          <button type="button" data-intake-apply class="inline-flex items-center gap-2 rounded-md border border-accent-line bg-accent-soft px-3 py-1.5 text-[13px] font-medium text-fg hover:bg-accent hover:text-on-accent">
+            <Icon name="lucide:user-check" class="size-4" /><span data-intake-apply-label>Apply</span>
+          </button>
+        </div>
+      </div>
+      <p data-intake-error class="mt-2 hidden rounded-sm bg-danger-soft px-3 py-2 text-[12px] text-danger-bright"></p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { fleet } from '../../lib/api';
+  import { fmtUsd, scenarioLabel, scenarioToInput, type ScenarioField } from '@taxline/tax-engine';
+  import { h } from '../../lib/tools/render';
+
+  const THRESHOLD = 0.85;
+  const STATUS_LABEL: Record<string, string> = { single: 'Single', mfj: 'Married filing jointly', mfs: 'Married filing separately', hoh: 'Head of household' };
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-intake]')) {
+    const form = document.getElementById(root.dataset.form ?? '') as HTMLFormElement | null;
+    const map = JSON.parse(root.dataset.map ?? '{}') as Record<string, string>;
+    const text = root.querySelector<HTMLTextAreaElement>('textarea')!;
+    const run = root.querySelector<HTMLButtonElement>('[data-intake-run]')!;
+    const list = root.querySelector<HTMLUListElement>('[data-intake-fields]')!;
+    const result = root.querySelector<HTMLElement>('[data-intake-result]')!;
+    const empty = root.querySelector<HTMLElement>('[data-intake-empty]')!;
+    const err = root.querySelector<HTMLElement>('[data-intake-error]')!;
+    const unplaced = root.querySelector<HTMLElement>('[data-intake-unplaced]')!;
+    const apply = root.querySelector<HTMLButtonElement>('[data-intake-apply]')!;
+    const applyLabel = root.querySelector<HTMLElement>('[data-intake-apply-label]')!;
+    const mode = root.querySelector<HTMLElement>('[data-intake-mode]')!;
+    let fields: ScenarioField[] = [];
+
+    mode.textContent = fleet.name === 'mock' ? 'offline extractor · runs in your browser' : 'live fleet';
+
+    const fmtValue = (f: ScenarioField) =>
+      f.value === null ? '—' : f.key === 'status' ? STATUS_LABEL[String(f.value)] ?? String(f.value) : f.key === 'children' ? String(f.value) : fmtUsd(Number(f.value));
+
+    const updateApply = () => {
+      const n = list.querySelectorAll<HTMLInputElement>('input[type=checkbox]:checked').length;
+      applyLabel.textContent = n ? `Apply ${n} field${n > 1 ? 's' : ''}` : 'Select fields to apply';
+      apply.disabled = n === 0;
+    };
+
+    const render = () => {
+      list.replaceChildren();
+      for (const [i, f] of fields.entries()) {
+        const c = f.confidence;
+        const band = c == null ? 'none' : c >= THRESHOLD ? 'ok' : c >= 0.6 ? 'warn' : 'danger';
+        const li = h('li', 'flex gap-3 px-3 py-2.5');
+        const box = h('input', 'mt-1 size-4 shrink-0 accent-[var(--color-accent)]', undefined, { type: 'checkbox', 'data-i': String(i), 'aria-label': `Apply ${scenarioLabel(f.key)}` }) as HTMLInputElement;
+        box.checked = f.value !== null && band === 'ok';
+        box.disabled = f.value === null;
+        box.addEventListener('change', updateApply);
+        const body = h('div', 'min-w-0 flex-1');
+        const top = h('div', 'flex flex-wrap items-baseline justify-between gap-x-3');
+        top.append(h('span', 'text-[13px] text-fg', scenarioLabel(f.key)), h('span', 'font-mono text-[13px] font-medium tabular-nums text-fg', fmtValue(f)));
+        const meter = h('div', 'mt-1.5 flex items-center gap-2');
+        const track = h('div', 'h-[5px] flex-1 overflow-hidden rounded-full border border-border-faint bg-inset');
+        const fill = h('div', `h-full rounded-full ${band === 'ok' ? 'bg-ok' : band === 'warn' ? 'bg-warn' : band === 'danger' ? 'bg-danger' : 'bg-border-strong'}`);
+        fill.style.width = `${Math.round((c ?? 0) * 100)}%`;
+        track.append(fill);
+        meter.append(track, h('span', `w-9 text-right font-mono text-[11px] ${band === 'ok' ? 'text-ok-bright' : band === 'warn' ? 'text-warn-bright' : band === 'danger' ? 'text-danger-bright' : 'text-fg-faint'}`, c == null ? '—' : c.toFixed(2)));
+        body.append(top, meter);
+        if (f.evidence) body.append(h('p', 'mt-1.5 truncate font-mono text-[11px] text-fg-faint', `“${f.evidence}”`, { title: f.evidence }));
+        if (f.note) body.append(h('p', `mt-1 text-[11px] leading-snug ${band === 'ok' ? 'text-fg-muted' : 'text-warn-bright'}`, f.note));
+        li.append(box, body);
+        list.append(li);
+      }
+      empty.hidden = true;
+      result.hidden = false;
+      updateApply();
+    };
+
+    const extract = async () => {
+      const t = text.value.trim();
+      err.classList.add('hidden');
+      if (!t) {
+        text.focus();
+        return;
+      }
+      run.disabled = true;
+      run.lastChild!.textContent = 'Extracting…';
+      try {
+        const r = await fleet.scenario(t);
+        fields = r.fields;
+        mode.textContent = `extractor · ${r.extractor}`;
+        if (fields.length === 0) {
+          result.hidden = true;
+          empty.hidden = false;
+          empty.textContent = 'No figures found. Try amounts with what they are, e.g. “$85k salary”.';
+        } else render();
+        unplaced.classList.toggle('hidden', r.unplaced.length === 0);
+        unplaced.textContent = r.unplaced.length ? `Not placed: ${r.unplaced.map((u) => `“${u}”`).join(', ')}` : '';
+      } catch (e) {
+        err.textContent = e instanceof Error ? e.message : 'Extraction failed.';
+        err.classList.remove('hidden');
+      } finally {
+        run.disabled = false;
+        run.lastChild!.textContent = 'Extract fields';
+      }
+    };
+
+    run.addEventListener('click', extract);
+    text.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) extract();
+    });
+    for (const b of root.querySelectorAll<HTMLButtonElement>('[data-intake-example]')) {
+      b.addEventListener('click', () => {
+        text.value = b.dataset.intakeExample ?? '';
+        extract();
+      });
+    }
+
+    apply.addEventListener('click', () => {
+      if (!form) return;
+      const chosen = [...list.querySelectorAll<HTMLInputElement>('input[type=checkbox]:checked')].map((b) => fields[Number(b.dataset.i)]!);
+      const input = scenarioToInput(chosen) as Record<string, unknown>;
+      // Reset every mapped field, then write the approved values.
+      for (const [key, name] of Object.entries(map)) {
+        const el = form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null;
+        if (!el) continue;
+        const v = input[key];
+        if (key === 'status') {
+          if (typeof v === 'string') el.value = v;
+        } else el.value = typeof v === 'number' ? v.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '0';
+      }
+      form.dispatchEvent(new Event('input', { bubbles: true }));
+      applyLabel.textContent = `Applied ${chosen.length} — review the workpaper`;
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+</script>

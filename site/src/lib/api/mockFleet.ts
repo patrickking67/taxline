@@ -12,6 +12,7 @@ import type {
 } from './types';
 import { docs, docById } from '../data/app';
 import { fleet as roster, orchestratorName } from '../data/fleet';
+import { extractScenario, type ScenarioExtraction } from '@taxline/tax-engine';
 
 // Mock fleet — implements the full FleetService contract entirely in the browser.
 // It mirrors the real orchestrator's observable behavior (keyword routing, a
@@ -363,6 +364,11 @@ export const mockFleet: FleetService = {
 
   memorySearch(query: string, k = 5): Promise<MemoryHit[]> {
     return Promise.resolve(searchKb(query, k));
+  },
+
+  // Same validator as the service; the rule-based extractor stands in for the model.
+  scenario(text: string): Promise<ScenarioExtraction> {
+    return Promise.resolve(extractScenario(text.slice(0, 4_000)));
   },
 };
 
