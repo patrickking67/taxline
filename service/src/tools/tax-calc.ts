@@ -38,6 +38,38 @@ const STATUSES = new Set<string>(FILING_STATUSES.map((s) => s.key));
 const CLASSES = new Set<string>(RECOVERY_CLASSES.map((c) => c.key));
 const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 
+// Runtime contract per calculation. The model's arguments are untrusted: every
+// supplied key must be known and of the right type before anything is computed.
+type Kind = 'number' | 'boolean' | 'string';
+const SPEC: Record<TaxCalcInput['calculation'], Record<string, Kind>> = {
+  return: {
+    status: 'string', wages: 'number', seOwnerSsWages: 'number', medicareWages: 'number', federalWithholding: 'number',
+    interest: 'number', ordinaryDividends: 'number', qualifiedDividends: 'number', shortTermGain: 'number', longTermGain: 'number',
+    selfEmploymentProfit: 'number', passThroughIncome: 'number', otherIncome: 'number', adjustments: 'number', itemized: 'number',
+    children: 'number', estimatedPayments: 'number', qbiW2Wages: 'number', qbiUbia: 'number', sstb: 'boolean',
+  },
+  estimated: { status: 'string', currentYearTax: 'number', withholding: 'number', priorYearTax: 'number', priorYearAgi: 'number', priorYearFull: 'boolean' },
+  depreciation: {
+    cost: 'number', recoveryClass: 'string', month: 'number', businessUsePct: 'number', listedProperty: 'boolean',
+    section179: 'number', bonusPct: 'number', businessIncome: 'number',
+  },
+};
+
+/** Unknown keys and wrong types, as messages. recoveryClass may arrive as a number. */
+function contractErrors(calc: TaxCalcInput['calculation'], i: Record<string, unknown>): string[] {
+  const spec = SPEC[calc];
+  const out: string[] = [];
+  for (const [k, v] of Object.entries(i)) {
+    if (v === null || v === undefined) continue;
+    const kind = spec[k];
+    if (!kind) out.push(`unknown input "${k}"`);
+    else if (kind === 'number' && !(typeof v === 'number' && Number.isFinite(v))) out.push(`${k} must be a finite number`);
+    else if (kind === 'boolean' && typeof v !== 'boolean') out.push(`${k} must be true or false`);
+    else if (kind === 'string' && typeof v !== 'string' && !(k === 'recoveryClass' && typeof v === 'number')) out.push(`${k} must be a string`);
+  }
+  return out;
+}
+
 /** Keys the caller passed as null: unknown facts must be omitted or supplied, never treated as 0. */
 const nullKeys = (o: Record<string, unknown>) => Object.entries(o).filter(([, v]) => v === null).map(([k]) => k);
 
@@ -71,6 +103,10 @@ export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
     const i = input?.inputs ?? {};
     const nulls = nullKeys(i);
     if (nulls.length) return fail('validation', `Unknown values passed as null: ${nulls.join(', ')}. Omit them or supply evidence.`);
+    if (input?.calculation && input.calculation in SPEC) {
+      const errs = contractErrors(input.calculation, i);
+      if (errs.length) return fail('validation', `compute_tax ${input.calculation}: ${errs.join('; ')}.`);
+    }
     try {
       switch (input?.calculation) {
         case 'return': {
@@ -132,7 +168,7 @@ export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
             summary: { basis: r.basis, section179: r.section179, carryforward: r.carryforward, bonus: r.bonus, firstYear: r.firstYear, years: r.rows.length },
             trace: r.trace,
             schedule: r.rows.map((x) => ({ year: x.year, ratePct: x.rate, section179: x.section179, bonus: x.bonus, macrs: x.macrs, total: x.total, endingBasis: x.endingBasis })),
-            limits: 'GDS half-year (personal) or mid-month (real) only; mid-quarter convention, ADS, and luxury-auto caps are not modeled.',
+            limits: 'GDS half-year (personal), mid-month (real), or ADS straight line for listed property at 50% or less business use; the mid-quarter convention, other ADS cases, and luxury-auto caps are not modeled.',
           });
         }
         default:

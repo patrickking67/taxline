@@ -219,9 +219,13 @@ test('depreciation schedule: MACRS, bonus, and §179 phase-out', () => {
   assert.equal(furniture.section179, 0);
   assert.equal(furniture.bonus, 16_000);
   // …while listed property (§280F) gets neither.
+  // At ≤50% business use, listed property also moves to ADS straight line:
+  // 5-year, half-year → 10% of the $16,000 business basis in year one.
   const car = depreciate({ cost: 40_000, recoveryClass: '5', businessUsePct: 0.4, listedProperty: true });
   assert.equal(car.bonus, 0);
-  near(car.firstYear, 16_000 * 0.2);
+  near(car.firstYear, 1_600);
+  assert.equal(car.rows.length, 6);
+  near(car.rows.reduce((s, r) => s + r.total, 0), 16_000, 1e-6);
 });
 
 test('tax shield PV favors accelerated recovery', () => {

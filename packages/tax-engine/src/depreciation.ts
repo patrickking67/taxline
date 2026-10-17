@@ -83,6 +83,12 @@ export function realPropertyRates(life: 27.5 | 39, month: number): number[] {
   return rates;
 }
 
+/** Straight line over `life` years, half-year convention (ADS for listed property). */
+export function straightLineHalfYear(life: number): number[] {
+  const annual = 100 / life;
+  return [annual / 2, ...Array.from({ length: life - 1 }, () => annual), annual / 2];
+}
+
 export function ratesFor(cls: RecoveryClass, month = 1): number[] {
   if (cls === '27.5') return realPropertyRates(27.5, month);
   if (cls === '39') return realPropertyRates(39, month);
@@ -152,7 +158,11 @@ export function depreciate(i: DepreciationInput, y: TaxYear = TY2026): Depreciat
   const bonus = round2((basis - section179Elected) * bonusPct);
   const macrsBase = round2(basis - section179Elected - bonus);
 
-  const rates = ratesFor(i.recoveryClass, i.month ?? 1);
+  // Listed property at 50% business use or less must use ADS straight line
+  // (§280F(b)(1)). ADS periods match GDS for vehicles and computers (5 years);
+  // other listed property can differ — the trace says which method applied.
+  const ads = !isReal && !!i.listedProperty && use <= 0.5;
+  const rates = ads ? straightLineHalfYear(Number(i.recoveryClass)) : ratesFor(i.recoveryClass, i.month ?? 1);
   const start = i.startYear ?? y.year;
   // Basis left after the full election (the carryforward is a deferred deduction, not basis).
   let left = round2(basis - section179Elected + section179);
@@ -177,7 +187,7 @@ export function depreciate(i: DepreciationInput, y: TaxYear = TY2026): Depreciat
     { id: 'dep.179', label: '§179 deduction allowed', value: section179, ref: '4562 L12', formula: carryforward ? `limited to business income ${fmtUsd(incomeCap)}` : undefined, authority: cite.sec179 },
     ...(carryforward ? [{ id: 'dep.carry', label: '§179 carryforward to next year', value: carryforward, ref: '4562 L13', formula: `${fmtUsd(section179Elected)} − ${fmtUsd(section179)}`, authority: cite.sec179 }] : []),
     { id: 'dep.bonus', label: 'Special (bonus) depreciation', value: bonus, ref: '4562 L14', formula: bonusEligible ? `${fmtUsd(basis - section179Elected)} × ${fmtPct(bonusPct, 0)}` : isReal ? 'not available for buildings' : 'listed property needs >50% business use', authority: cite.bonus },
-    { id: 'dep.macrs1', label: 'MACRS deduction, year 1', value: rows[0]?.macrs ?? 0, ref: '4562 L19', formula: `${fmtUsd(macrsBase)} × ${(rows[0]?.rate ?? 0).toFixed(3)}%`, authority: cite.macrs },
+    { id: 'dep.macrs1', label: 'MACRS deduction, year 1', value: rows[0]?.macrs ?? 0, ref: '4562 L19', formula: `${fmtUsd(macrsBase)} × ${(rows[0]?.rate ?? 0).toFixed(3)}%${ads ? ' (ADS straight line, §280F(b))' : ''}`, authority: cite.macrs },
     { id: 'dep.first', label: 'First-year deduction', value: firstYear, ref: '4562 L22', emphasis: 'total' },
   ];
 

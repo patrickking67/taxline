@@ -136,17 +136,22 @@ const examples = [
       updateApply();
     };
 
+    // Every extraction gets a sequence number; only the latest may write results,
+    // errors, or busy state, so a slow earlier response can't overwrite a newer one.
+    let latest = 0;
     const extract = async () => {
       const t = text.value.trim();
-      err.classList.add('hidden');
       if (!t) {
         text.focus();
         return;
       }
+      const seq = ++latest;
+      err.classList.add('hidden');
       run.disabled = true;
       run.lastChild!.textContent = 'Extracting…';
       try {
         const r = await fleet.scenario(t);
+        if (seq !== latest) return;
         fields = r.fields;
         mode.textContent = `extractor · ${r.extractor}`;
         if (fields.length === 0) {
@@ -157,11 +162,14 @@ const examples = [
         unplaced.classList.toggle('hidden', r.unplaced.length === 0);
         unplaced.textContent = r.unplaced.length ? `Not placed: ${r.unplaced.map((u) => `“${u}”`).join(', ')}` : '';
       } catch (e) {
+        if (seq !== latest) return;
         err.textContent = e instanceof Error ? e.message : 'Extraction failed.';
         err.classList.remove('hidden');
       } finally {
-        run.disabled = false;
-        run.lastChild!.textContent = 'Extract fields';
+        if (seq === latest) {
+          run.disabled = false;
+          run.lastChild!.textContent = 'Extract fields';
+        }
       }
     };
 
