@@ -14,4 +14,6 @@ export * from './form1040.js';
 export * from './estimated.js';
 export * from './depreciation.js';
 export * from './roi.js';
+export * from './scenario.js';
+export * from './entity.js';
 export { TY2026, cite, type TaxYear } from './years/2026.js';

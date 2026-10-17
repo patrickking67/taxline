@@ -31,6 +31,8 @@ export interface ReturnInput {
   shortTermGain?: number;
   longTermGain?: number;
   selfEmploymentProfit?: number;
+  /** S-corp K-1 ordinary business income (Sch E): QBI-eligible, no SE tax. */
+  passThroughIncome?: number;
   otherIncome?: number;
   adjustments?: number;
   itemized?: number;
@@ -86,6 +88,7 @@ export function computeReturn(input: ReturnInput, y: TaxYear = TY2026, withMargi
   const st = signed(input.shortTermGain);
   const lt = signed(input.longTermGain);
   const seProfit = amount(input.selfEmploymentProfit);
+  const passThrough = amount(input.passThroughIncome);
   const other = amount(input.otherIncome);
   const useTable = input.useTaxTable ?? true;
 
@@ -96,7 +99,7 @@ export function computeReturn(input: ReturnInput, y: TaxYear = TY2026, withMargi
   const netLtcgForPref = Math.max(0, Math.min(lt, netCap));
 
   const se = selfEmploymentTax({ netProfit: seProfit, w2SsWages: wages }, y);
-  const totalIncome = round2(wages + interest + ordDiv + capLine + seProfit + other);
+  const totalIncome = round2(wages + interest + ordDiv + capLine + seProfit + passThrough + other);
   const adjustments = round2(se.deduction + amount(input.adjustments));
   const agi = round2(Math.max(0, totalIncome - adjustments));
 
@@ -106,7 +109,7 @@ export function computeReturn(input: ReturnInput, y: TaxYear = TY2026, withMargi
   const deduction = Math.max(standard, itemized);
   const beforeQbi = Math.max(0, agi - deduction);
 
-  const qbiIncome = Math.max(0, seProfit - se.deduction);
+  const qbiIncome = Math.max(0, seProfit - se.deduction) + passThrough;
   const qbi = qbiDeduction({
     status: s,
     qbi: qbiIncome,
@@ -156,6 +159,7 @@ export function computeReturn(input: ReturnInput, y: TaxYear = TY2026, withMargi
     L('dividends', 'Ordinary dividends', ordDiv, '1040 L3b', qualDiv ? `includes ${fmtUsd(qualDiv)} qualified` : undefined),
     L('capgain', 'Capital gain or (loss)', capLine, '1040 L7', netCap < 0 && capLine !== netCap ? `loss limited to ${fmtUsd(-lossCap)}` : `${fmtUsd(st)} ST + ${fmtUsd(lt)} LT`),
     L('business', 'Business income (Schedule C)', seProfit, 'Sch 1 L3'),
+    L('passthrough', 'S corporation income (K-1, Schedule E)', passThrough, 'Sch 1 L5'),
     L('other', 'Other income', other, 'Sch 1 L8z'),
     L('total', 'Total income', totalIncome, '1040 L9', undefined, { emphasis: 'subtotal' }),
     L('adj', 'Adjustments to income', adjustments, '1040 L10', `${fmtUsd(se.deduction, true)} ½ SE tax + ${fmtUsd(amount(input.adjustments))} other`),
