@@ -23,17 +23,26 @@ test('income tax: edits update the URL and survive a reload', async ({ page }) =
 });
 
 test('intake: low-confidence fields start unchecked; Apply writes only checked ones', async ({ page }) => {
-  await page.goto('tools/income-tax/?medWages=300000');
+  await page.goto('tools/income-tax/?status=single&wages=100000&medWages=300000');
   await page.locator('textarea').first().fill('Married, I earned 90k.');
   await page.locator('[data-intake-run]').click();
-  const boxes = page.locator('[data-intake-fields] input[type=checkbox]');
-  await expect(boxes.first()).toBeVisible();
-  // Both fields were assumed, not stated, so neither is pre-approved.
-  for (const b of await boxes.all()) await expect(b).not.toBeChecked();
+  const status = page.getByRole('checkbox', { name: 'Apply Filing status' });
+  const wages = page.getByRole('checkbox', { name: 'Apply W-2 wages' });
+  // Both fields are extracted, and both were assumed rather than stated.
+  await expect(page.locator('[data-intake-fields] input[type=checkbox]')).toHaveCount(2);
+  await expect(status).not.toBeChecked();
+  await expect(wages).not.toBeChecked();
   await expect(page.locator('[data-intake-apply]')).toBeDisabled();
-  await boxes.first().check();
+
+  // Approve only the filing status.
+  await status.check();
   await page.locator('[data-intake-apply]').click();
-  // Applying resets supplemental inputs from the previous calculation.
+  await expect(page.locator('select[name=status]')).toHaveValue('mfj');
+  // The unapproved $90,000 is never written; the old $100,000 does not survive either.
+  const wagesInput = page.locator('input[name=wages]');
+  await expect(wagesInput).not.toHaveValue(/90,?000/);
+  await expect(wagesInput).not.toHaveValue(/100,?000/);
+  // Supplemental inputs from the previous calculation are reset.
   await expect(page.locator('input[name=medWages]')).toHaveValue('');
 });
 

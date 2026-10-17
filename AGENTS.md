@@ -37,6 +37,8 @@ host, and the site talks to it through the adapter layer.
 
 ## Setup and validation
 
+Node `^22.22.3 || ^24.16.0 || >=26.3.0` (root `engines`; `.nvmrc` pins 22).
+
 ```bash
 npm install            # root (installs the site workspace + lint toolchain)
 npm run dev            # Astro dev server → http://localhost:4321

@@ -57,6 +57,8 @@ flowchart LR
 
 ## Quick start
 
+Requires Node `^22.22.3`, `^24.16.0`, or `>=26.3.0` (Astro 7 and the ESLint 10 toolchain; `.nvmrc` pins 22).
+
 ```bash
 npm install            # site + tax-engine workspaces + lint toolchain
 npm run dev            # site            http://localhost:4321
