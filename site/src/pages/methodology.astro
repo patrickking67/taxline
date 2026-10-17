@@ -31,7 +31,7 @@ const rules = [
 ---
 
 <Base
-  title="Methodology — how Taxline computes, cites, and routes | Taxline"
+  title="Methodology: how Taxline computes, cites, and routes | Taxline"
   description="How the Taxline tax engine computes and rounds, where every 2026 figure comes from, how it is tested, and the confidence math that routes uncertain fields to a person before anything ships."
   schema={[breadcrumbs(Astro.site, [{ name: 'Home', path: '' }, { name: 'Methodology', path: 'methodology/' }])]}
   ogType="article"
@@ -97,7 +97,7 @@ const rules = [
         <p class="ds-lead mt-3 max-w-2xl">Each extracted field carries a confidence <i>c</i> in [0, 1]. The routing rule is the same in the service (<code class="font-mono text-[15px] text-fg">assess_confidence</code>) and the offline demo.</p>
 
         <div class="mt-10 grid gap-4 lg:grid-cols-2">
-          <Formula title="Routing rule" plain="route(f) = review if value is null or c is null or c < tau, else pass; tau = 0.85" note="A missing value or a missing score routes to review — absence is never treated as confidence.">
+          <Formula title="Routing rule" plain="route(f) = review if value is null or c is null or c < tau, else pass; tau = 0.85" note="A missing value or a missing score routes to review: absence is never treated as confidence.">
             <math display="block"><mrow><mi>route</mi><mo>(</mo><mi>f</mi><mo>)</mo><mo>=</mo><mrow><mo>&#123;</mo><mtable columnalign="left left" columnspacing="1.2em" rowspacing="0.4em"><mtr><mtd><mtext>review</mtext></mtd><mtd><mi>v</mi><mo>=</mo><mi>∅</mi><mo>∨</mo><mi>c</mi><mo>=</mo><mi>∅</mi><mo>∨</mo><mi>c</mi><mo>&lt;</mo><mi>τ</mi></mtd></mtr><mtr><mtd><mtext>pass</mtext></mtd><mtd><mtext>otherwise</mtext></mtd></mtr></mtable></mrow><mo>,</mo><mspace width="0.5em"/><mi>τ</mi><mo>=</mo><mn>0.85</mn></mrow></math>
           </Formula>
           <Formula title="Review load" plain="L(tau) = count of fields with c < tau; share = L / N" note="Raising τ sends more to people and fewer errors through; lowering it does the reverse. The explorer below runs this on the demo queue.">

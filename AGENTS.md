@@ -20,8 +20,10 @@ accountants" or "fully autonomous".
 
 ```
 site/               Astro 5 static site — marketing, free calculators (/tools), the product app shell (the GUI)
-packages/tax-engine/ Deterministic federal tax math (TY2026), shared by site + service — pure TS, no deps
+packages/tax-engine/ Deterministic federal tax math (TY2026) + scenario validation, shared by site + service
 service/            Node + TypeScript agent fleet (Anthropic SDK) — the backend
+cms/                EmDash CMS (Astro 7, own lockfile) for Insights; NOT a root workspace
+scripts/            pull-insights.mjs — CMS export → site/src/content/insights.json
 knowledge-base/     Markdown corpus (tax/ + practices/) + manifest.json + ingest/
 workers/contact/    Cloudflare Worker — the demo/contact form backend
 docs/               design.md (spec), design-contract.md, system-design.md
@@ -39,6 +41,8 @@ host, and the site talks to it through the adapter layer.
 npm install            # root (installs the site workspace + lint toolchain)
 npm run dev            # Astro dev server → http://localhost:4321
 npm run dev:service    # agent fleet     → http://localhost:8787
+npm run dev:cms        # EmDash CMS      → http://localhost:4322/_emdash/admin (cd cms && npm install && npm run seed first)
+npm run pull-insights  # EMDASH_URL=… pulls published Insights into the site snapshot (no-op without it)
 npm run build          # static build    → site/dist (fingerprinted assets in _assets/)
 npm run check          # astro check (typecheck .astro)
 npm run typecheck      # site + tax-engine + service + worker typecheck
@@ -48,7 +52,7 @@ npm run format         # prettier --write
 npm run refresh-kb     # re-review the knowledge base + restamp the manifest
 ```
 
-`service/` and `workers/contact/` have their own dependencies — run `npm install`
+`service/`, `cms/`, and `workers/contact/` have their own dependencies — run `npm install`
 inside each. The service needs `service/.env` → `ANTHROPIC_API_KEY`; without it the
 fleet stays offline-deterministic.
 
@@ -95,6 +99,19 @@ fleet stays offline-deterministic.
   (`service/src/tools/tax-calc.ts`, imported by relative path; the Dockerfile copies
   `packages/tax-engine/src`). Test expectations are worked by hand from the IRS
   tables, never copied from engine output.
+- **AI intake is validated in code.** `POST /scenario` (service) asks Claude, via one
+  tool with nullable fields, for each figure plus an exact evidence quote;
+  `validateScenario` (engine) then checks key, type, that the quote is in the input, and
+  that it states the amount. Failures are capped at 0.5 confidence with a reason, never
+  dropped. `mockFleet.scenario` runs the deterministic `extractScenario` with the same
+  validator. The UI (`components/tools/ScenarioIntake.astro`) applies only fields the
+  person checks; fields under 0.85 start unchecked.
+- **EmDash is the CMS; the site stays static.** `cms/` is a separate EmDash app (Astro 7,
+  React, SQLite locally, D1/R2 on Cloudflare) because EmDash needs Astro 6+ and a server
+  runtime. It exports published Insights at `/api/insights.json`;
+  `scripts/pull-insights.mjs` validates and atomically writes the committed snapshot the
+  site builds from. The deploy pulls only when the `EMDASH_URL` repository variable is set
+  and continues on failure. Schema of record: `cms/seed/seed.json`.
 - **SEO lives in `Base.astro` + `lib/seo.ts`.** Canonical/OG/Twitter tags and one JSON-LD
   `@graph` per page (pages pass extra nodes via `schema`). `sitemap.xml`, `robots.txt`,
   and `llms.txt` are generated endpoints in `site/src/pages/`; the sitemap derives from
