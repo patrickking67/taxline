@@ -43,7 +43,7 @@ const cls = (s: PtSpan) =>
         </ul>
       ) : (
         <ol class="my-5 list-decimal space-y-2 pl-5 text-[16px] leading-relaxed text-fg-muted marker:font-mono marker:text-fg-faint">
-          {g.items.map((it) => <li>{(it.children ?? []).map((s) => <span class={cls(s)}>{s.text}</span>)}</li>)}
+          {g.items.map((it) => <li>{(it.children ?? []).map((s) => (href(it, s) ? <a href={href(it, s)} class="text-accent underline underline-offset-2">{s.text}</a> : <span class={cls(s)}>{s.text}</span>))}</li>)}
         </ol>
       )
     ) : g.block._type !== 'block' ? null : g.block.style === 'h2' ? (

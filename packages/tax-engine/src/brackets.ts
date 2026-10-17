@@ -50,7 +50,9 @@ export function baseAmounts(brackets: Bracket[]): number[] {
 /** Rate on the next dollar of taxable income. */
 export function marginalRate(taxable: number, brackets: Bracket[]): number {
   let rate = brackets[0]?.rate ?? 0;
-  for (const b of brackets) if (taxable > b.floor) rate = b.rate;
+  // Income above a floor is taxed at that band's rate, so at exactly the floor
+  // the next dollar already falls in it.
+  for (const b of brackets) if (taxable >= b.floor) rate = b.rate;
   return rate;
 }
 

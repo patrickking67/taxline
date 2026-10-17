@@ -60,6 +60,7 @@ const limits = [
         <Field name="status" label="Filing status" kind="select" options={statuses} value="single" class="sm:col-span-2" />
         <Field name="otherWages" label="Other W-2 wages" value="0" />
         <Field name="children" label="Qualifying children" kind="number" value="0" min={0} max={12} step={1} />
+        <Field name="sstb" label="Specified service business" kind="toggle" class="sm:col-span-2" hint="Law, health, consulting, accounting… QBI phases out above $201,750 ($403,500 joint)." />
       </Fieldset>
       <div class="flex items-center justify-between gap-3">
         <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
@@ -126,7 +127,7 @@ const limits = [
       profit: num(v.profit),
       salary: num(v.salary),
       overhead: num(v.overhead),
-      household: { wages: num(v.otherWages), children: num(v.children) },
+      household: { wages: num(v.otherWages), children: num(v.children), sstb: Boolean(v.sstb) },
     };
     const r = compareEntity(input);
     last = { input, r };

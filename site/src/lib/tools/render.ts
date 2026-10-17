@@ -61,7 +61,11 @@ export function renderTrace(tbody: HTMLElement, trace: Trace, opts: { showZero?:
 export function traceToText(title: string, trace: Trace): string {
   const rows = trace
     .filter((l) => l.value !== 0 || l.emphasis)
-    .map((l) => `${(l.ref ?? '').padEnd(14)} ${l.label.padEnd(44)} ${fmtLine(l, true).padStart(16)}${l.formula ? `   [${l.formula}]` : ''}`);
+    .map((l) => {
+      const row = `${(l.ref ?? '').padEnd(14)} ${l.label.padEnd(44)} ${fmtLine(l, true).padStart(16)}${l.formula ? `   [${l.formula}]` : ''}`;
+      // Keep each line's own authority so a pasted workpaper still cites its source.
+      return l.authority ? `${row}\n${''.padEnd(15)}source: ${l.authority.label}${l.authority.url ? ` <${l.authority.url}>` : ''}` : row;
+    });
   return [title, '-'.repeat(title.length), ...rows, '', 'Estimate for review. Computed by @taxline/tax-engine (TY2026, Rev. Proc. 2025-32).'].join('\n');
 }
 

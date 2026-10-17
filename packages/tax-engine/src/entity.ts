@@ -81,7 +81,15 @@ export function compareEntity(i: EntityInput, y: TaxYear = TY2026): EntityResult
   const fica = payrollFica(salary, ownerOtherSs, y);
   const k1 = round2(Math.max(0, profit - salary - fica.employer - overhead));
   const scorpRet = computeReturn(
-    { ...i.household, status: i.status, wages: otherWages + salary, passThroughIncome: k1, qbiW2Wages: salary },
+    {
+      ...i.household,
+      status: i.status,
+      wages: otherWages + salary,
+      // Salary adds to any wage bases the household already reported, never replaces them.
+      medicareWages: i.household?.medicareWages != null ? i.household.medicareWages + salary : undefined,
+      qbiW2Wages: (i.household?.qbiW2Wages ?? 0) + salary,
+      passThroughIncome: k1,
+    },
     y,
   );
 

@@ -41,7 +41,8 @@ test('rate schedule and marginal rate', () => {
   assert.equal(scheduleTax(0, TY2026.brackets.single), 0);
   assert.equal(scheduleTax(-5, TY2026.brackets.single), 0);
   assert.equal(marginalRate(100_000, TY2026.brackets.single), 0.22);
-  assert.equal(marginalRate(50_400, TY2026.brackets.single), 0.12);
+  assert.equal(marginalRate(50_399, TY2026.brackets.single), 0.12);
+  assert.equal(marginalRate(50_400, TY2026.brackets.single), 0.22);
   assert.equal(marginalRate(50_401, TY2026.brackets.single), 0.22);
   // Top bracket: 192,979.25 + 37% × 359,400
   assert.equal(scheduleTax(1_000_000, TY2026.brackets.single), 325_957.25);

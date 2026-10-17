@@ -30,6 +30,16 @@ if (!res.ok) {
 }
 const body = await res.json();
 const strOrNull = (v) => v === null || typeof v === 'string';
+const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
+const optArray = (v, ok) => v === undefined || (Array.isArray(v) && v.every(ok));
+// Portable Text as the site renders it: blocks with spans, marks, and link defs.
+const validSpan = (c) => isObj(c) && typeof c.text === 'string' && optArray(c.marks, (m) => typeof m === 'string');
+const validDef = (d) => isObj(d) && typeof d._key === 'string' && typeof d._type === 'string' && (d.href === undefined || typeof d.href === 'string');
+const validBlock = (b) =>
+  isObj(b) && typeof b._type === 'string' &&
+  (b.style === undefined || typeof b.style === 'string') &&
+  (b.listItem === undefined || b.listItem === 'bullet' || b.listItem === 'number') &&
+  optArray(b.children, validSpan) && optArray(b.markDefs, validDef);
 const valid =
   Array.isArray(body?.entries) &&
   body.entries.every(
@@ -40,7 +50,7 @@ const valid =
       typeof e.publishedAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.publishedAt) &&
       strOrNull(e.category) && strOrNull(e.tool) &&
       (e.readingMinutes === null || Number.isInteger(e.readingMinutes)) &&
-      Array.isArray(e.content),
+      Array.isArray(e.content) && e.content.every(validBlock),
   );
 if (!valid) {
   console.error('CMS response does not match the Insights contract; snapshot left unchanged.');

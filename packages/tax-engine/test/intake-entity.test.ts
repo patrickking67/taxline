@@ -139,3 +139,13 @@ test('ROI horizon is bounded in the engine, not only the UI', () => {
   });
   assert.equal(r.cumulative.length, 30 * 12 + 1);
 });
+
+test('S-corp salary adds to existing Medicare and QBI wage bases', () => {
+  const r = compareEntity({
+    status: 'single', profit: 150_000, salary: 60_000,
+    household: { wages: 200_000, medicareWages: 200_000, qbiW2Wages: 100_000 },
+  });
+  // (200,000 + 60,000 − 200,000) × 0.9%
+  near(r.scorp.ret.addlMedicare, 540);
+  assert.ok(r.scorp.ret.qbi.wageLimit >= 80_000, `wage limit ${r.scorp.ret.qbi.wageLimit}`);
+});

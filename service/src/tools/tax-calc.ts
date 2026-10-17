@@ -50,7 +50,7 @@ const SPEC: Record<TaxCalcInput['calculation'], Record<string, Kind>> = {
   },
   estimated: { status: 'string', currentYearTax: 'number', withholding: 'number', priorYearTax: 'number', priorYearAgi: 'number', priorYearFull: 'boolean' },
   depreciation: {
-    cost: 'number', recoveryClass: 'string', month: 'number', businessUsePct: 'number', listedProperty: 'boolean',
+    cost: 'number', recoveryClass: 'string', month: 'number', businessUsePct: 'number', listedProperty: 'boolean', total179Property: 'number',
     section179: 'number', bonusPct: 'number', businessIncome: 'number',
   },
 };
@@ -94,7 +94,7 @@ export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
           'qualifiedDividends, shortTermGain, longTermGain, selfEmploymentProfit, otherIncome, adjustments, ' +
           'itemized, children, estimatedPayments, qbiW2Wages, qbiUbia, sstb. estimated: status, currentYearTax, withholding, and — only together — ' +
           'priorYearTax, priorYearAgi, priorYearFull. depreciation: cost, recoveryClass (3|5|7|10|15|20|27.5|39), month, ' +
-          'businessUsePct (0-1), listedProperty, section179 (requires businessIncome), bonusPct (0-1), businessIncome.',
+          'businessUsePct (0-1), listedProperty, section179 (requires businessIncome), total179Property (all §179 property placed in service this year; drives the phase-out), bonusPct (0-1), businessIncome.',
       },
     },
     required: ['calculation', 'inputs'],
@@ -158,6 +158,7 @@ export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
             month: num(i.month),
             businessUsePct: num(i.businessUsePct),
             listedProperty: i.listedProperty === true,
+            total179Property: num(i.total179Property),
             section179: num(i.section179),
             bonusPct: num(i.bonusPct),
             businessIncome: num(i.businessIncome) ?? null,
