@@ -1,0 +1,20 @@
+{
+  "name": "@taxline/tax-engine",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Deterministic US federal tax math for Taxline. Pure functions, typed, every figure cited to its primary source.",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.0"
+  }
+}
