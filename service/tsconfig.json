@@ -16,5 +16,5 @@
     "verbatimModuleSyntax": true,
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "../knowledge-base/ingest/**/*.ts"]
+  "include": ["src/**/*.ts", "../knowledge-base/ingest/**/*.ts", "../packages/tax-engine/src/**/*.ts"]
 }

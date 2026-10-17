@@ -10,6 +10,7 @@
 .vscode
 .claude
 site
+# packages/ is kept: the service imports packages/tax-engine/src.
 workers
 docs
 **/.env
