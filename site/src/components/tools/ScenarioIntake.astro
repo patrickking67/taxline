@@ -57,7 +57,7 @@ const examples = [
         <ul data-intake-fields class="divide-y divide-border-faint rounded-md border border-border bg-base"></ul>
         <p data-intake-unplaced class="mt-2 hidden text-[11px] text-warn-bright"></p>
         <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
-          <p class="text-[11px] text-fg-faint">Applying replaces the calculator inputs. Fields you did not describe are set to 0.</p>
+          <p class="text-[11px] text-fg-faint">Applying replaces the calculator inputs. Fields you did not describe are cleared.</p>
           <button type="button" data-intake-apply class="inline-flex items-center gap-2 rounded-md border border-accent-line bg-accent-soft px-3 py-1.5 text-[13px] font-medium text-fg hover:bg-accent hover:text-on-accent">
             <Icon name="lucide:user-check" class="size-4" /><span data-intake-apply-label>Apply</span>
           </button>
@@ -188,7 +188,9 @@ const examples = [
       if (!form) return;
       const chosen = [...list.querySelectorAll<HTMLInputElement>('input[type=checkbox]:checked')].map((b) => fields[Number(b.dataset.i)]!);
       const input = scenarioToInput(chosen) as Record<string, unknown>;
-      // Reset every mapped field, then write the approved values.
+      // Return every input to its default (supplemental wage bases, UBIA, SSTB
+      // included), then write the approved values over the mapped fields.
+      form.reset();
       for (const [key, name] of Object.entries(map)) {
         const el = form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null;
         if (!el) continue;
