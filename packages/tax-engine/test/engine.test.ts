@@ -132,10 +132,14 @@ test('QBI: phase-in and SSTB phase-out', () => {
   assert.equal(mid.phaseIn, 0.5);
   // tentative 40,000; wage limit 10,000; 40,000 − 0.5 × 30,000 = 25,000
   assert.equal(mid.deduction, 25_000);
+  // Fully phased out above the range: the SSTB's qualifying income is zero, so
+  // the OBBBA $400 minimum (which tests income after the exclusion) does not apply.
   const sstb = qbiDeduction({ status: 'single', qbi: 200_000, taxableBeforeQbi: 300_000, sstb: true });
-  // Fully phased out above the range; the OBBBA $400 minimum still applies.
-  assert.equal(sstb.deduction, 400);
-  assert.equal(sstb.minimumApplied, true);
+  assert.equal(sstb.deduction, 0);
+  assert.equal(sstb.minimumApplied, false);
+  // A small non-SSTB business below the threshold still gets the minimum.
+  const small = qbiDeduction({ status: 'single', qbi: 1_500, taxableBeforeQbi: 50_000 });
+  assert.equal(small.deduction, 400);
 });
 
 test('estimated tax safe harbor', () => {
@@ -152,6 +156,11 @@ test('estimated tax safe harbor', () => {
 
   const c = estimatedTax({ status: 'single', currentYearTax: 5_500, withholding: 4_800, priorYearTax: 9_000 });
   assert.equal(c.required, false);
+
+  // Prior-year AGI unknown: the conservative 110% test applies.
+  const u = estimatedTax({ status: 'single', currentYearTax: 32_000, withholding: 6_000, priorYearTax: 26_000 });
+  assert.equal(u.priorYearTarget, 28_600);
+  assert.equal(u.safeHarbor, 28_600);
 
   const d = estimatedTax({ status: 'single', currentYearTax: 10_001, withholding: 0, priorYearFull: false });
   const sum = d.installments.reduce((s, x) => s + x.amount, 0);
@@ -191,17 +200,28 @@ test('depreciation schedule: MACRS, bonus, and §179 phase-out', () => {
   assert.equal(phased.section179Limit, 2_450_000);
   assert.equal(phased.section179, 100_000);
 
+  // The income limit defers §179; the disallowed $30,000 carries forward and is
+  // NOT returned to the MACRS basis.
   const capped = depreciate({ cost: 50_000, recoveryClass: '7', section179: 50_000, businessIncome: 20_000, bonusPct: 0 });
+  assert.equal(capped.section179Elected, 50_000);
   assert.equal(capped.section179, 20_000);
-  near(capped.rows[0]!.macrs, 30_000 * 0.1429);
+  assert.equal(capped.carryforward, 30_000);
+  assert.equal(capped.macrsBase, 0);
+  assert.equal(capped.firstYear, 20_000);
 
   const building = depreciate({ cost: 275_000, recoveryClass: '27.5', section179: 50_000 });
   assert.equal(building.section179, 0);
   assert.equal(building.bonus, 0);
 
-  const personalUse = depreciate({ cost: 40_000, recoveryClass: '5', businessUsePct: 0.4 });
-  assert.equal(personalUse.basis, 16_000);
-  assert.equal(personalUse.bonus, 0);
+  // 40% business use: no §179 (needs >50%), but ordinary property still gets bonus…
+  const furniture = depreciate({ cost: 40_000, recoveryClass: '7', businessUsePct: 0.4, section179: 10_000 });
+  assert.equal(furniture.basis, 16_000);
+  assert.equal(furniture.section179, 0);
+  assert.equal(furniture.bonus, 16_000);
+  // …while listed property (§280F) gets neither.
+  const car = depreciate({ cost: 40_000, recoveryClass: '5', businessUsePct: 0.4, listedProperty: true });
+  assert.equal(car.bonus, 0);
+  near(car.firstYear, 16_000 * 0.2);
 });
 
 test('tax shield PV favors accelerated recovery', () => {
@@ -231,7 +251,31 @@ test('NPV, IRR, and firm ROI', () => {
   assert.equal(r.cumulative.length, 37);
 });
 
-test('rounding is stable at half-cents', () => {
+test('rounding is half away from zero at every magnitude', () => {
   assert.equal(round2(1.005), 1.01);
   assert.equal(round2(-1.005), -1.01);
+  assert.equal(round2(10.075), 10.08);
+  assert.equal(round2(-10.075), -10.08);
+  assert.equal(round2(10_000.005), 10_000.01);
+  assert.equal(round2(1e-7), 0);
+  assert.equal(round2(123_456.785), 123_456.79);
+});
+
+test('1040: a Schedule C loss offsets other income', () => {
+  const r = computeReturn({ status: 'single', wages: 60_000, selfEmploymentProfit: -10_000 });
+  assert.equal(r.totalIncome, 50_000);
+  assert.equal(r.seTax, 0);
+  assert.equal(r.taxable, 33_900);
+});
+
+test('1040: a spouse’s wages do not use up the SE owner’s wage base', () => {
+  const joint = computeReturn({ status: 'mfj', wages: 185_000, selfEmploymentProfit: 100_000 });
+  near(joint.seTax, 14_129.55);
+  const own = computeReturn({ status: 'mfj', wages: 185_000, seOwnerSsWages: 185_000, selfEmploymentProfit: 100_000 });
+  near(own.seTax, 2_678.15);
+});
+
+test('1040: Additional Medicare uses box 5 wages; NIIT nets the capital loss', () => {
+  near(computeReturn({ status: 'single', wages: 200_000, medicareWages: 220_000 }).addlMedicare, 180);
+  near(computeReturn({ status: 'single', wages: 300_000, interest: 10_000, shortTermGain: -3_000 }).niit, 266);
 });

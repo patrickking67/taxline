@@ -73,9 +73,13 @@ const limits = [
       </Fieldset>
       <Fieldset legend="Earned income">
         <Field name="wages" label="W-2 wages (box 1)" value="85000" />
-        <Field name="se" label="Schedule C net profit" value="0" hint="Drives SE tax and the QBI deduction." />
+        <Field name="se" label="Schedule C net profit" value="0" hint="Negative for a loss. Drives SE tax and QBI." />
         <Field name="other" label="Other ordinary income" value="0" />
-        <Field name="sstb" label="Specified service business" kind="toggle" hint="Law, health, consulting, accounting… (QBI phase-out)" />
+        <Field name="ownerSs" label="Sch C owner's own W-2 box 3" value="" hint="Blank: same as wages (single), none (joint)." />
+        <Field name="medWages" label="Medicare wages (box 5)" value="" hint="Blank: same as box 1." />
+        <Field name="qbiWages" label="W-2 wages the business paid" value="" hint="QBI wage limit above $201,750 ($403,500 joint)." />
+        <Field name="ubia" label="Qualified property (UBIA)" value="" hint="Unadjusted basis of depreciable property." />
+        <Field name="sstb" label="Specified service business" kind="toggle" class="sm:col-span-2" hint="Law, health, consulting, accounting… (QBI phase-out)" />
       </Fieldset>
       <Fieldset legend="Investments">
         <Field name="interest" label="Taxable interest" value="0" />
@@ -143,7 +147,7 @@ const limits = [
 
 <script>
   import { TY2026, computeReturn, fmtPct, fmtUsd, scheduleTax, type FilingStatus, type ReturnResult } from '@taxline/tax-engine';
-  import { bindCalculator, num } from '../../lib/tools/form';
+  import { bindCalculator, num, opt } from '../../lib/tools/form';
   import { h, renderTrace, setOutputs, setTone, traceToText, wireCopy } from '../../lib/tools/render';
   import { compactUsd, lineChart, onResize } from '../../lib/tools/charts';
 
@@ -208,6 +212,10 @@ const limits = [
       status,
       children: num(v.children),
       wages: num(v.wages),
+      seOwnerSsWages: opt(v.ownerSs),
+      medicareWages: opt(v.medWages),
+      qbiW2Wages: opt(v.qbiWages),
+      qbiUbia: opt(v.ubia),
       selfEmploymentProfit: num(v.se),
       otherIncome: num(v.other),
       sstb: Boolean(v.sstb),

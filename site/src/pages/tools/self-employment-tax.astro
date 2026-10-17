@@ -104,14 +104,14 @@ const limits = [
 </ToolShell>
 
 <script>
-  import { TY2026, additionalMedicare, fmtPct, fmtUsd, selfEmploymentTax, type FilingStatus, type SeResult } from '@taxline/tax-engine';
+  import { TY2026, additionalMedicare, fmtPct, fmtUsd, selfEmploymentTax, type FilingStatus, type SeResult, type Trace } from '@taxline/tax-engine';
   import { bindCalculator, num } from '../../lib/tools/form';
   import { renderTrace, setOutputs, traceToText, wireCopy } from '../../lib/tools/render';
   import { compactUsd, lineChart, onResize } from '../../lib/tools/charts';
 
   const form = document.getElementById('calc') as HTMLFormElement;
   const curve = document.querySelector<HTMLElement>('[data-curve]')!;
-  let state: { profit: number; ss: number; r: SeResult } | null = null;
+  let state: { profit: number; ss: number; r: SeResult; trace: Trace } | null = null;
 
   function draw() {
     if (!state) return;
@@ -138,7 +138,10 @@ const limits = [
     const ss = num(v.ssWages);
     const r = selfEmploymentTax({ netProfit: profit, w2SsWages: ss });
     const addl = additionalMedicare(String(v.status) as FilingStatus, num(v.medWages), r.netEarnings);
-    state = { profit, ss, r };
+    const trace = addl
+      ? [...r.trace, { id: 'se.addl', label: 'Additional Medicare tax (separate, Form 8959)', value: addl, ref: 'Sch 2 L11', formula: `0.9% over ${fmtUsd(TY2026.addlMedicare.threshold[String(v.status) as FilingStatus])}` }]
+      : r.trace;
+    state = { profit, ss, r, trace };
     setOutputs(document, {
       total: fmtUsd(r.total),
       ne: `on ${fmtUsd(r.netEarnings)} net earnings`,
@@ -146,12 +149,9 @@ const limits = [
       rate: profit > 0 ? fmtPct(r.total / profit) : '—',
       addl: fmtUsd(addl),
     });
-    const trace = addl
-      ? [...r.trace, { id: 'se.addl', label: 'Additional Medicare tax (separate, Form 8959)', value: addl, ref: 'Sch 2 L11', formula: `0.9% over ${fmtUsd(TY2026.addlMedicare.threshold[String(v.status) as FilingStatus])}` }]
-      : r.trace;
     renderTrace(document.querySelector('[data-trace="wp"]')!, trace, { cents: true });
     draw();
   });
   onResize(curve, draw);
-  wireCopy(document.querySelector('[data-copy="wp"]'), () => (state ? traceToText('Schedule SE — TY2026', state.r.trace) : ''));
+  wireCopy(document.querySelector('[data-copy="wp"]'), () => (state ? traceToText('Schedule SE, TY2026', state.trace) : ''));
 </script>

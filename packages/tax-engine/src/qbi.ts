@@ -55,7 +55,9 @@ export function qbiDeduction(i: QbiInput, y: TaxYear = TY2026): QbiResult {
   const incomeLimit = rate * Math.max(0, T - Math.max(0, i.netCapitalGain ?? 0));
   let deduction = Math.min(component, incomeLimit);
   let minimumApplied = false;
-  if (Math.max(0, i.qbi) >= minimumQbi && deduction < minimumDeduction) {
+  // The minimum tests qualifying income after the SSTB exclusion, so a fully
+  // phased-out specified service business gets nothing.
+  if (qbi >= minimumQbi && deduction < minimumDeduction) {
     deduction = Math.min(minimumDeduction, T);
     minimumApplied = deduction > 0;
   }

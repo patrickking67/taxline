@@ -4,11 +4,23 @@
 
 export type FormValues = Record<string, string | number | boolean>;
 
+/**
+ * Clamp to the input's declared min/max. HTML constraints do not stop a typed or
+ * URL-restored value, and calculator loops scale with some inputs (?years=1e9).
+ */
+function clampToInput(el: HTMLInputElement, n: number): number {
+  const min = el.min !== '' ? Number(el.min) : -Infinity;
+  const max = el.max !== '' ? Number(el.max) : Infinity;
+  return Math.min(max, Math.max(min, n));
+}
+
 function readValue(el: HTMLInputElement | HTMLSelectElement): string | number | boolean {
   if (el instanceof HTMLInputElement && el.type === 'checkbox') return el.checked;
   if (el.dataset.kind === 'money' || (el instanceof HTMLInputElement && el.type === 'number')) {
+    // Blank stays blank so optional fields can mean "not provided".
+    if (el.value.trim() === '') return '';
     const n = Number(el.value.replace(/[$,\s]/g, ''));
-    return Number.isFinite(n) ? n : 0;
+    return Number.isFinite(n) ? clampToInput(el as HTMLInputElement, n) : 0;
   }
   return el.value;
 }
@@ -23,7 +35,10 @@ export function bindCalculator(form: HTMLFormElement, compute: (v: FormValues) =
     const q = params.get(el.name);
     if (q == null) continue;
     if (el instanceof HTMLInputElement && el.type === 'checkbox') el.checked = q === '1';
-    else el.value = q;
+    else if (el instanceof HTMLSelectElement) {
+      // Only restore an option that exists; a malformed link keeps the default.
+      if (Array.from(el.options).some((o) => o.value === q)) el.value = q;
+    } else el.value = q;
   }
 
   // Money inputs show thousands separators but accept anything numeric.
@@ -62,4 +77,6 @@ export function bindCalculator(form: HTMLFormElement, compute: (v: FormValues) =
 }
 
 export const num = (v: FormValues[string] | undefined) => (typeof v === 'number' ? v : Number(v) || 0);
+/** Optional amount: undefined when the field was left blank. */
+export const opt = (v: FormValues[string] | undefined) => (v === '' || v === undefined ? undefined : num(v));
 export const pct = (v: FormValues[string] | undefined) => num(v) / 100;

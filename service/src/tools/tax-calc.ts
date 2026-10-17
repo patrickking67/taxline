@@ -28,6 +28,8 @@ export interface TaxCalcOutput {
   taxYear: number;
   summary: Record<string, number | string | null>;
   trace: Trace;
+  /** Year-by-year schedule (depreciation only), so later years are quoted, not recomputed. */
+  schedule?: { year: number; ratePct: number; section179: number; bonus: number; macrs: number; total: number; endingBasis: number }[];
   /** Scope note the workpaper must carry so a reviewer knows what was not modeled. */
   limits: string;
 }
@@ -36,6 +38,9 @@ const STATUSES = new Set<string>(FILING_STATUSES.map((s) => s.key));
 const CLASSES = new Set<string>(RECOVERY_CLASSES.map((c) => c.key));
 const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 
+/** Keys the caller passed as null: unknown facts must be omitted or supplied, never treated as 0. */
+const nullKeys = (o: Record<string, unknown>) => Object.entries(o).filter(([, v]) => v === null).map(([k]) => k);
+
 export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
   name: 'compute_tax',
   description:
@@ -43,7 +48,7 @@ export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
     '(value, formula with operands, form line, IRS authority). Use for ANY arithmetic a workpaper ' +
     'needs instead of calculating yourself. calculation="return": Form 1040 estimate from wages, ' +
     'interest, dividends, capital gains, Schedule C profit, adjustments, itemized deductions, children, ' +
-    'withholding. calculation="estimated": §6654 safe-harbor estimates and the four 1040-ES installments. ' +
+    'withholding. Never pass null: omit a fact that is not in evidence, and a required fact that is missing is a validation error. calculation="estimated": §6654 safe-harbor estimates and the four 1040-ES installments. ' +
     'calculation="depreciation": §179, bonus, and MACRS schedule for one asset. Pass only values ' +
     'taken from extracted fields; omit anything not in evidence rather than guessing.',
   inputSchema: {
@@ -53,17 +58,19 @@ export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
       inputs: {
         type: 'object',
         description:
-          'return: status (single|mfj|mfs|hoh), wages, federalWithholding, interest, ordinaryDividends, ' +
+          'return: status (single|mfj|mfs|hoh), wages, seOwnerSsWages (Schedule C owner\'s own W-2 box 3), medicareWages (box 5), federalWithholding, interest, ordinaryDividends, ' +
           'qualifiedDividends, shortTermGain, longTermGain, selfEmploymentProfit, otherIncome, adjustments, ' +
-          'itemized, children, estimatedPayments. estimated: status, currentYearTax, withholding, priorYearTax, ' +
-          'priorYearAgi, priorYearFull. depreciation: cost, recoveryClass (3|5|7|10|15|20|27.5|39), month, ' +
-          'businessUsePct (0-1), section179, bonusPct (0-1), businessIncome.',
+          'itemized, children, estimatedPayments, qbiW2Wages, qbiUbia, sstb. estimated: status, currentYearTax, withholding, and — only together — ' +
+          'priorYearTax, priorYearAgi, priorYearFull. depreciation: cost, recoveryClass (3|5|7|10|15|20|27.5|39), month, ' +
+          'businessUsePct (0-1), listedProperty, section179 (requires businessIncome), bonusPct (0-1), businessIncome.',
       },
     },
     required: ['calculation', 'inputs'],
   },
   run(input) {
     const i = input?.inputs ?? {};
+    const nulls = nullKeys(i);
+    if (nulls.length) return fail('validation', `Unknown values passed as null: ${nulls.join(', ')}. Omit them or supply evidence.`);
     try {
       switch (input?.calculation) {
         case 'return': {
@@ -81,13 +88,18 @@ export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
           if (!STATUSES.has(String(i.status))) return fail('validation', 'compute_tax estimated needs status.');
           const tax = num(i.currentYearTax);
           if (tax == null) return fail('validation', 'compute_tax estimated needs currentYearTax (number).');
+          // The prior-year test needs all three facts; its percentage depends on AGI.
+          const hasPrior = i.priorYearTax !== undefined;
+          if (hasPrior && (num(i.priorYearTax) == null || num(i.priorYearAgi) == null || typeof i.priorYearFull !== 'boolean')) {
+            return fail('validation', 'The prior-year safe harbor needs priorYearTax, priorYearAgi, and priorYearFull together; omit all three to use the current-year test.');
+          }
           const r = estimatedTax({
             status: i.status as FilingStatus,
             currentYearTax: tax,
             withholding: num(i.withholding) ?? 0,
-            priorYearTax: num(i.priorYearTax) ?? null,
+            priorYearTax: hasPrior ? num(i.priorYearTax)! : null,
             priorYearAgi: num(i.priorYearAgi),
-            priorYearFull: i.priorYearFull !== false,
+            priorYearFull: hasPrior ? i.priorYearFull === true : false,
           });
           return ok({
             calculation: 'estimated',
@@ -101,11 +113,15 @@ export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
           const cost = num(i.cost);
           if (cost == null || cost <= 0) return fail('validation', 'compute_tax depreciation needs a positive cost.');
           if (!CLASSES.has(String(i.recoveryClass))) return fail('validation', 'recoveryClass must be one of 3, 5, 7, 10, 15, 20, 27.5, 39.');
+          if ((num(i.section179) ?? 0) > 0 && num(i.businessIncome) == null) {
+            return fail('validation', '§179 is limited to taxable business income; supply businessIncome with a section179 election.');
+          }
           const r = depreciate({
             cost,
             recoveryClass: String(i.recoveryClass) as RecoveryClass,
             month: num(i.month),
             businessUsePct: num(i.businessUsePct),
+            listedProperty: i.listedProperty === true,
             section179: num(i.section179),
             bonusPct: num(i.bonusPct),
             businessIncome: num(i.businessIncome) ?? null,
@@ -113,8 +129,9 @@ export const taxCalc: Tool<TaxCalcInput, TaxCalcOutput> = {
           return ok({
             calculation: 'depreciation',
             taxYear: 2026,
-            summary: { basis: r.basis, section179: r.section179, bonus: r.bonus, firstYear: r.firstYear, years: r.rows.length },
+            summary: { basis: r.basis, section179: r.section179, carryforward: r.carryforward, bonus: r.bonus, firstYear: r.firstYear, years: r.rows.length },
             trace: r.trace,
+            schedule: r.rows.map((x) => ({ year: x.year, ratePct: x.rate, section179: x.section179, bonus: x.bonus, macrs: x.macrs, total: x.total, endingBasis: x.endingBasis })),
             limits: 'GDS half-year (personal) or mid-month (real) only; mid-quarter convention, ADS, and luxury-auto caps are not modeled.',
           });
         }

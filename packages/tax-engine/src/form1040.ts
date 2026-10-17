@@ -22,6 +22,14 @@ import { amount, fmtPct, fmtUsd, round2 } from './money.js';
 export interface ReturnInput {
   status: FilingStatus;
   wages?: number;
+  /**
+   * W-2 box 3 Social Security wages of the Schedule C owner only — they use up
+   * that person's SE wage base. Defaults to `wages` except on a joint return,
+   * where a spouse's wages cannot be assumed to be the owner's (default 0).
+   */
+  seOwnerSsWages?: number;
+  /** W-2 box 5 Medicare wages for Form 8959. Defaults to `wages` (box 1). */
+  medicareWages?: number;
   federalWithholding?: number;
   interest?: number;
   /** Total ordinary dividends (1099-DIV box 1a), including qualified. */
@@ -87,7 +95,8 @@ export function computeReturn(input: ReturnInput, y: TaxYear = TY2026, withMargi
   const qualDiv = Math.min(amount(input.qualifiedDividends), ordDiv);
   const st = signed(input.shortTermGain);
   const lt = signed(input.longTermGain);
-  const seProfit = amount(input.selfEmploymentProfit);
+  // Signed: a Schedule C loss offsets other income. SE tax floors its own base.
+  const seProfit = signed(input.selfEmploymentProfit);
   const passThrough = amount(input.passThroughIncome);
   const other = amount(input.otherIncome);
   const useTable = input.useTaxTable ?? true;
@@ -98,7 +107,9 @@ export function computeReturn(input: ReturnInput, y: TaxYear = TY2026, withMargi
   const capLine = netCap >= 0 ? netCap : Math.max(netCap, -lossCap);
   const netLtcgForPref = Math.max(0, Math.min(lt, netCap));
 
-  const se = selfEmploymentTax({ netProfit: seProfit, w2SsWages: wages }, y);
+  const ownerSs = input.seOwnerSsWages != null ? amount(input.seOwnerSsWages) : s === 'mfj' ? 0 : wages;
+  const medicareWages = input.medicareWages != null ? amount(input.medicareWages) : wages;
+  const se = selfEmploymentTax({ netProfit: seProfit, w2SsWages: ownerSs }, y);
   const totalIncome = round2(wages + interest + ordDiv + capLine + seProfit + passThrough + other);
   const adjustments = round2(se.deduction + amount(input.adjustments));
   const agi = round2(Math.max(0, totalIncome - adjustments));
@@ -125,10 +136,11 @@ export function computeReturn(input: ReturnInput, y: TaxYear = TY2026, withMargi
   const preferential = preferentialTax(taxable, netLtcgForPref + qualDiv, y.brackets[s], y.capGains[s], ordinaryFn);
   const incomeTax = preferential.tax;
 
-  const earned = wages + Math.max(0, seProfit - se.deduction);
+  const earned = wages + seProfit - se.deduction;
   const ctc = childTaxCredit(s, input.children ?? 0, agi, incomeTax, earned, y);
-  const addlMed = additionalMedicare(s, wages, se.netEarnings, y);
-  const nii = interest + ordDiv + Math.max(0, capLine);
+  const addlMed = additionalMedicare(s, medicareWages, se.netEarnings, y);
+  // The deductible capital loss reduces NII; the aggregate cannot go below zero.
+  const nii = Math.max(0, interest + ordDiv + capLine);
   const niit = netInvestmentIncomeTax(s, agi, nii, y);
   const otherTaxes = round2(se.total + addlMed + niit);
   const totalTax = round2(Math.max(0, incomeTax - ctc.nonrefundable) + otherTaxes);

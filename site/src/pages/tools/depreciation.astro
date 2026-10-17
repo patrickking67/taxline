@@ -25,7 +25,7 @@ const faqs = [
   },
   {
     q: 'Can I take Section 179 or bonus on a rental building?',
-    a: 'No. Residential rental (27.5-year) and nonresidential (39-year) buildings are straight line with the mid-month convention. Qualified improvement property and some building components can qualify; model them as 15-year property.',
+    a: 'No. Residential rental (27.5-year) and nonresidential (39-year) buildings are straight line with the mid-month convention. Qualified improvement property is 15-year property but must use straight line, which this calculator does not model.',
   },
   {
     q: 'What is the tax shield, and why does present value matter?',
@@ -57,6 +57,7 @@ const limits = [
         <Field name="month" label="Placed in service" kind="select" options={months} value="3" hint="Matters for real property." />
         <Field name="cls" label="Recovery class" kind="select" options={classes} value="5" class="sm:col-span-2" />
         <Field name="use" label="Business use" kind="number" value="100" suffix="%" min={0} max={100} step={1} />
+        <Field name="listed" label="Listed property" kind="toggle" hint="Vehicles and similar (§280F)." />
       </Fieldset>
       <Fieldset legend="Elections">
         <Field name="s179" label="§179 expense elected" value="0" />
@@ -154,7 +155,7 @@ const limits = [
     const real = cls === '27.5' || cls === '39';
     income.disabled = !v.limitOn;
     income.closest('div')?.parentElement?.classList.toggle('opacity-50', !v.limitOn);
-    const base = { cost: num(v.cost), recoveryClass: cls, month: num(v.month), businessUsePct: pct(v.use) };
+    const base = { cost: num(v.cost), recoveryClass: cls, month: num(v.month), businessUsePct: pct(v.use), listedProperty: Boolean(v.listed) };
     const r = depreciate({ ...base, section179: num(v.s179), bonusPct: pct(v.bonus), businessIncome: v.limitOn ? num(v.income) : null });
     const plain = depreciate({ ...base, section179: 0, bonusPct: 0 });
     const tau = pct(v.rate);
@@ -165,7 +166,7 @@ const limits = [
 
     setOutputs(document, {
       first: fmtUsd(r.firstYear),
-      firstPct: r.basis ? `${fmtPct(r.firstYear / r.basis)} of basis` : '',
+      firstPct: r.carryforward ? `${fmtUsd(r.carryforward)} §179 carried forward` : r.basis ? `${fmtPct(r.firstYear / r.basis)} of basis` : '',
       pv: fmtUsd(pv),
       pvSub: `of ${fmtUsd(r.basis * tau)} nominal`,
       accel: fmtUsd(pv - pvPlain),

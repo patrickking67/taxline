@@ -64,7 +64,9 @@ export function compareEntity(i: EntityInput, y: TaxYear = TY2026): EntityResult
   const salary = Math.min(Math.max(0, i.salary), maxSalary);
 
   const soleRet = computeReturn({ ...i.household, status: i.status, selfEmploymentProfit: profit }, y);
-  const fica = payrollFica(salary, otherWages, y);
+  // Only the owner's own other W-2 Social Security wages share their wage base.
+  const ownerOtherSs = i.household?.seOwnerSsWages ?? (i.status === 'mfj' ? 0 : otherWages);
+  const fica = payrollFica(salary, ownerOtherSs, y);
   const k1 = round2(Math.max(0, profit - salary - fica.employer - overhead));
   const scorpRet = computeReturn(
     { ...i.household, status: i.status, wages: otherWages + salary, passThroughIncome: k1, qbiW2Wages: salary },

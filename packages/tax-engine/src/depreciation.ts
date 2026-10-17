@@ -8,7 +8,13 @@
 // GDS personal property (3–20 year) uses the half-year convention; 3/5/7/10-year
 // at 200% declining balance and 15/20-year at 150%, each switching to straight
 // line when SL yields more. Real property (27.5/39) is straight line, mid-month.
-// The mid-quarter convention (>40% placed in service in Q4) is not modeled.
+// Not modeled: the mid-quarter convention (>40% placed in service in Q4), and
+// qualified improvement property, which is 15-year but straight line (§168(b)(3)).
+//
+// §179 needs >50% business use (Reg. §1.179-1(d)) and is limited to business
+// income; the excess is carried forward (Form 4562 L13), never returned to the
+// bonus/MACRS basis. Bonus has no business-use floor except for listed property
+// (§280F), which must exceed 50% for both.
 
 import type { Trace } from './types.js';
 import { TY2026, cite, type TaxYear } from './years/2026.js';
@@ -21,7 +27,7 @@ export const RECOVERY_CLASSES: { key: RecoveryClass; label: string; examples: st
   { key: '5', label: '5-year', examples: 'Computers, vehicles, office equipment' },
   { key: '7', label: '7-year', examples: 'Office furniture, fixtures' },
   { key: '10', label: '10-year', examples: 'Vessels, single-purpose structures' },
-  { key: '15', label: '15-year', examples: 'Land improvements, QIP' },
+  { key: '15', label: '15-year', examples: 'Land improvements (fences, paving)' },
   { key: '20', label: '20-year', examples: 'Farm buildings, utility property' },
   { key: '27.5', label: '27.5-year', examples: 'Residential rental property' },
   { key: '39', label: '39-year', examples: 'Nonresidential real property' },
@@ -92,6 +98,8 @@ export interface DepreciationInput {
   section179?: number;
   /** Total §179 property placed in service this year (drives the phase-out). Defaults to cost. */
   total179Property?: number;
+  /** Listed property (vehicles and similar, §280F): bonus also needs >50% business use. */
+  listedProperty?: boolean;
   /** Taxable business income limit on §179; omit to ignore the limit. */
   businessIncome?: number | null;
   /** 0–1. Defaults to the year’s rate for qualified property. */
@@ -112,7 +120,12 @@ export interface DepreciationRow {
 
 export interface DepreciationResult {
   basis: number;
+  /** §179 deduction allowed this year (after the business-income limit). */
   section179: number;
+  /** §179 elected; removed from bonus/MACRS basis in full. */
+  section179Elected: number;
+  /** Elected but disallowed by the income limit; deductible in later years. */
+  carryforward: number;
   section179Limit: number;
   bonus: number;
   macrsBase: number;
@@ -125,21 +138,24 @@ export function depreciate(i: DepreciationInput, y: TaxYear = TY2026): Depreciat
   const use = Math.min(1, Math.max(0, i.businessUsePct ?? 1));
   const basis = round2(Math.max(0, i.cost) * use);
   const isReal = i.recoveryClass === '27.5' || i.recoveryClass === '39';
-  // §179 and bonus do not apply to buildings; listed property needs >50% business use.
-  const qualifies = !isReal && use > 0.5;
+  const s179Eligible = !isReal && use > 0.5;
+  const bonusEligible = !isReal && (!i.listedProperty || use > 0.5);
 
   const totalProp = Math.max(i.total179Property ?? i.cost, i.cost);
   const section179Limit = Math.max(0, y.sec179.limit - Math.max(0, totalProp - y.sec179.phaseoutStart));
   const incomeCap = i.businessIncome == null ? Infinity : Math.max(0, i.businessIncome);
-  const section179 = qualifies ? round2(Math.min(Math.max(0, i.section179 ?? 0), section179Limit, basis, incomeCap)) : 0;
+  const section179Elected = s179Eligible ? round2(Math.min(Math.max(0, i.section179 ?? 0), section179Limit, basis)) : 0;
+  const section179 = round2(Math.min(section179Elected, incomeCap));
+  const carryforward = round2(section179Elected - section179);
 
-  const bonusPct = qualifies ? Math.min(1, Math.max(0, i.bonusPct ?? y.bonusPct)) : 0;
-  const bonus = round2((basis - section179) * bonusPct);
-  const macrsBase = round2(basis - section179 - bonus);
+  const bonusPct = bonusEligible ? Math.min(1, Math.max(0, i.bonusPct ?? y.bonusPct)) : 0;
+  const bonus = round2((basis - section179Elected) * bonusPct);
+  const macrsBase = round2(basis - section179Elected - bonus);
 
   const rates = ratesFor(i.recoveryClass, i.month ?? 1);
   const start = i.startYear ?? y.year;
-  let left = basis;
+  // Basis left after the full election (the carryforward is a deferred deduction, not basis).
+  let left = round2(basis - section179Elected + section179);
   let assigned = 0;
   const rows: DepreciationRow[] = rates.map((r, k) => {
     const last = k === rates.length - 1;
@@ -157,13 +173,15 @@ export function depreciate(i: DepreciationInput, y: TaxYear = TY2026): Depreciat
   const trace: Trace = [
     { id: 'dep.basis', label: 'Depreciable basis', value: basis, ref: '4562 L19/L6', formula: `${fmtUsd(i.cost)} × ${fmtPct(use, 0)} business use` },
     { id: 'dep.limit', label: '§179 limit after phase-out', value: section179Limit, ref: '4562 L5', formula: `${fmtUsd(y.sec179.limit)} − max(0, ${fmtUsd(totalProp)} − ${fmtUsd(y.sec179.phaseoutStart)})`, authority: cite.sec179 },
-    { id: 'dep.179', label: '§179 expense elected', value: section179, ref: '4562 L12', formula: qualifies ? undefined : isReal ? 'not available for buildings' : 'requires >50% business use', authority: cite.sec179 },
-    { id: 'dep.bonus', label: 'Special (bonus) depreciation', value: bonus, ref: '4562 L14', formula: `${fmtUsd(basis - section179)} × ${fmtPct(bonusPct, 0)}`, authority: cite.bonus },
+    { id: 'dep.179e', label: '§179 expense elected', value: section179Elected, ref: '4562 L8', formula: s179Eligible ? undefined : isReal ? 'not available for buildings' : 'requires >50% business use', authority: cite.sec179 },
+    { id: 'dep.179', label: '§179 deduction allowed', value: section179, ref: '4562 L12', formula: carryforward ? `limited to business income ${fmtUsd(incomeCap)}` : undefined, authority: cite.sec179 },
+    ...(carryforward ? [{ id: 'dep.carry', label: '§179 carryforward to next year', value: carryforward, ref: '4562 L13', formula: `${fmtUsd(section179Elected)} − ${fmtUsd(section179)}`, authority: cite.sec179 }] : []),
+    { id: 'dep.bonus', label: 'Special (bonus) depreciation', value: bonus, ref: '4562 L14', formula: bonusEligible ? `${fmtUsd(basis - section179Elected)} × ${fmtPct(bonusPct, 0)}` : isReal ? 'not available for buildings' : 'listed property needs >50% business use', authority: cite.bonus },
     { id: 'dep.macrs1', label: 'MACRS deduction, year 1', value: rows[0]?.macrs ?? 0, ref: '4562 L19', formula: `${fmtUsd(macrsBase)} × ${(rows[0]?.rate ?? 0).toFixed(3)}%`, authority: cite.macrs },
     { id: 'dep.first', label: 'First-year deduction', value: firstYear, ref: '4562 L22', emphasis: 'total' },
   ];
 
-  return { basis, section179, section179Limit, bonus, macrsBase, rows, firstYear, trace };
+  return { basis, section179, section179Elected, carryforward, section179Limit, bonus, macrsBase, rows, firstYear, trace };
 }
 
 /**
