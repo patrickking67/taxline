@@ -55,13 +55,25 @@ export function payrollFica(salary: number, otherSsWages: number, y: TaxYear = T
   return { employee: round2(employee), employer: round2(employer) };
 }
 
+/**
+ * Largest salary the business can pay: S + employer FICA(S) = profit − overhead,
+ * with employer Social Security stopping at the wage base.
+ */
+export function maxSalary(profit: number, overhead: number, y: TaxYear = TY2026): number {
+  const avail = Math.max(0, profit - Math.max(0, overhead));
+  const ss = y.fica.ssRate / 2;
+  const med = y.fica.medicareRate / 2;
+  const belowBase = avail / (1 + ss + med);
+  if (belowBase <= y.fica.wageBase) return belowBase;
+  return (avail - ss * y.fica.wageBase) / (1 + med);
+}
+
 export function compareEntity(i: EntityInput, y: TaxYear = TY2026): EntityResult {
   const profit = Math.max(0, i.profit);
   const overhead = Math.max(0, i.overhead ?? 0);
   const otherWages = Math.max(0, i.household?.wages ?? 0);
   // Salary cannot exceed what the business can pay after its own FICA and overhead.
-  const maxSalary = Math.max(0, (profit - overhead) / (1 + y.fica.ssRate / 2 + y.fica.medicareRate / 2));
-  const salary = Math.min(Math.max(0, i.salary), maxSalary);
+  const salary = Math.min(Math.max(0, i.salary), maxSalary(profit, overhead, y));
 
   const soleRet = computeReturn({ ...i.household, status: i.status, selfEmploymentProfit: profit }, y);
   // Only the owner's own other W-2 Social Security wages share their wage base.
@@ -101,7 +113,7 @@ export function compareEntity(i: EntityInput, y: TaxYear = TY2026): EntityResult
 
 /** Savings across salaries from 0 to the maximum the business can pay. */
 export function salarySweep(i: EntityInput, points = 60, y: TaxYear = TY2026): [number, number][] {
-  const max = Math.max(0, (Math.max(0, i.profit) - Math.max(0, i.overhead ?? 0)) / (1 + y.fica.ssRate / 2 + y.fica.medicareRate / 2));
+  const max = maxSalary(Math.max(0, i.profit), i.overhead ?? 0, y);
   const out: [number, number][] = [];
   for (let k = 0; k <= points; k++) {
     const s = (max * k) / points;

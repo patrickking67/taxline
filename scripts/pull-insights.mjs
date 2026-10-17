@@ -29,9 +29,19 @@ if (!res.ok) {
   process.exit(1);
 }
 const body = await res.json();
+const strOrNull = (v) => v === null || typeof v === 'string';
 const valid =
   Array.isArray(body?.entries) &&
-  body.entries.every((e) => typeof e.slug === 'string' && /^[a-z0-9-]+$/.test(e.slug) && typeof e.title === 'string' && Array.isArray(e.content));
+  body.entries.every(
+    (e) =>
+      typeof e.slug === 'string' && /^[a-z0-9-]+$/.test(e.slug) &&
+      typeof e.title === 'string' && e.title.trim() !== '' &&
+      typeof e.excerpt === 'string' &&
+      typeof e.publishedAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.publishedAt) &&
+      strOrNull(e.category) && strOrNull(e.tool) &&
+      (e.readingMinutes === null || Number.isInteger(e.readingMinutes)) &&
+      Array.isArray(e.content),
+  );
 if (!valid) {
   console.error('CMS response does not match the Insights contract; snapshot left unchanged.');
   process.exit(1);

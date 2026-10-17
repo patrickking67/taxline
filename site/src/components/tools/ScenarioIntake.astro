@@ -48,7 +48,8 @@ const examples = [
           <button type="button" data-intake-example={ex} class="rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg">example {i + 1}</button>
         ))}
       </div>
-      <p class="mt-3 text-[11px] leading-relaxed text-fg-faint">Each figure comes back with the exact words it came from. Code checks the quote is in your text and states the amount; anything uncertain stays unchecked until you confirm it.</p>
+      <p data-intake-privacy class="mt-3 rounded-sm border border-border-faint bg-base px-2.5 py-2 text-[11px] leading-relaxed text-fg-muted"></p>
+      <p class="mt-2 text-[11px] leading-relaxed text-fg-faint">Each figure comes back with the exact words it came from. Code checks the quote is in your text and states the amount; anything uncertain stays unchecked until you confirm it.</p>
     </div>
     <div aria-live="polite">
       <div data-intake-empty class="grid h-full min-h-[150px] place-items-center rounded-md border border-dashed border-border px-4 text-center text-[12px] text-fg-faint">Extracted fields appear here for your review.</div>
@@ -90,7 +91,11 @@ const examples = [
     const mode = root.querySelector<HTMLElement>('[data-intake-mode]')!;
     let fields: ScenarioField[] = [];
 
-    mode.textContent = fleet.name === 'mock' ? 'offline extractor · runs in your browser' : 'live fleet';
+    const live = fleet.name !== 'mock';
+    mode.textContent = live ? 'live fleet' : 'offline extractor · runs in your browser';
+    root.querySelector<HTMLElement>('[data-intake-privacy]')!.textContent = live
+      ? 'Your description is sent to the Taxline service and to Anthropic’s Claude API to extract the figures. It is not stored or used for training. Leave out names and account numbers.'
+      : 'Extraction runs entirely in your browser. Your description is not sent anywhere.';
 
     const fmtValue = (f: ScenarioField) =>
       f.value === null ? '—' : f.key === 'status' ? STATUS_LABEL[String(f.value)] ?? String(f.value) : f.key === 'children' ? String(f.value) : fmtUsd(Number(f.value));

@@ -44,6 +44,9 @@ export interface RoiResult {
   cumulative: number[];
 }
 
+/** Longest horizon the model will build monthly flows for. */
+export const MAX_YEARS = 30;
+
 export function npv(rate: number, flows: number[]): number {
   return flows.reduce((s, f, t) => s + f / Math.pow(1 + rate, t), 0);
 }
@@ -80,8 +83,9 @@ export function firmRoi(i: RoiInput): RoiResult {
   const laborValue = hoursSaved * Math.max(0, i.loadedHourlyCost);
   const subscription = Math.max(0, i.seats) * Math.max(0, i.pricePerSeatMonth) * 12;
   const netAnnual = laborValue - subscription;
-  const years = Math.max(1, Math.round(i.years));
-  const ramp = Math.max(0, Math.round(i.rampMonths ?? 0));
+  // Bounded here, not only in the UI: flows are allocated per month.
+  const years = Number.isFinite(i.years) ? Math.min(MAX_YEARS, Math.max(1, Math.round(i.years))) : 1;
+  const ramp = Number.isFinite(i.rampMonths ?? 0) ? Math.min(years * 12, Math.max(0, Math.round(i.rampMonths ?? 0))) : 0;
 
   // Monthly flows with an adoption ramp; subscription is paid from month 1.
   const monthly: number[] = [-Math.max(0, i.onboardingCost)];

@@ -32,7 +32,8 @@ const {
 const path = Astro.url.pathname.replace(/\/?$/, '/');
 const canonical = new URL(path, Astro.site).href;
 const ogImage = absolute('social-preview.png', Astro.site);
-const graph = JSON.stringify({ '@context': 'https://schema.org', '@graph': [organization(Astro.site), website(Astro.site), ...schema] });
+// CMS text reaches this graph; escape "<" so a "</script>" in a title cannot end the block.
+const graph = JSON.stringify({ '@context': 'https://schema.org', '@graph': [organization(Astro.site), website(Astro.site), ...schema] }).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>

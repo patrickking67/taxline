@@ -9,6 +9,8 @@ import {
   computeReturn,
   extractScenario,
   parseAmount,
+  firmRoi,
+  maxSalary,
   payrollFica,
   salarySweep,
   scenarioToInput,
@@ -121,4 +123,19 @@ test('salary is capped at what the business can pay, and the sweep is ordered', 
   assert.ok(sweep.every((p, i) => i === 0 || p[0] > sweep[i - 1]![0]));
   // Paying the whole profit as salary saves less than a partial salary.
   assert.ok(sweep[10]![1] < sweep[5]![1]);
+});
+
+test('salary ceiling stops employer Social Security at the wage base', () => {
+  // Below the base: S × 1.0765 = available.
+  near(maxSalary(100_000, 0), 100_000 / 1.0765);
+  // Above it: (500,000 − 6.2% × 184,500) / 1.0145
+  near(maxSalary(500_000, 0), 481_578.12);
+});
+
+test('ROI horizon is bounded in the engine, not only the UI', () => {
+  const r = firmRoi({
+    returnsPerYear: 100, hoursPerReturn: 5, reduction: 0.3, loadedHourlyCost: 80,
+    seats: 1, pricePerSeatMonth: 59, onboardingCost: 0, discountRate: 0.1, years: 1e9, rampMonths: 1e9,
+  });
+  assert.equal(r.cumulative.length, 30 * 12 + 1);
 });

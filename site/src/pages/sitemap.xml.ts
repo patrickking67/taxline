@@ -3,13 +3,16 @@
 // are excluded (they are noindex).
 import type { APIRoute } from 'astro';
 import { absolute } from '../lib/url';
+import { insights } from '../lib/content/insights';
 
 const pages = Object.keys(import.meta.glob('./**/*.astro'))
   .map((f) => f.replace(/^\.\//, '').replace(/\.astro$/, '').replace(/(^|\/)index$/, ''))
   .filter((p) => !p.startsWith('app') && !p.includes('[') && p !== '404')
+  // Dynamic routes are excluded above; add the concrete public article pages.
+  .concat(insights.map((post) => `insights/${post.slug}`))
   .sort();
 
-const priority = (p: string) => (p === '' ? '1.0' : p.startsWith('tools') || p === 'pricing' || p === 'product' ? '0.9' : '0.7');
+const priority = (p: string) => (p === '' ? '1.0' : p.startsWith('tools') || p.startsWith('insights') || p === 'pricing' || p === 'product' ? '0.9' : '0.7');
 
 export const GET: APIRoute = ({ site }) => {
   const lastmod = new Date().toISOString().slice(0, 10);
