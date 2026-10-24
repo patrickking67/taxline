@@ -14,12 +14,12 @@
     "refresh-kb": "tsx ../knowledge-base/ingest/refresh.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.68.0",
+    "@anthropic-ai/sdk": "^0.137.0",
     "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "tsx": "^4.19.2",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.2"
   }
 }
