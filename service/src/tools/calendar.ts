@@ -46,15 +46,29 @@ const VERIFY_SOURCE =
   'Verify against the current IRS source (see tax/filing-deadlines.md → "IRS source"). ' +
   'Dates shift for weekends and federal/DC holidays (e.g. Emancipation Day).';
 
-// SEED ONLY — fixed-date federal holidays relevant to spring filing season, plus a
-// couple commonly-observed ones. Not exhaustive; the engine shifts off these and
-// off weekends, and the verify pointer covers the rest.
-const SEED_HOLIDAYS_MMDD = new Set(['01-01', '04-16', '06-19', '07-04', '12-25']);
+// SEED ONLY: fixed-date federal holidays plus DC Emancipation Day (April 16), the
+// ones that can land on or next to a filing date. Not exhaustive; the verify
+// pointer covers the rest. Each is checked on its OBSERVED date: a holiday on a
+// Saturday is observed the Friday before, on a Sunday the Monday after
+// (5 U.S.C. 6103(b); D.C. Code 1-612.02 for Emancipation Day). That is what moved
+// the 2022 deadline from Friday April 15 to Monday April 18, and the 2023 one
+// past Monday April 17 to Tuesday April 18.
+const SEED_HOLIDAYS: { month: number; day: number }[] = [
+  { month: 1, day: 1 },
+  { month: 4, day: 16 },
+  { month: 6, day: 19 },
+  { month: 7, day: 4 },
+  { month: 12, day: 25 },
+];
 
 function isoToParts(iso: string): { y: number; m: number; d: number } | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
   if (!m) return null;
-  return { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) };
+  const parts = { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) };
+  // Reject dates that Date.UTC would silently roll over (2024-02-30, 2024-13-01).
+  const check = new Date(Date.UTC(parts.y, parts.m - 1, parts.d));
+  if (check.getUTCFullYear() !== parts.y || check.getUTCMonth() !== parts.m - 1 || check.getUTCDate() !== parts.d) return null;
+  return parts;
 }
 
 function toIso(d: Date): string {
@@ -66,12 +80,26 @@ function isWeekend(d: Date): boolean {
   return day === 0 || day === 6;
 }
 
-function isHoliday(d: Date): boolean {
-  const mmdd = toIso(d).slice(5);
-  return SEED_HOLIDAYS_MMDD.has(mmdd);
+/** The date a fixed holiday is observed in year `y`: Saturday moves back a day, Sunday forward. */
+export function observedDate(y: number, month: number, day: number): string {
+  const d = new Date(Date.UTC(y, month - 1, day));
+  const dow = d.getUTCDay();
+  if (dow === 6) d.setUTCDate(d.getUTCDate() - 1);
+  if (dow === 0) d.setUTCDate(d.getUTCDate() + 1);
+  return toIso(d);
 }
 
-/** Roll forward to the next business day that is neither weekend nor seeded holiday. */
+function isHoliday(d: Date): boolean {
+  const iso = toIso(d);
+  const y = d.getUTCFullYear();
+  // New Year's Day on a Saturday is observed on December 31 of the year before.
+  return [y, y + 1].some((year) => SEED_HOLIDAYS.some((h) => observedDate(year, h.month, h.day) === iso));
+}
+
+/**
+ * Roll forward to the next day that is not a Saturday, Sunday, or observed
+ * holiday (IRC 7503).
+ */
 function nextBusinessDay(d: Date): Date {
   const out = new Date(d.getTime());
   while (isWeekend(out) || isHoliday(out)) {
@@ -114,8 +142,11 @@ export const calendar: Tool<DeadlineInput, DeadlineOutput> = {
     let yEnd: { y: number; m: number; d: number } | null;
     if (input.yearEnd) {
       yEnd = isoToParts(input.yearEnd);
-      if (!yEnd) return fail('validation', '`yearEnd` must be YYYY-MM-DD.');
+      if (!yEnd) return fail('validation', '`yearEnd` must be a real date in YYYY-MM-DD form.');
     } else if (typeof input.taxYear === 'number') {
+      if (!Number.isInteger(input.taxYear) || input.taxYear < 1900 || input.taxYear > 2200) {
+        return fail('validation', '`taxYear` must be a four-digit year.');
+      }
       yEnd = { y: input.taxYear, m: 12, d: 31 };
     } else {
       return fail('validation', 'Provide either `yearEnd` or `taxYear`.');
