@@ -1,4 +1,4 @@
-// Taxline HTTP server — node:http, no framework.
+// Taxline HTTP server: node:http, no framework.
 //
 // Endpoints:
 //   GET  /health            liveness + config snapshot (no secrets)
@@ -230,13 +230,13 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
     if (req.method === 'POST' && path === '/demo') {
       const body = (await readJsonBody(req)) as {
         email?: string;
-        company_website?: string; // honeypot — must be empty
+        company_website?: string; // honeypot, must be empty
       };
       if (body.company_website) return sendJson(res, 200, { ok: false, error: 'rejected' });
       if (!body.email || !/.+@.+\..+/.test(body.email)) {
         return sendJson(res, 400, { ok: false, error: 'A valid work email is required.' });
       }
-      // Intake only — a human follows up. We do not auto-act on the request.
+      // Intake only: a human follows up. We do not auto-act on the request.
       const id = `demo_${Math.random().toString(36).slice(2, 10)}`;
       return sendJson(res, 200, { ok: true, id });
     }
@@ -260,10 +260,10 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
 export function start(port = PORT): http.Server {
   const server = http.createServer((req, res) => void handle(req, res));
   server.listen(port, () => {
-    // Startup line — confirms port, mode, and the human-in-the-loop posture.
+    // Startup line: confirms port, mode, and the human-in-the-loop posture.
     const mode = hasApiKey
       ? 'live agents'
-      : 'OFFLINE (no ANTHROPIC_API_KEY — deterministic tool runs)';
+      : 'OFFLINE (no ANTHROPIC_API_KEY, deterministic tool runs)';
     // eslint-disable-next-line no-console
     console.log(
       `Taxline service on http://localhost:${port}  ·  ${mode}  ·  ` +
@@ -273,7 +273,7 @@ export function start(port = PORT): http.Server {
 
     // Persistent vector memory: if the on-disk store is empty (first run / fresh volume),
     // build the index from the knowledge base now so retrieval is vector-backed
-    // immediately. A failure here is logged but non-fatal — retrieve() falls back to
+    // immediately. A failure here is logged but non-fatal: retrieve() falls back to
     // keyword scoring while the store is empty.
     void (async () => {
       try {
