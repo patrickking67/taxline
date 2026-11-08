@@ -1,0 +1,40 @@
+# Taxline
+
+> Agentic tax operations. Five AI agents (Relay intake, Lens extraction, Atlas research, Ledger workpapers, Sentry compliance) work behind an orchestrator. Every field carries a confidence score and a citation; fields under 0.85 confidence route to a person, and a human approves before any output ships. Taxline does not file autonomously and does not train on client data.
+
+## Free tax calculators (tax year 2026, figures from IRS Rev. Proc. 2025-32)
+
+- [Federal income tax calculator](https://patrickking67.github.io/taxline/tools/income-tax/): Form 1040 estimate with brackets, capital gains, QBI, child tax credit, SE tax, NIIT, and a line-by-line trace. Accepts a plain-English description; each extracted field carries a confidence and an evidence quote checked in code before the user approves it.
+- [Self-employment tax calculator](https://patrickking67.github.io/taxline/tools/self-employment-tax/): Schedule SE with the $184,500 wage base and Additional Medicare.
+- [Estimated tax calculator](https://patrickking67.github.io/taxline/tools/estimated-tax/): §6654 safe harbor (90% / 100% / 110%) and the four 1040-ES installments.
+- [S corporation election calculator](https://patrickking67.github.io/taxline/tools/s-corp/): sole proprietor vs. S corp on the same profit, with payroll FICA, QBI, overhead, and a salary sweep.
+- [Depreciation calculator](https://patrickking67.github.io/taxline/tools/depreciation/): §179, bonus, and MACRS schedules with tax-shield present value.
+- [Firm ROI calculator](https://patrickking67.github.io/taxline/tools/roi/): hours returned, payback, NPV, and IRR for a tax practice.
+
+## Product
+
+- [Product](https://patrickking67.github.io/taxline/product/): the console surfaces.
+- [Agents](https://patrickking67.github.io/taxline/agents/): the fleet and the orchestrator.
+- [Methodology](https://patrickking67.github.io/taxline/methodology/): how the engine computes, rounds, and cites; confidence routing math.
+- [Insights](https://patrickking67.github.io/taxline/insights/): guides on 2026 tax figures and planning, authored in an EmDash CMS.
+  - [2026 federal tax brackets and standard deduction, line by line](https://patrickking67.github.io/taxline/insights/2026-federal-tax-brackets/): The seven 2026 rates, every threshold for every filing status, and the new standard deduction, transcribed from Rev. Proc. 2025-32 and checked against the IRS base amounts.
+  - [The estimated tax safe harbor, with the math](https://patrickking67.github.io/taxline/insights/estimated-tax-safe-harbor/): Pay the smaller of 90% of this year's tax or 100% of last year's (110% above $150,000 of AGI), and the underpayment penalty does not apply. Here is how to compute it and when to pay.
+  - [When an S corporation election pays: a worked example at $150,000](https://patrickking67.github.io/taxline/insights/s-corp-election-worked-example/): At $150,000 of profit and a $60,000 salary, the election saves a single filer $7,275.61 in 2026. The reasonable-compensation rule is why the salary is not zero.
+  - [Why our agents never do arithmetic](https://patrickking67.github.io/taxline/insights/why-agents-never-do-arithmetic/): Language models draft and extract. A tested engine computes. A person approves. How Taxline splits the work, and the checks that sit at each boundary.
+- [Pricing](https://patrickking67.github.io/taxline/pricing/)
+- [Security](https://patrickking67.github.io/taxline/security/)
+- [Docs](https://patrickking67.github.io/taxline/docs/)
+
+## Source
+
+- [Repository](https://github.com/patrickking67/taxline): MIT-licensed monorepo with the site, agent service, tax engine, CMS, and contact Worker.
+- [README](https://github.com/patrickking67/taxline/blob/main/README.md): architecture, quick start, environment variables, and tests.
+- [AGENTS.md](https://github.com/patrickking67/taxline/blob/main/AGENTS.md): commands, layout, and conventions for coding agents.
+- [Tax engine](https://github.com/patrickking67/taxline/tree/main/packages/tax-engine): deterministic TY2026 federal math, every figure cited.
+- [Agent service](https://github.com/patrickking67/taxline/tree/main/service): orchestrator, five agents, and the human-approval gate.
+
+## Optional
+
+- [System design](https://github.com/patrickking67/taxline/blob/main/docs/system-design.md): deployment and runtime topology.
+- [Changelog](https://github.com/patrickking67/taxline/blob/main/CHANGELOG.md)
+- [Sitemap](https://patrickking67.github.io/taxline/sitemap.xml)

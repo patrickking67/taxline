@@ -3,6 +3,8 @@ import type { APIRoute } from 'astro';
 import { absolute } from '../lib/url';
 import { insights } from '../lib/content/insights';
 
+const REPO = 'https://github.com/patrickking67/taxline';
+
 export const GET: APIRoute = ({ site }) => {
   const a = (p: string) => absolute(p, site);
   const body = `# Taxline
@@ -28,6 +30,20 @@ ${insights.map((p) => `  - [${p.title}](${a(`insights/${p.slug}/`)}): ${p.excerp
 - [Pricing](${a('pricing/')})
 - [Security](${a('security/')})
 - [Docs](${a('docs/')})
+
+## Source
+
+- [Repository](${REPO}): MIT-licensed monorepo with the site, agent service, tax engine, CMS, and contact Worker.
+- [README](${REPO}/blob/main/README.md): architecture, quick start, environment variables, and tests.
+- [AGENTS.md](${REPO}/blob/main/AGENTS.md): commands, layout, and conventions for coding agents.
+- [Tax engine](${REPO}/tree/main/packages/tax-engine): deterministic TY2026 federal math, every figure cited.
+- [Agent service](${REPO}/tree/main/service): orchestrator, five agents, and the human-approval gate.
+
+## Optional
+
+- [System design](${REPO}/blob/main/docs/system-design.md): deployment and runtime topology.
+- [Changelog](${REPO}/blob/main/CHANGELOG.md)
+- [Sitemap](${a('sitemap.xml')})
 `;
   return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 };
