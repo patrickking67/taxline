@@ -330,7 +330,7 @@ export const mockFleet: FleetService = {
       provider: 'local',
       records: MOCK_KB.length,
       agents: roster.map((a) => a.key),
-      models: { default: 'claude-opus-4-8', fast: 'claude-haiku-4-5' },
+      models: { default: 'claude-opus-5-5', fast: 'claude-haiku-5-5' },
       note: `Offline mock — ${orchestratorName} routes between ${roster.length} agents. A human approves before output ships.`,
     });
   },

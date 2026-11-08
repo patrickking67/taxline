@@ -11,7 +11,8 @@
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
     "typecheck": "tsc --noEmit",
-    "refresh-kb": "tsx ../knowledge-base/ingest/refresh.ts"
+    "refresh-kb": "tsx ../knowledge-base/ingest/refresh.ts",
+    "test": "ANTHROPIC_API_KEY= tsx --test test/*.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",

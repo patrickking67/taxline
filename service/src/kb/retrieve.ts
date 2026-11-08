@@ -199,16 +199,27 @@ async function keywordRetrieve(query: string, k: number): Promise<KbChunk[]> {
  * no-match returns [] (an EMPTY RESULT, distinct from a load failure, which throws and
  * is caught by the calling tool).
  */
+/**
+ * The citation file for a memory hit. Knowledge-base chunks cite their file.
+ * Anything remembered later (approved findings, or a POST to /memory/remember) is
+ * labeled as memory, so a reviewer can tell a primary-source citation from a
+ * remembered one even when the record claims a KB file as its source.
+ */
+export function citationFile(source: { file?: string; kind?: string }): string {
+  if (source.kind === 'kb') return source.file ?? '';
+  return `memory:${source.kind || 'finding'}${source.file ? `:${source.file}` : ''}`;
+}
+
 export async function retrieve(query: string, k = 4): Promise<KbChunk[]> {
   if (await memory.isEmpty()) {
     return keywordRetrieve(query, k);
   }
   const hits = await memory.retrieve(query, k);
-  // Adapt the memory layer's source shape back to KbChunk's { file, heading } so the
-  // public contract (consumed by kb-search.ts) is byte-for-byte the same as before.
+  // Adapt the memory layer's source shape back to KbChunk's { file, heading }.
+  // Non-KB records are relabeled by citationFile() so provenance stays honest.
   return hits.map((h) => ({
     text: h.text,
-    source: { file: h.source.file ?? '', heading: h.source.heading ?? null },
+    source: { file: citationFile(h.source), heading: h.source.heading ?? null },
     score: h.score,
   }));
 }

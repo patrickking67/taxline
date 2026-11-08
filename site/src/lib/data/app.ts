@@ -16,7 +16,7 @@ export const docs: AppDoc[] = [
     docTitle: 'Form W-2 · Wage and Tax Statement · 2024',
     fields: [
       { label: 'Employer', value: 'Acme Studios LLC', confidence: 0.99 },
-      { label: 'EIN', value: '84-1739204', confidence: 0.97 },
+      { label: 'EIN', value: '00-0000001', confidence: 0.97 },
       { label: 'Wages · box 1', value: '$128,400.00', confidence: 0.97 },
       { label: 'Federal w/h · box 2', value: '$24,310.00', confidence: 0.91 },
       { label: 'State w/h · box 17', value: '$6,180.00', confidence: 0.74 },
@@ -39,7 +39,7 @@ export const docs: AppDoc[] = [
     docTitle: 'Form 1099-NEC · Nonemployee Compensation · 2024',
     fields: [
       { label: 'Payer', value: 'Meadow LP', confidence: 0.95 },
-      { label: 'Payer TIN', value: '47-2210043', confidence: 0.88 },
+      { label: 'Payer TIN', value: '00-0000002', confidence: 0.88 },
       { label: 'Nonemployee comp · box 1', value: '$42,000.00', confidence: 0.78 },
       { label: 'Federal w/h · box 4', value: '$0.00', confidence: 0.62 },
     ],

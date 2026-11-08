@@ -182,13 +182,16 @@ class Memory {
     if (clean === '') throw new Error('remember(): text must be non-empty.');
     const [vector] = await this.embeddings.embed([clean]);
     if (!vector) throw new Error('remember(): embedding failed.');
+    // 'kb' is reserved for indexKnowledgeBase(). A remembered record can never pass
+    // itself off as a knowledge-base chunk, whatever the caller sends.
+    const kind = source.kind && source.kind !== 'kb' ? source.kind : 'finding';
     // Content-addressed id so remembering the identical finding twice is a no-op upsert.
-    const id = `${source.kind || 'finding'}_${hashId(`${source.file ?? ''}::${source.heading ?? ''}::${clean}`)}`;
+    const id = `${kind}_${hashId(`${source.file ?? ''}::${source.heading ?? ''}::${clean}`)}`;
     const record: MemoryRecord = {
       id,
       text: clean,
       vector,
-      source: { ...source, kind: source.kind || 'finding' },
+      source: { ...source, kind },
       ts: Date.now(),
     };
     await this.store.append(record);

@@ -4,8 +4,8 @@
 import 'dotenv/config';
 
 /** Exact model IDs. opus = default/accuracy, haiku = fast/classify. */
-export const MODEL_DEFAULT = process.env.MODEL_DEFAULT ?? 'claude-opus-4-8';
-export const MODEL_FAST = process.env.MODEL_FAST ?? 'claude-haiku-4-5';
+export const MODEL_DEFAULT = process.env.MODEL_DEFAULT ?? 'claude-opus-5-5';
+export const MODEL_FAST = process.env.MODEL_FAST ?? 'claude-haiku-5-5';
 
 export const PORT = Number(process.env.PORT ?? 8787);
 
