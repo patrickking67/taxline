@@ -48,7 +48,7 @@ npm run pull-insights  # EMDASH_URL=… pulls published Insights into the site s
 npm run build          # static build    → site/dist (fingerprinted assets in _assets/)
 npm run check          # astro check (typecheck .astro)
 npm run typecheck      # site + tax-engine + service + worker typecheck
-npm test               # tax-engine unit tests (node:test via tsx)
+npm test               # tax-engine + service unit tests (node:test via tsx)
 npm run test:e2e       # Playwright + axe against the production build under /taxline
 npm run lint           # eslint (flat config)
 npm run format         # prettier --write
@@ -93,7 +93,10 @@ fleet stays offline-deterministic.
   `stop_reason`; hub-and-spoke orchestrator; isolated agent context; structured errors
   (`errorCategory` / `isRetryable`); a **programmatic** `requireHumanApproval` gate
   (not a prompt); nullable tool-output fields to prevent fabrication; provenance and
-  confidence preserved; confidence `<0.85` routes to human review.
+  confidence preserved; confidence `<0.85` routes to human review. The hub treats
+  `extract_fields` as the source of truth: `assess_confidence` can only add review items,
+  and a model call that fails becomes a structured error and a review item, never a throw.
+  Service tests in `service/test/` use a fake Messages client (no key, no network).
 - **The math is code, never a prompt.** `packages/tax-engine` holds every tax
   computation (Form 1040 path, Schedule SE, §6654 safe harbor, §179/bonus/MACRS,
   practice ROI). Indexed figures live only in `src/years/2026.ts`, each cited to

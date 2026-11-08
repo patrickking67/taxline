@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "description": "Taxline \u2014 agentic tax operations: an AI agent fleet, a tested 2026 tax engine, free calculators, and human approval before anything ships.",
   "workspaces": [
     "site",
@@ -21,7 +21,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "refresh-kb": "npm --prefix service run refresh-kb",
-    "test": "npm test --workspace @taxline/tax-engine",
+    "test": "npm test --workspace @taxline/tax-engine && npm --prefix service test",
     "pull-insights": "node scripts/pull-insights.mjs",
     "dev:cms": "npm --prefix cms run dev",
     "test:e2e": "npm run test:e2e --workspace site"

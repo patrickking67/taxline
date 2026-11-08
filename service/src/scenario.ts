@@ -12,6 +12,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ANTHROPIC_API_KEY, hasApiKey, MODEL_FAST } from './config.js';
 import { ok, fail, type ToolResult } from './types.js';
+import { classifyModelError } from './model-errors.js';
 import {
   SCENARIO_FIELDS,
   extractScenario,
@@ -77,7 +78,8 @@ export async function extractScenarioLive(text: string): Promise<ToolResult<Scen
   try {
     response = await client.messages.create({
       model: MODEL_FAST,
-      max_tokens: 2048,
+      // Covers thinking plus the tool call on models where thinking can run.
+      max_tokens: 4096,
       system: SYSTEM,
       tools: [TOOL],
       // `auto` + an explicit instruction works on every model; correctness is
@@ -86,17 +88,11 @@ export async function extractScenarioLive(text: string): Promise<ToolResult<Scen
       messages: [{ role: 'user', content: `<description>\n${trimmed}\n</description>` }],
     });
   } catch (err) {
-    if (err instanceof Anthropic.RateLimitError || err instanceof Anthropic.InternalServerError || err instanceof Anthropic.APIConnectionError) {
-      return fail('transient', 'The model is temporarily unavailable.', err.message);
-    }
-    if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
-      return fail('permission', 'The service API key was rejected.', err.message);
-    }
-    if (err instanceof Anthropic.APIError) return fail('business', `Model request failed (${err.status}).`, err.message);
-    throw err;
+    return classifyModelError(err);
   }
 
   if (response.stop_reason === 'refusal') return fail('business', 'The model declined this description.');
+  if (response.stop_reason === 'max_tokens') return fail('business', 'The model ran out of output tokens before recording the scenario.');
   const call = response.content.find((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use' && b.name === TOOL.name);
   if (!call) return fail('business', 'The model did not record a scenario.', { stop_reason: response.stop_reason });
 

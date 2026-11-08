@@ -11,11 +11,11 @@ Five narrow, tool-using agents (hub-and-spoke, with the orchestrator as the hub)
 
 | Agent        | Job                                          | Tools (least privilege)        | Model               |
 |--------------|----------------------------------------------|--------------------------------|---------------------|
-| **Intake**   | Classify a document and route it             | `classify_document`, `kb_search` | `claude-haiku-4-5` (fast) |
-| **Extraction** | Pull fields with confidence + citations    | `extract_fields`, `assess_confidence` | `claude-opus-4-8` |
-| **Research** | Citation-backed answers from the KB          | `kb_search`, `format_citations` | `claude-opus-4-8` |
-| **Workpaper** | Assemble a reviewer-ready workpaper         | `kb_search`, `format_citations` | `claude-opus-4-8` |
-| **Compliance** | Deadlines + follow-up                      | `compute_deadline`, `kb_search` | `claude-opus-4-8` |
+| **Intake**   | Classify a document and route it             | `classify_document`, `kb_search` | `claude-haiku-5-5` (fast) |
+| **Extraction** | Pull fields with confidence + citations    | `extract_fields`, `assess_confidence` | `claude-opus-5-5` |
+| **Research** | Citation-backed answers from the KB          | `kb_search`, `format_citations` | `claude-opus-5-5` |
+| **Workpaper** | Assemble a reviewer-ready workpaper         | `kb_search`, `format_citations` | `claude-opus-5-5` |
+| **Compliance** | Deadlines + follow-up                      | `compute_deadline`, `kb_search` | `claude-opus-5-5` |
 
 The **orchestrator** owns decomposition, routing, error handling, and aggregation, and it
 applies a **programmatic human-approval gate** (`requireHumanApproval`) before returning
@@ -50,6 +50,8 @@ npm run dev                   # tsx watch src/server.ts  (http://localhost:8787)
   clearly-labeled tool run so every endpoint is exercisable with no API access. The output
   says so — it is a degraded mode, not a silent fabrication.
 - `npm run start` runs once (no watch). `npm run typecheck` runs `tsc --noEmit`.
+- `npm test` runs the service tests (`test/*.test.ts`, node:test via tsx). They use a fake
+  Messages client, force offline mode, and never call the API.
 - `npm run refresh-kb` re-reads the knowledge base and stamps `manifest.updatedAt`.
 
 The API key is read from `.env` via `dotenv` at startup — it is **never** hardcoded.

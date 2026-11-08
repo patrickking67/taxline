@@ -111,10 +111,10 @@
       "title": "Claude API notes",
       "domain": "practices",
       "kind": "reference",
-      "lastReviewed": "2026-05-30",
+      "lastReviewed": "2026-11-07",
       "verify": false,
       "note": "Distilled engineering reference for the Messages API and model lineup.",
-      "contentHash": "e10eb01ef42fef17"
+      "contentHash": "3211c63bf0e27974"
     }
   ]
 }

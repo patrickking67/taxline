@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Deterministic US federal tax math for Taxline. Pure functions, typed, every figure cited to its primary source.",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "exports": {
     ".": "./src/index.ts"
   },

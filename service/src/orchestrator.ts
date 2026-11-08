@@ -6,15 +6,15 @@
 // gate that blocks any final "ship" output until a human approves. Agents are
 // spokes: isolated context, explicit task input, no agent-to-agent calls.
 
-import { runAgent, type AgentDefinition } from './agent.js';
+import { runAgent, MAX_ITERATIONS, type AgentDefinition, type MessagesClient, type RunAgentOutput } from './agent.js';
 import { intake } from './agents/intake.js';
 import { extraction } from './agents/extraction.js';
 import { research } from './agents/research.js';
 import { workpaper } from './agents/workpaper.js';
 import { compliance } from './agents/compliance.js';
 import { memory } from './memory/index.js';
+import { reviewReason, validConfidence } from './tools/confidence.js';
 import {
-  CONFIDENCE_THRESHOLD,
   type OrchestratorResult,
   type Citation,
   type ExtractedField,
@@ -61,7 +61,7 @@ export interface OrchestratorTask {
  * Decomposition: choose the starting agent when one isn't specified. This is the
  * orchestrator's job, not an agent's. Keyword routing keeps it explainable.
  */
-function pickEntryAgent(task: string): AgentName {
+export function pickEntryAgent(task: string): AgentName {
   const t = task.toLowerCase();
   if (/(deadline|due date|file by|extension|follow[- ]?up|calendar)/.test(t)) return 'compliance';
   if (/(research|what is|how do|rule|cite|guidance|treatment|deduct)/.test(t)) return 'research';
@@ -117,50 +117,96 @@ function dedupeCitations(cits: Citation[]): Citation[] {
   return out;
 }
 
-/** Pull review items + fields out of an agent's structured tool outputs. */
-function aggregateToolOutputs(
+const fieldKey = (f: { label: string; value: string | null }) => `${f.label}::${f.value ?? ''}`;
+
+/**
+ * Pull fields, review items, and errors out of one agent run's tool outputs.
+ *
+ * extract_fields is the source of truth for field values, scores, and citations.
+ * Every extracted field is returned, and any field that does not clear the
+ * threshold is also flagged for review, so the gate holds even if the model never
+ * calls assess_confidence. assess_confidence can only add review items: a field it
+ * reports as passed is accepted only when it matches an extracted field (label and
+ * value), and the extracted record is kept, so the model cannot raise a score,
+ * change a value, or attach a citation that no tool produced. Tool failures are
+ * returned as errors and also as review items, so none is swallowed.
+ */
+export function aggregateToolOutputs(
   toolOutputs: { name: string; result: { ok: boolean; data?: unknown } }[],
 ): { fields: ExtractedField[]; review: ReviewItem[]; errors: StructuredError[] } {
-  const fields: ExtractedField[] = [];
+  const extracted = new Map<string, ExtractedField>();
   const review: ReviewItem[] = [];
   const errors: StructuredError[] = [];
+  const claimedPassed: ExtractedField[] = [];
 
-  for (const { result } of toolOutputs) {
+  for (const { name, result } of toolOutputs) {
     if (!result.ok) {
-      errors.push(result as unknown as StructuredError);
+      const err = result as unknown as StructuredError;
+      errors.push(err);
+      // Every tool failure is visible to the reviewer, including the ones that do
+      // not stop the chain (a missing document, an unsupported form).
+      review.push({ reason: `tool "${name}" failed (${err.errorCategory}): ${err.message}` });
       continue;
     }
     const data = result.data as Record<string, unknown> | undefined;
-    if (!data) continue;
+    if (!data || typeof data !== 'object') continue;
 
-    // assess_confidence: { passed[], needsReview[] }
-    const passed = (data as { passed?: ExtractedField[] }).passed;
-    if (Array.isArray(passed)) fields.push(...passed);
-    const needsReview = (data as { needsReview?: ReviewItem[] }).needsReview;
-    if (Array.isArray(needsReview)) review.push(...needsReview);
-
-    // extract_fields: { fields[] } — also fold in, flagging low-confidence ones
-    // even if assess_confidence wasn't called, so the gate can't be skipped.
-    const extracted = (data as { fields?: ExtractedField[] }).fields;
-    if (Array.isArray(extracted)) {
-      for (const f of extracted) {
-        if (f.value == null || f.confidence == null || f.confidence < CONFIDENCE_THRESHOLD) {
-          review.push({
-            reason:
-              f.value == null
-                ? 'missing value'
-                : f.confidence == null
-                  ? 'no confidence score'
-                  : `confidence ${f.confidence.toFixed(2)} < ${CONFIDENCE_THRESHOLD}`,
-            label: f.label,
-            value: f.value,
-            confidence: f.confidence,
-          });
-        }
+    // extract_fields: { fields[] }
+    const fields = (data as { fields?: ExtractedField[] }).fields;
+    if (Array.isArray(fields)) {
+      for (const f of fields) {
+        extracted.set(fieldKey(f), f);
+        const reason = reviewReason(f);
+        if (reason) review.push({ reason, label: f.label, value: f.value, confidence: validConfidence(f.confidence) });
       }
     }
+
+    // assess_confidence: { passed[], needsReview[] }
+    const needsReview = (data as { needsReview?: ReviewItem[] }).needsReview;
+    if (Array.isArray(needsReview)) review.push(...needsReview);
+    const passed = (data as { passed?: ExtractedField[] }).passed;
+    if (Array.isArray(passed)) claimedPassed.push(...passed);
   }
-  return { fields, review, errors };
+
+  for (const f of claimedPassed) {
+    if (!extracted.has(fieldKey(f))) {
+      review.push({
+        reason: 'not traceable to extract_fields output',
+        label: f.label,
+        value: f.value ?? null,
+        confidence: validConfidence(f.confidence),
+      });
+    }
+  }
+
+  return { fields: [...extracted.values()], review, errors };
+}
+
+/**
+ * Review items for how an agent run ended. A model failure, a truncated answer,
+ * a refusal, or the iteration backstop all mean the draft may be incomplete, so a
+ * person has to look before it can ship.
+ */
+export function runIssues(agentName: string, run: Pick<RunAgentOutput, 'error' | 'hitBackstop' | 'stopReason'>): ReviewItem[] {
+  const out: ReviewItem[] = [];
+  if (run.error) {
+    const retry = run.error.isRetryable ? 'retryable' : 'not retryable';
+    out.push({ reason: `agent "${agentName}" failed: ${run.error.message} (${run.error.errorCategory}, ${retry})` });
+  }
+  if (run.hitBackstop) {
+    out.push({ reason: `agent "${agentName}" hit the ${MAX_ITERATIONS}-turn backstop before finishing` });
+  }
+  if (run.stopReason === 'max_tokens') {
+    out.push({ reason: `agent "${agentName}" output was cut off at the token limit` });
+  }
+  if (run.stopReason === 'refusal') {
+    out.push({ reason: `agent "${agentName}" declined the task` });
+  }
+  return out;
+}
+
+function dedupeFields(fields: ExtractedField[]): ExtractedField[] {
+  return [...new Map(fields.map((f) => [fieldKey(f), f])).values()];
 }
 
 function dedupeReview(items: ReviewItem[]): ReviewItem[] {
@@ -212,7 +258,10 @@ async function rememberApprovedFindings(result: OrchestratorResult): Promise<voi
  * result. The handoff hop-count is a backstop only — the chain naturally ends at
  * an agent whose `handoff` is null.
  */
-export async function orchestrate(task: OrchestratorTask): Promise<OrchestratorResult> {
+export async function orchestrate(
+  task: OrchestratorTask,
+  options: { client?: MessagesClient } = {},
+): Promise<OrchestratorResult> {
   const entry = task.agent ?? pickEntryAgent(task.task);
   const maxHops = task.maxHops ?? 5;
 
@@ -233,7 +282,7 @@ export async function orchestrate(task: OrchestratorTask): Promise<OrchestratorR
     const agent: AgentDefinition | undefined = REGISTRY[current];
     if (!agent) break;
 
-    const run = await runAgent(agent, { task: task.task, context });
+    const run = await runAgent(agent, { task: task.task, context }, options);
     trace.push(run.step);
     allCitations.push(...run.citations);
     if (run.text) outputs.push(`## ${agent.name}\n${run.text}`);
@@ -241,6 +290,11 @@ export async function orchestrate(task: OrchestratorTask): Promise<OrchestratorR
     const agg = aggregateToolOutputs(run.toolOutputs);
     allFields.push(...agg.fields);
     allReview.push(...agg.review);
+
+    // A failed model call means this agent did not finish. Stop the chain: the
+    // next agent would build on an incomplete draft.
+    allReview.push(...runIssues(agent.name, run));
+    if (run.error) break;
 
     // Error handling lives in the hub. A non-retryable hard error from a tool
     // stops the chain and is surfaced for a human rather than blindly continuing.
@@ -261,7 +315,7 @@ export async function orchestrate(task: OrchestratorTask): Promise<OrchestratorR
   const draft: OrchestratorResult = {
     output: outputs.join('\n\n') || 'No agent produced output.',
     citations: dedupeCitations(allCitations),
-    fields: allFields.length > 0 ? allFields : undefined,
+    fields: allFields.length > 0 ? dedupeFields(allFields) : undefined,
     needsHumanReview: dedupeReview(allReview),
     trace,
     approved: false,
