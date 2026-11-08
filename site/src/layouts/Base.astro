@@ -63,27 +63,10 @@ const graph = JSON.stringify({ '@context': 'https://schema.org', '@graph': [orga
     <meta name="twitter:image" content={ogImage} />
     <link rel="icon" href={u('favicon.svg')} type="image/svg+xml" />
     <link rel="sitemap" type="application/xml" href={u('sitemap.xml')} />
-    {/* Reveal animations only hide content once JS is known to run: no-JS readers and crawlers see everything. */}
-    <script is:inline>document.documentElement.classList.add('js')</script>
     <script is:inline type="application/ld+json" set:html={graph} />
   </head>
   <body class="min-h-screen bg-base text-fg antialiased">
     <a href="#main" class="sr-only z-[100] rounded-md bg-accent px-3 py-2 text-sm font-medium text-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-3">Skip to content</a>
     <slot />
-    <script>
-      // Scroll-reveal: rise + fade elements tagged [data-reveal] as they enter view.
-      const io = new IntersectionObserver(
-        (entries) => {
-          for (const e of entries) {
-            if (e.isIntersecting) {
-              e.target.classList.add('revealed');
-              io.unobserve(e.target);
-            }
-          }
-        },
-        { rootMargin: '0px 0px -8% 0px', threshold: 0.05 },
-      );
-      document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
-    </script>
   </body>
 </html>
