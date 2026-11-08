@@ -182,6 +182,8 @@ body {
   color: var(--color-fg);
 }
 .formula math[display="block"] { display: block; text-align: left; }
+/* Phones: a step smaller so short formulas fit; long ones scroll inside their focusable box. */
+@media (max-width: 480px) { .formula math { font-size: 1rem; } }
 .formula mi, .formula mn { color: var(--color-fg); }
 .formula mo { color: var(--color-fg-muted); }
 
