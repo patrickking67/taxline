@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "license": "MIT",
-  "description": "Taxline — agentic tax operations: an AI agent fleet, a tested 2026 tax engine, free calculators, and human approval before anything ships.",
+  "description": "Taxline: agentic tax operations. An AI agent fleet, a tested 2026 tax engine, free calculators, and human approval before anything ships.",
   "workspaces": [
     "site",
     "packages/*"
@@ -25,7 +25,9 @@
     "pull-insights": "node scripts/pull-insights.mjs",
     "dev:cms": "npm --prefix cms run dev",
     "test:e2e": "npm run test:e2e --workspace site",
-    "llms": "BASE_PATH=/taxline npm run build && cp site/dist/llms.txt llms.txt"
+    "llms": "BASE_PATH=/taxline npm run build && cp site/dist/llms.txt llms.txt",
+    "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e && npm --prefix cms run typecheck && npm --prefix cms run build",
+    "verify:fast": "npm run lint && npm run typecheck && npm test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

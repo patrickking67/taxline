@@ -19,6 +19,9 @@ export default [
       '**/node_modules/**',
       '**/.data/**',
       '**/.wrangler/**',
+      // Git worktrees live inside the repo; each one is linted from its own root.
+      '.worktrees/**',
+      '.claude/worktrees/**',
       'site/astro.config.mjs',
       'cms/astro.config.mjs',
       'cms/emdash-env.d.ts',
