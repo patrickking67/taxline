@@ -1,19 +1,15 @@
-## What & why
+## What and why
 
 <!-- What does this change do, and why? Link any issue. -->
 
 ## How it was verified
 
-- [ ] `npm run check` (astro typecheck) passes
-- [ ] `npm run build` (site) passes
-- [ ] `npm run typecheck` (service + worker) passes, if touched
-- [ ] `npm run lint` passes
-- [ ] `npm test` (tax engine) passes, if touched
-- [ ] Verified in the browser preview, if UI-observable
+- [ ] `npm run verify` passes (lint, typechecks, unit tests, site build, Playwright + axe, CMS build)
+- [ ] Checked in the browser preview, if the change is visible
 
 ## Checklist
 
-- [ ] Uses the design system tokens/components — no hardcoded colors, ≤8px radius
-- [ ] Copy follows the voice rules (no "replace accountants" / "fully autonomous")
-- [ ] No secrets committed (`.env` stays local)
-- [ ] Human-approval posture preserved (nothing ships unreviewed)
+- [ ] Uses the design tokens and primitives; no hardcoded colors; radius 8px or less
+- [ ] Copy keeps the human-approval posture (never "replace accountants" or "fully autonomous")
+- [ ] Data is synthetic (placeholder IDs such as `00-0000001`); no secrets committed
+- [ ] `CHANGELOG.md` has an entry under Unreleased
