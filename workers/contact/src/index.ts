@@ -26,6 +26,9 @@ interface Lead {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Field caps. A demo request is a few lines; anything past this is truncated. */
+export const LIMITS = { email: 254, firm: 200, engagement: 120, message: 4_000, seats: 100_000, bodyBytes: 32_000 } as const;
+
 function corsHeaders(env: Env): Record<string, string> {
   return {
     'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN ?? '*',
@@ -50,8 +53,24 @@ function shortId(): string {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 10);
 }
 
-function str(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : '';
+function str(value: unknown, max = Infinity): string {
+  return typeof value === 'string' ? value.trim().slice(0, max) : '';
+}
+
+/** Whole seats in [0, LIMITS.seats]. Anything unparseable is 0. */
+export function parseSeats(value: unknown): number {
+  const n = typeof value === 'number' ? value : Number(str(value));
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.min(Math.floor(n), LIMITS.seats);
+}
+
+/**
+ * Slack reads `&`, `<`, and `>` as control characters: `<!channel>` pings a whole
+ * channel and `<https://x|text>` hides a link. Escape them so form text shows as
+ * typed (https://api.slack.com/reference/surfaces/formatting#escaping).
+ */
+export function slackEscape(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 export default {
@@ -65,12 +84,22 @@ export default {
       return json({ ok: false, error: 'method_not_allowed' }, 405, env);
     }
 
-    let payload: Record<string, unknown>;
+    const declared = Number(request.headers.get('content-length') ?? 0);
+    if (declared > LIMITS.bodyBytes) {
+      return json({ ok: false, error: 'payload_too_large' }, 413, env);
+    }
+
+    let parsed: unknown;
     try {
-      payload = (await request.json()) as Record<string, unknown>;
+      parsed = await request.json();
     } catch {
       return json({ ok: false, error: 'invalid_json' }, 400, env);
     }
+    // `null`, an array, or a bare value parses as JSON but is not a form.
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return json({ ok: false, error: 'invalid_json' }, 400, env);
+    }
+    const payload = parsed as Record<string, unknown>;
 
     // Honeypot: a real user never fills this hidden field. Pretend success so
     // bots get no signal, and store nothing.
@@ -79,19 +108,16 @@ export default {
     }
 
     const email = str(payload.email);
-    if (!EMAIL_RE.test(email)) {
+    if (email.length > LIMITS.email || !EMAIL_RE.test(email)) {
       return json({ ok: false, error: 'invalid_email' }, 400, env);
     }
 
-    const seatsRaw = payload.seats;
-    const seats = typeof seatsRaw === 'number' && Number.isFinite(seatsRaw) ? seatsRaw : Number(str(seatsRaw)) || 0;
-
     const lead: Lead = {
       email,
-      firm: str(payload.firm),
-      seats,
-      engagement: str(payload.engagement),
-      message: str(payload.message),
+      firm: str(payload.firm, LIMITS.firm),
+      seats: parseSeats(payload.seats),
+      engagement: str(payload.engagement, LIMITS.engagement),
+      message: str(payload.message, LIMITS.message),
       receivedAt: new Date().toISOString(),
     };
 
@@ -99,7 +125,8 @@ export default {
 
     if (env.LEADS) {
       try {
-        await env.LEADS.put('lead:' + Date.now(), JSON.stringify({ id, ...lead }));
+        // The id keeps two requests in the same millisecond from overwriting each other.
+        await env.LEADS.put(`lead:${lead.receivedAt}:${id}`, JSON.stringify({ id, ...lead }));
       } catch (err) {
         const detail = err instanceof Error ? err.message : 'storage_error';
         return json({ ok: false, error: 'storage_error', detail }, 500, env);
@@ -107,13 +134,14 @@ export default {
     }
 
     if (env.SLACK_WEBHOOK) {
-      const summary =
+      const summary = slackEscape(
         `New Taxline demo request (${id})\n` +
-        `Email: ${lead.email}\n` +
-        `Firm: ${lead.firm || '—'}\n` +
-        `Seats: ${lead.seats || '—'}\n` +
-        `Engagement: ${lead.engagement || '—'}\n` +
-        `Message: ${lead.message || '—'}`;
+          `Email: ${lead.email}\n` +
+          `Firm: ${lead.firm || '-'}\n` +
+          `Seats: ${lead.seats || '-'}\n` +
+          `Engagement: ${lead.engagement || '-'}\n` +
+          `Message: ${lead.message || '-'}`,
+      );
       // Best-effort: never block or fail the response on Slack delivery.
       ctx.waitUntil(
         fetch(env.SLACK_WEBHOOK, {

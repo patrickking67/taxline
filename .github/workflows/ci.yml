@@ -112,7 +112,7 @@ jobs:
         working-directory: service
 
   worker:
-    name: Worker — typecheck
+    name: "Worker: test + typecheck"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -122,6 +122,8 @@ jobs:
           cache: npm
           cache-dependency-path: workers/contact/package-lock.json
       - run: npm ci
+        working-directory: workers/contact
+      - run: npm test
         working-directory: workers/contact
       - run: npm run typecheck
         working-directory: workers/contact

@@ -30,9 +30,24 @@ Request body (all fields except `email` optional):
 - `company_website` is a honeypot. If it is non-empty the Worker returns
   `{ "ok": true }` and stores nothing (silently dropping bots).
 - Invalid email returns `400 { "ok": false, "error": "invalid_email" }`.
+- A body that is not a JSON object returns `400 { "ok": false, "error": "invalid_json" }`.
+- A body over 32 KB returns `413 { "ok": false, "error": "payload_too_large" }`.
 - Success returns `200 { "ok": true, "id": "<short id>" }`.
+- Free text is trimmed and capped (firm 200, engagement 120, message 4,000
+  characters); `seats` is a whole number from 0 to 100,000.
+- Leads are stored under `lead:<ISO timestamp>:<id>`, so two requests in the
+  same millisecond never overwrite each other.
+- Text sent to Slack has `&`, `<`, and `>` escaped, so a message cannot ping
+  `@channel` or hide a link.
 
 All responses are JSON and carry CORS headers.
+
+## Test
+
+```bash
+npm test             # node:test with type stripping, in-memory KV, no network
+npm run typecheck
+```
 
 ## Deploy
 

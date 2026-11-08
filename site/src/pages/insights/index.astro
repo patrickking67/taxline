@@ -62,8 +62,8 @@ const schema = [
 
     <section class="border-b border-border">
       <div class="mx-auto grid max-w-[1200px] gap-4 px-5 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-3">
-        {rest.map((p, i) => (
-          <a data-reveal style={`--reveal-delay:${i * 60}ms`} href={u(`insights/${p.slug}`)} class="lift group flex flex-col rounded-lg border border-border bg-panel p-5 hover:border-accent-line">
+        {rest.map((p) => (
+          <a href={u(`insights/${p.slug}`)} class="lift group flex flex-col rounded-lg border border-border bg-panel p-5 hover:border-accent-line">
             <div class="flex flex-wrap items-center gap-2 font-mono text-[11px] text-fg-faint">
               <span class="rounded-sm bg-raised px-2 py-0.5 text-fg-muted">{categoryLabel[p.category ?? ''] ?? 'Insight'}</span>
               {p.readingMinutes && <span>{p.readingMinutes} min</span>}

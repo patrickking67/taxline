@@ -9,7 +9,7 @@ The interesting part is where the controls live. The model drafts; code decides.
 > Taxline is a portfolio project, not tax software. It is not tax, legal, or accounting advice, and nothing it produces should be filed without review by a qualified professional. See [Limitations](#limitations-and-disclaimer).
 
 [![CI](https://github.com/patrickking67/taxline/actions/workflows/ci.yml/badge.svg)](https://github.com/patrickking67/taxline/actions/workflows/ci.yml)
-[![Deploy](https://github.com/patrickking67/taxline/actions/workflows/deploy.yml/badge.svg)](https://github.com/patrickking67/taxline/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **Live site:** [patrickking67.github.io/taxline](https://patrickking67.github.io/taxline/) · [Calculators](https://patrickking67.github.io/taxline/tools/) · [Product console](https://patrickking67.github.io/taxline/app/) · [Methodology](https://patrickking67.github.io/taxline/methodology/)
 
@@ -25,7 +25,7 @@ The interesting part is where the controls live. The model drafts; code decides.
 | **Free calculators** | Six tools: income tax, self-employment tax, estimated tax, S-corp election, depreciation, and firm ROI. Each one recomputes live, keeps its state in the URL, has SVG charts, typesets its formulas in MathML, and produces a copyable cited workpaper. | `site/src/pages/tools/` |
 | **Product console** | Intake queue, extraction review with confidence meters, a gated `compute_tax` preview, research, workpapers, and compliance. Fully functional on static hosting through an offline adapter. | `site/src/pages/app/` |
 | **CMS** | [EmDash](https://github.com/emdash-cms/emdash) (Astro, SQLite locally, D1/R2 on Cloudflare) for Insights articles. The static site pulls published entries at build time and falls back to a committed snapshot. | `cms/`, `scripts/pull-insights.mjs` |
-| **Quality gates** | 35 hand-worked engine tests, 23 service tests for the agent loop, the confidence gate, and orchestration, plus Playwright end-to-end tests against the production build under the real `/taxline` base path. Every page in the sitemap must pass axe WCAG 2.1 AA (serious and critical), load with no console errors, and link only to pages that exist. | `packages/tax-engine/test/`, `service/test/`, `site/e2e/` |
+| **Quality gates** | 35 hand-worked engine tests, 32 service tests for the agent loop, the confidence gate, orchestration, the HTTP boundary, and filing deadlines, 7 contact Worker tests, plus Playwright end-to-end tests against the production build under the real `/taxline` base path. Every page in the sitemap must pass axe WCAG 2.1 AA (serious and critical), load with no console errors, and link only to pages that exist. | `packages/tax-engine/test/`, `service/test/`, `workers/contact/test/`, `site/e2e/` |
 | **Contact Worker** | Cloudflare Worker for demo requests, with honeypot and email validation. | `workers/contact/` |
 
 ## Architecture
@@ -139,14 +139,15 @@ Templates: [`service/.env.example`](service/.env.example) and [`site/.env.exampl
 ## Tests
 
 ```bash
-npm test               # engine (35 hand-worked tests) + service (23 tests), node:test via tsx
-npm run check && npm run lint && npm run typecheck
-npm run test:e2e       # builds the site, then runs Playwright + axe (CHROMIUM_PATH=… to reuse a local Chromium)
+npm test               # engine (35 hand-worked tests), service (32), contact Worker (7); node:test
+npm run lint && npm run typecheck
+npm run test:e2e       # builds the site under /taxline, then runs Playwright + axe (CHROMIUM_PATH reuses a local Chromium)
+npm run verify         # everything CI runs, in one command (needs the cms/ install for its last step)
 ```
 
 The service tests drive the agent loop with a fake Messages client, so they never call the API and need no key. They cover stopping on `stop_reason`, tool results paired to `tool_use` ids, structured errors for each failure class, the iteration backstop, the context fence, the confidence gate (including attempts to lower the threshold or restate a score), and the full offline chain.
 
-CI (`.github/workflows/ci.yml`) runs the site check and build, the e2e suite, the engine and service tests, every typecheck, lint, and the CMS build on every push and pull request.
+CI (`.github/workflows/ci.yml`) runs the site check and build, the e2e suite, the engine, service, and Worker tests, every typecheck, lint, and the CMS build on every push and pull request. `npm run verify` runs the same set locally.
 
 ## Using the engine
 
@@ -166,11 +167,11 @@ compareEntity({ status: 'single', profit: 150_000, salary: 60_000, overhead: 2_0
 ```
 site/                 Astro 7 static site: marketing, /tools, /insights, /methodology, the /app console
 packages/tax-engine/  2026 federal tax math + scenario validation (35 tests, node:test via tsx)
-service/              Node + TypeScript agent fleet on the Anthropic SDK; /agents/run, /scenario, memory (23 tests)
+service/              Node + TypeScript agent fleet on the Anthropic SDK; /agents/run, /scenario, memory (32 tests)
 cms/                  EmDash CMS (Astro 7) for Insights; export endpoint at /api/insights.json
 scripts/              pull-insights.mjs: CMS to static snapshot, atomic and validated
 knowledge-base/       Markdown corpus the Research agent retrieves over, with a content-hash manifest
-workers/contact/      Cloudflare Worker for the demo form
+workers/contact/      Cloudflare Worker for the demo form (7 tests)
 docs/                 design spec, design contract, system design and deploy runbook
 ```
 
@@ -193,13 +194,17 @@ What it does not do, or does only partly:
 
 - **Federal only, tax year 2026.** Each calculator lists what it does not model (AMT, EITC, state tax, the mid-quarter convention, and so on).
 - **Extraction is a stub.** `extract_fields` reads seeded queue documents, not uploaded files. There is no OCR or upload path yet, so the prompt-injection defenses are designed for documents but tested against fixtures.
-- **Deadlines are seeds.** `compute_deadline` applies the statutory rule and a small holiday list, and every result carries a pointer to verify against the IRS.
+- **Deadlines are seeds.** `compute_deadline` applies the statutory rule and a small list of fixed-date holidays (checked on their observed dates, including DC Emancipation Day), and every result carries a pointer to verify against the IRS. Floating holidays are not modeled.
 - **The knowledge base is seed content** flagged for source verification, not a maintained tax library.
 - **No authentication.** The service is a local demo. `approved` is a request field, and `/memory/remember` accepts writes from anyone who can reach the port (remembered records are cited as `memory:…`, never as knowledge-base files). Put the service behind auth before any real use.
 - **Fixtures are fictional.** Client names are invented and every TIN is a `00-0000000` style placeholder. Do not load real taxpayer data.
 
 Pricing on the site is representative, and the SOC 2 audit is marked in progress. Taxline does not train on client data.
 
+## Contributing and security
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, branch names, and the PR checklist, [`AGENTS.md`](AGENTS.md) for the full command reference, and [`CHANGELOG.md`](CHANGELOG.md) for history. Report vulnerabilities privately as described in [`SECURITY.md`](SECURITY.md).
+
 ## License
 
-MIT. See `LICENSE`.
+MIT. See [`LICENSE`](LICENSE).

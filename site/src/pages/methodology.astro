@@ -79,7 +79,7 @@ const rules = [
         <p class="ds-lead mt-3 max-w-2xl"><code class="font-mono text-fg">@taxline/tax-engine</code> is a dependency-free TypeScript package shared by the site’s calculators and the agent service.</p>
         <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {rules.map(([t, d], i) => (
-            <div data-reveal style={`--reveal-delay:${i * 50}ms`} class="rounded-lg border border-border bg-panel p-5">
+            <div class="rounded-lg border border-border bg-panel p-5">
               <span class="font-mono text-[11px] text-fg-faint">0{i + 1}</span>
               <h3 class="mt-2 text-[15px] font-semibold text-fg">{t}</h3>
               <p class="mt-1.5 text-[13px] leading-relaxed text-fg-muted">{d}</p>

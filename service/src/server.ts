@@ -1,4 +1,4 @@
-// Taxline HTTP server — node:http, no framework.
+// Taxline HTTP server: node:http, no framework.
 //
 // Endpoints:
 //   GET  /health            liveness + config snapshot (no secrets)
@@ -14,6 +14,7 @@
 // CORS is restricted to the configured site origin(s).
 
 import http from 'node:http';
+import { pathToFileURL } from 'node:url';
 import { PORT, SITE_ORIGINS, hasApiKey, MODEL_DEFAULT, MODEL_FAST } from './config.js';
 import { queueSummary, docById } from './seed/queue.js';
 import { orchestrate, type AgentName } from './orchestrator.js';
@@ -41,27 +42,44 @@ function sendJson(res: http.ServerResponse, status: number, body: unknown): void
   res.end(payload);
 }
 
-async function readJsonBody(req: http.IncomingMessage, limitBytes = 1_000_000): Promise<unknown> {
+/**
+ * Read a JSON object body. An empty body is `{}`. `null`, arrays, and bare values
+ * parse as JSON but are not a request object, so they are rejected as invalid
+ * (route handlers read fields off the result). Past the limit the rest of the
+ * body is drained, not buffered, so the 413 still reaches the client.
+ */
+export async function readJsonBody(
+  req: http.IncomingMessage,
+  limitBytes = 1_000_000,
+): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
     let size = 0;
+    let tooLarge = false;
     req.on('data', (c: Buffer) => {
+      if (tooLarge) return;
       size += c.length;
       if (size > limitBytes) {
+        tooLarge = true;
+        chunks.length = 0;
         reject(new Error('payload too large'));
-        req.destroy();
         return;
       }
       chunks.push(c);
     });
     req.on('end', () => {
+      if (tooLarge) return;
       const raw = Buffer.concat(chunks).toString('utf8').trim();
       if (!raw) return resolve({});
+      let parsed: unknown;
       try {
-        resolve(JSON.parse(raw));
+        parsed = JSON.parse(raw);
       } catch {
-        reject(new Error('invalid JSON'));
+        return reject(new Error('invalid JSON'));
       }
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+        return reject(new Error('invalid JSON'));
+      resolve(parsed as Record<string, unknown>);
     });
     req.on('error', reject);
   });
@@ -69,7 +87,8 @@ async function readJsonBody(req: http.IncomingMessage, limitBytes = 1_000_000): 
 
 const VALID_AGENTS: AgentName[] = ['intake', 'extraction', 'research', 'workpaper', 'compliance'];
 
-const server = http.createServer(async (req, res) => {
+/** The request handler. Exported so tests can serve it on an ephemeral port. */
+export async function handle(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
   const reqOrigin = req.headers.origin;
   setCors(res, reqOrigin);
 
@@ -190,8 +209,18 @@ const server = http.createServer(async (req, res) => {
       const body = (await readJsonBody(req, 16_000)) as { text?: unknown };
       const result = await extractScenarioLive(typeof body.text === 'string' ? body.text : '');
       if (!result.ok) {
-        const status = result.errorCategory === 'validation' ? 400 : result.errorCategory === 'transient' ? 503 : 502;
-        return sendJson(res, status, { ok: false, errorCategory: result.errorCategory, isRetryable: result.isRetryable, error: result.message });
+        const status =
+          result.errorCategory === 'validation'
+            ? 400
+            : result.errorCategory === 'transient'
+              ? 503
+              : 502;
+        return sendJson(res, status, {
+          ok: false,
+          errorCategory: result.errorCategory,
+          isRetryable: result.isRetryable,
+          error: result.message,
+        });
       }
       return sendJson(res, 200, { ok: true, ...result.data });
     }
@@ -201,13 +230,13 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && path === '/demo') {
       const body = (await readJsonBody(req)) as {
         email?: string;
-        company_website?: string; // honeypot — must be empty
+        company_website?: string; // honeypot, must be empty
       };
       if (body.company_website) return sendJson(res, 200, { ok: false, error: 'rejected' });
       if (!body.email || !/.+@.+\..+/.test(body.email)) {
         return sendJson(res, 400, { ok: false, error: 'A valid work email is required.' });
       }
-      // Intake only — a human follows up. We do not auto-act on the request.
+      // Intake only: a human follows up. We do not auto-act on the request.
       const id = `demo_${Math.random().toString(36).slice(2, 10)}`;
       return sendJson(res, 200, { ok: true, id });
     }
@@ -217,37 +246,57 @@ const server = http.createServer(async (req, res) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'unexpected error';
     const status = message === 'payload too large' ? 413 : message === 'invalid JSON' ? 400 : 500;
-    return sendJson(res, status, { ok: false, error: message });
-  }
-});
-
-server.listen(PORT, () => {
-  // Startup line — confirms port, mode, and the human-in-the-loop posture.
-  const mode = hasApiKey ? 'live agents' : 'OFFLINE (no ANTHROPIC_API_KEY — deterministic tool runs)';
-  // eslint-disable-next-line no-console
-  console.log(
-    `Taxline service on http://localhost:${PORT}  ·  ${mode}  ·  ` +
-      `models ${MODEL_DEFAULT}/${MODEL_FAST}  ·  CORS ${SITE_ORIGINS.join(', ')}  ·  ` +
-      `human-approval gate active  ·  memory ${memory.provider}`,
-  );
-
-  // Persistent vector memory: if the on-disk store is empty (first run / fresh volume),
-  // build the index from the knowledge base now so retrieval is vector-backed
-  // immediately. A failure here is logged but non-fatal — retrieve() falls back to
-  // keyword scoring while the store is empty.
-  void (async () => {
-    try {
-      if (await memory.isEmpty()) {
-        const n = await memory.indexKnowledgeBase();
-        // eslint-disable-next-line no-console
-        console.log(`Memory index built: ${n} KB chunk(s) embedded via ${memory.provider}.`);
-      } else {
-        // eslint-disable-next-line no-console
-        console.log(`Memory store loaded: ${memory.size} record(s) (provider ${memory.provider}).`);
-      }
-    } catch (err) {
+    if (status === 413) res.setHeader('connection', 'close');
+    if (status === 500) {
       // eslint-disable-next-line no-console
-      console.warn('Memory index build failed (keyword fallback active):', err instanceof Error ? err.message : err);
+      console.error('Unhandled request error:', err);
     }
-  })();
-});
+    // Internal error text stays in the log, not in the response.
+    return sendJson(res, status, { ok: false, error: status === 500 ? 'internal error' : message });
+  }
+}
+
+/** Start the HTTP server. Called only when this file is the entry point. */
+export function start(port = PORT): http.Server {
+  const server = http.createServer((req, res) => void handle(req, res));
+  server.listen(port, () => {
+    // Startup line: confirms port, mode, and the human-in-the-loop posture.
+    const mode = hasApiKey
+      ? 'live agents'
+      : 'OFFLINE (no ANTHROPIC_API_KEY, deterministic tool runs)';
+    // eslint-disable-next-line no-console
+    console.log(
+      `Taxline service on http://localhost:${port}  ·  ${mode}  ·  ` +
+        `models ${MODEL_DEFAULT}/${MODEL_FAST}  ·  CORS ${SITE_ORIGINS.join(', ')}  ·  ` +
+        `human-approval gate active  ·  memory ${memory.provider}`,
+    );
+
+    // Persistent vector memory: if the on-disk store is empty (first run / fresh volume),
+    // build the index from the knowledge base now so retrieval is vector-backed
+    // immediately. A failure here is logged but non-fatal: retrieve() falls back to
+    // keyword scoring while the store is empty.
+    void (async () => {
+      try {
+        if (await memory.isEmpty()) {
+          const n = await memory.indexKnowledgeBase();
+          // eslint-disable-next-line no-console
+          console.log(`Memory index built: ${n} KB chunk(s) embedded via ${memory.provider}.`);
+        } else {
+          // eslint-disable-next-line no-console
+          console.log(
+            `Memory store loaded: ${memory.size} record(s) (provider ${memory.provider}).`,
+          );
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          'Memory index build failed (keyword fallback active):',
+          err instanceof Error ? err.message : err,
+        );
+      }
+    })();
+  });
+  return server;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) start();

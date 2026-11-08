@@ -1,4 +1,4 @@
-# Keep dependencies current and patch advisories. Grouped to limit PR noise.
+# Weekly dependency updates, grouped so minor and patch bumps land together.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -26,7 +26,18 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
 
+  - package-ecosystem: npm
+    directory: '/cms'
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
   - package-ecosystem: github-actions
     directory: '/'
     schedule:
       interval: weekly
+    groups:
+      actions:
+        update-types: [minor, patch]
