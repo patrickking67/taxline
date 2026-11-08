@@ -174,7 +174,7 @@ Then rebuild the site with `PUBLIC_API_ADAPTER=service` and
 
 ## 9 — Scaling & cost notes
 
-- **Model tiers**: `claude-haiku-4-5` for classify/intake; `claude-opus-4-8` for
+- **Model tiers**: `claude-haiku-5-5` for classify/intake; `claude-opus-5-5` for
   research/workpaper/extraction. Pick the smallest model that meets the accuracy bar.
 - **Batches API** (≈50% cheaper, ≤24h, no multi-turn tools) is for overnight bulk only —
   never the interactive path.

@@ -26,6 +26,9 @@ Honor `stop_reason` to decide stopping — do not parse the prose.
 
 Use `auto` for genuine agency; `any`/`tool` when the step requires a structured action.
 
+Claude Opus 5.5 rejects `any` and `tool` with a 400 error. Use `auto` with a clear instruction
+(or strict tool use) and validate the call in code. Taxline's fleet uses `auto` everywhere.
+
 ## Batches API
 
 The Message Batches API processes many requests asynchronously at roughly **50% lower
@@ -35,10 +38,10 @@ API for interactive agentic loops, and batches for bulk one-shot jobs.
 
 ## Model lineup (exact IDs)
 
-- `claude-opus-4-8` — highest accuracy; Taxline's default for extraction, research,
+- `claude-opus-5-5`: highest accuracy; Taxline's default for extraction, research,
   workpaper, and compliance.
-- `claude-sonnet-4-6` — balanced capability/latency.
-- `claude-haiku-4-5` — fastest/cheapest; Taxline uses it for classification/triage.
+- `claude-sonnet-5-5`: balanced capability/latency.
+- `claude-haiku-5-5`: fastest/cheapest; Taxline uses it for classification/triage.
 
 Pick the smallest model that meets the task's accuracy bar; reserve the largest for steps
 where correctness dominates.
