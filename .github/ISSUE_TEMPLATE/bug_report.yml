@@ -1,0 +1,46 @@
+name: Bug report
+description: Something does not work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Redact secrets and any real taxpayer data. Use synthetic values such as EIN 00-0000001.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [site, calculators, product app, service (agent fleet), tax engine, contact Worker, CMS, knowledge base, tooling]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: Browser and OS, or Node version; adapter (mock or service)
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      render: text

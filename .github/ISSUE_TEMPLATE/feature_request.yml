@@ -1,0 +1,28 @@
+name: Feature request
+description: Propose a change or addition.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Keep the human-approval posture. Tax math belongs in packages/tax-engine with a cited source.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options: [site, calculators, product app, service (agent fleet), tax engine, contact Worker, CMS, knowledge base, tooling]
+  - type: textarea
+    id: notes
+    attributes:
+      label: Alternatives and notes
