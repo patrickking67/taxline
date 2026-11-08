@@ -16,5 +16,5 @@ Critical non-negotiables (repeated here because they must be direct):
 
 Before completion:
 
-- Run `npm run check`, `npm run lint`, `npm run typecheck`, and `npm test` (plus `npm run test:e2e` for site changes).
+- Run `npm run verify` (or `npm run verify:fast` for lint, typecheck, and unit tests).
 - Tax figures are computed only in `packages/tax-engine`; never hardcode tax math elsewhere.

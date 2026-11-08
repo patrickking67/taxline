@@ -1,10 +1,9 @@
 @AGENTS.md
 
-# Claude Code-specific instructions
+# Claude Code notes
 
-- Treat root and applicable nested `AGENTS.md` files as canonical.
-- Use `.claude/rules/` for Claude-specific scoped behavior (design system, agent architecture).
-- Use `.claude/launch.json` with `preview_start` to run dev servers; never ask the user to run them.
-- Do not create or rely on local or user-level configuration.
-- Never place secrets in repository files.
-- After durable changes, update `AGENTS.md` rather than this file.
+- `AGENTS.md` is canonical. Put durable changes there, not here.
+- `.claude/rules/` holds the always-on design-system and agent-architecture rules.
+- Start servers from `.claude/launch.json` with the preview tool (`taxline-site`,
+  `taxline-site-dist`, `taxline-service`, `taxline-cms`).
+- Never commit `.claude/settings.local.json`, `CLAUDE.local.md`, or machine paths.

@@ -1,168 +1,130 @@
-# Repository agent instructions
+# AGENTS.md
 
-Canonical instructions for every coding agent working in this repository
-(Claude Code, Cursor, GitHub Copilot, Codex). Vendor files are thin adapters
-that point here — never duplicate this content into them.
+Canonical guide for every coding agent in this repo (Claude Code, Codex, Cursor,
+Copilot). `CLAUDE.md` and `.github/copilot-instructions.md` only point here.
 
 ## What this is
 
-**Taxline** — agentic tax operations. A fleet of five AI agents (Intake, Extraction,
-Research, Workpaper, Compliance) works behind an orchestrator to remove manual tax
-operations for firms, businesses, and solo preparers, **while preserving human
-approval**. The product reads like a live operations console: queues, agent activity,
-extraction confidence, citation-backed evidence, compliance deadlines.
+Taxline: agentic tax operations. Five AI agents (Relay intake, Lens extraction,
+Atlas research, Ledger workpapers, Sentry compliance) work behind an orchestrator.
+Every field carries a confidence score and a citation; under 0.85 it goes to a
+person, and a person approves before anything ships. Users are accountants, so the
+product is a GUI, never a CLI. Never describe it as "fully autonomous" or as
+replacing accountants. It is a portfolio project, not tax advice.
 
-Product principle: **the end users are accountants — the product is GUI-first, never
-a CLI.** A human approves before any output ships. Never market it as "replace
-accountants" or "fully autonomous".
-
-## Repository map
+## Layout
 
 ```
-site/               Astro 7 static site — marketing, free calculators (/tools), the product app shell (the GUI)
-packages/tax-engine/ Deterministic federal tax math (TY2026) + scenario validation, shared by site + service
-service/            Node + TypeScript agent fleet (Anthropic SDK) — the backend
-cms/                EmDash CMS (Astro 7, own lockfile) for Insights; NOT a root workspace
-scripts/            pull-insights.mjs — CMS export → site/src/content/insights.json
-knowledge-base/     Markdown corpus (tax/ + practices/) + manifest.json + ingest/
-workers/contact/    Cloudflare Worker — the demo/contact form backend
-docs/               design.md (spec), design-contract.md, system-design.md
-.github/workflows/  deploy.yml (→ GitHub Pages) + ci.yml
-.claude/            launch.json (dev servers), rules/ (always-on conventions)
+site/                 Astro 7 static site: marketing, /tools calculators, /app console. Deploys to Pages.
+  e2e/                Playwright + axe against the production build under /taxline (serve.mjs mimics Pages)
+packages/tax-engine/  Deterministic TY2026 federal math; figures cited in src/years/2026.ts
+service/              Node + TypeScript agent fleet (Anthropic SDK), node:http server on :8787
+workers/contact/      Cloudflare Worker for the demo form
+cms/                  EmDash CMS for Insights (own lockfile, not a root workspace)
+knowledge-base/       Markdown corpus the Research agent retrieves over, plus ingest/
+scripts/              pull-insights.mjs: CMS export -> site/src/content/insights.json
+docs/                 design.md, design-contract.md, system-design.md
+.claude/              launch.json (preview servers), rules/ (design system, agent architecture)
 ```
 
-`site/` is the primary deliverable and the only thing that deploys to GitHub Pages
-(Pages is **static** — no server runs there). `service/` runs locally or on a Node
-host, and the site talks to it through the adapter layer.
+## Setup
 
-## Setup and validation
-
-Node `^22.22.3 || ^24.16.0 || >=26.3.0` (root `engines`; `.nvmrc` pins 22).
+Node `^22.22.3 || ^24.16.0 || >=26.3.0` (`.nvmrc` pins 22). Each package has its own lockfile.
 
 ```bash
-npm install            # root (installs the site workspace + lint toolchain)
-npm run dev            # Astro dev server → http://localhost:4321
-npm run dev:service    # agent fleet     → http://localhost:8787
-npm run dev:cms        # EmDash CMS      → http://localhost:4322/_emdash/admin (cd cms && npm install && npm run seed first)
-npm run pull-insights  # EMDASH_URL=… pulls published Insights into the site snapshot (no-op without it)
-npm run build          # static build    → site/dist (fingerprinted assets in _assets/)
-npm run check          # astro check (typecheck .astro)
-npm run typecheck      # site + tax-engine + service + worker typecheck
-npm test               # tax-engine + service unit tests (node:test via tsx)
-npm run test:e2e       # Playwright + axe against the production build under /taxline
-npm run lint           # eslint (flat config)
-npm run format         # prettier --write
-npm run refresh-kb     # re-review the knowledge base + restamp the manifest
+npm ci && npm --prefix service ci && npm --prefix workers/contact ci && npm --prefix cms ci
+(cd site && npx playwright install chromium)     # once, for the e2e suite
 ```
 
-`service/`, `cms/`, and `workers/contact/` have their own dependencies — run `npm install`
-inside each. The service needs `service/.env` → `ANTHROPIC_API_KEY`; without it the
-fleet stays offline-deterministic.
+No API key is needed for anything below. `service/.env` with `ANTHROPIC_API_KEY`
+turns on live agents; without it the fleet runs its tools deterministically and
+says so in the output. Templates: `service/.env.example`, `site/.env.example`.
 
-**Full validation before completion:** `npm run check && npm run lint && npm run typecheck && npm test`
-(plus `npm run test:e2e` for any site change; set `CHROMIUM_PATH` to use an existing Chromium).
+## Commands
 
-## Deployment
+| Task | Command | Notes |
+| --- | --- | --- |
+| Site dev server | `npm run dev` | http://localhost:4321/ (base `/` in dev) |
+| Agent service | `npm run dev:service` | http://localhost:8787/health |
+| CMS | `npm run dev:cms` | :4322, run `npm --prefix cms run seed` first |
+| Site build | `npm run build` | `site/dist`; set `BASE_PATH=/taxline` for the Pages shape |
+| Astro typecheck | `npm run check` | |
+| All typechecks | `npm run typecheck` | site, engine, service, Worker |
+| Lint | `npm run lint` | ESLint flat config |
+| Unit tests | `npm test` | engine, service, Worker (node:test) |
+| E2E + axe | `npm run test:e2e` | builds under `/taxline`, serves on :4173; `CHROMIUM_PATH` reuses a local Chromium |
+| Everything CI runs | `npm run verify` | lint, typecheck, tests, build, e2e, CMS typecheck + build |
+| Quick gate | `npm run verify:fast` | lint, typecheck, tests |
+| Refresh root llms.txt | `npm run llms` | copies the built `/llms.txt` to the repo root |
+| Format | `npm run format` | Prettier; Markdown is hand-formatted and ignored |
 
-- Site: GitHub Actions → Pages on push to `main`. Set `BASE_PATH=/taxline` for a
-  project page, `/` for a custom domain.
-- Fleet: container via the root `Dockerfile` / `fly.toml` (`fly deploy`).
-- Contact Worker: `wrangler deploy`.
-- Full runbook: `docs/system-design.md`.
+## Preview
 
-## Architecture that spans files
+`.claude/launch.json` defines `taxline-site` (:4321), `taxline-site-dist` (the
+`BASE_PATH=/taxline` build served at http://localhost:4173/taxline/),
+`taxline-service` (:8787), and `taxline-cms` (:4322). Start them with the preview
+tool rather than asking a person to run them.
 
-- **Design tokens are the source of truth.** `site/src/styles/global.css` `@theme`
-  mirrors the `docs/` design tokens: graphite shell, warm-white text, one green
-  accent (`#3da57b`), warm "paper" surface for documents, ≤8px radius, borders not
-  shadows, IBM Plex Sans/Mono. Use the Tailwind utilities; never hardcode hex. Reuse
-  the primitives (`StatusPill`, `ConfidenceMeter`, `EvidenceChip`, `AgentCard`,
-  `Button`, `Logo`) — change a primitive once. Full rules: `docs/design-contract.md`
-  and `.claude/rules/design-system.md`.
-- **Components compose; primitives are shared.** The same primitives back the
-  marketing site, the `ConsoleHero`, and the product app
-  (`components/app/AppShell.astro`).
-- **The backend boundary is the adapter layer.** `site/src/lib/api/` has two seams,
-  both defaulting to an offline mock: **`fleet`** (queue/doc/run/memory — `mockFleet`
-  → `serviceFleet` via `PUBLIC_SERVICE_ENDPOINT`) and **`api`** (contact form —
-  `mock` → `cloudflare` via `PUBLIC_CONTACT_ENDPOINT`), selected with
-  `PUBLIC_API_ADAPTER`. `mockFleet` simulates the orchestrator and the human-approval
-  gate fully client-side, so the app works on static Pages. Any backend honoring the
-  same contract drops in. **The site never assumes a server exists.**
-- **Agent fleet principles** (`.claude/rules/agent-architecture.md`): agentic loop on
-  `stop_reason`; hub-and-spoke orchestrator; isolated agent context; structured errors
-  (`errorCategory` / `isRetryable`); a **programmatic** `requireHumanApproval` gate
-  (not a prompt); nullable tool-output fields to prevent fabrication; provenance and
-  confidence preserved; confidence `<0.85` routes to human review. The hub treats
-  `extract_fields` as the source of truth: `assess_confidence` can only add review items,
-  and a model call that fails becomes a structured error and a review item, never a throw.
-  Service tests in `service/test/` use a fake Messages client (no key, no network).
-- **The math is code, never a prompt.** `packages/tax-engine` holds every tax
-  computation (Form 1040 path, Schedule SE, §6654 safe harbor, §179/bonus/MACRS,
-  practice ROI). Indexed figures live only in `src/years/2026.ts`, each cited to
-  Rev. Proc. 2025-32 / SSA / Pub 946 — add a year as data, not code. Every result is a
-  `Trace` (value, operands, form line, authority). The site's `/tools/*` calculators
-  import it directly; the Workpaper agent reaches it through the `compute_tax` tool
-  (`service/src/tools/tax-calc.ts`, imported by relative path; the Dockerfile copies
-  `packages/tax-engine/src`). Test expectations are worked by hand from the IRS
-  tables, never copied from engine output.
-- **AI intake is validated in code.** `POST /scenario` (service) asks Claude, via one
-  tool with nullable fields, for each figure plus an exact evidence quote;
-  `validateScenario` (engine) then checks key, type, that the quote is in the input, and
-  that it states the amount. Failures are capped at 0.5 confidence with a reason, never
-  dropped. `mockFleet.scenario` runs the deterministic `extractScenario` with the same
-  validator. The UI (`components/tools/ScenarioIntake.astro`) applies only fields the
-  person checks; fields under 0.85 start unchecked.
-- **EmDash is the CMS; the site stays static.** `cms/` is a separate EmDash app (Astro 7,
-  React, SQLite locally, D1/R2 on Cloudflare) because EmDash needs a server
-  runtime. It exports published Insights at `/api/insights.json`;
-  `scripts/pull-insights.mjs` validates and atomically writes the committed snapshot the
-  site builds from. The deploy pulls only when the `EMDASH_URL` repository variable is set
-  and continues on failure. Schema of record: `cms/seed/seed.json`.
-- **The deployed shape is tested, not assumed.** `site/e2e/` runs Playwright against the
-  production build served under `/taxline` (`e2e/serve.mjs` mimics Pages, including the 404).
-  It walks the sitemap: one `<h1>`, canonical, valid JSON-LD, no console errors or failed
-  requests, no serious/critical axe WCAG 2.1 AA violations, and every internal link resolves.
-  Calculator specs assert hand-worked figures on screen. Text tokens must hold ≥4.5:1 on
-  every surface; prose links are underlined.
-- **SEO lives in `Base.astro` + `lib/seo.ts`.** Canonical/OG/Twitter tags and one JSON-LD
-  `@graph` per page (pages pass extra nodes via `schema`). `sitemap.xml`, `robots.txt`,
-  and `llms.txt` are generated endpoints in `site/src/pages/`; the sitemap derives from
-  the pages directory and excludes `app/*` (the demo app is `noindex`).
-- **Knowledge base** is retrieved over by the Research agent
-  (`service/src/kb/retrieve.ts`), which delegates to the **vector memory**
-  (`service/src/memory/`, cosine over a persistent flat-file store) with a
-  dependency-free keyword fallback when the store is empty. Tax figures are
-  **domain-knowledge seeds flagged for source verification**;
-  `knowledge-base/ingest/refresh.ts` re-reviews and content-hashes each source.
+## CI and deploy
 
-## Voice
+- `.github/workflows/ci.yml` runs on every push and PR: site check + build, e2e +
+  axe, engine tests + typecheck, service tests + typecheck, Worker tests +
+  typecheck, lint, CMS typecheck + build. `npm run verify` is the local mirror.
+- `.github/workflows/deploy.yml` builds with `BASE_PATH=/taxline` and publishes
+  `site/dist` to GitHub Pages on push to `main`. Do not change Pages settings.
+- Service: root `Dockerfile` and `fly.toml`. Worker: `wrangler deploy`. Runbook:
+  `docs/system-design.md`.
 
-Short, certain, technical. Sentence case. No emoji. Quantify with confidence
-percentages and dates.
+## Conventions
 
-## Security boundaries
+- **Math is code.** All tax computation lives in `packages/tax-engine`. Indexed
+  figures live only in `src/years/2026.ts`, each cited (Rev. Proc. 2025-32, SSA, Pub
+  946). Results are `Trace` lines (value, operands, form line, authority). Test
+  expectations are worked by hand from IRS tables, never copied from engine output.
+  Do not change a result without a failing test and a cited rule.
+- **The site never assumes a server.** `site/src/lib/api/` has two adapters,
+  `fleet` and `api`, both defaulting to offline mocks (`PUBLIC_API_ADAPTER`,
+  `PUBLIC_SERVICE_ENDPOINT`, `PUBLIC_CONTACT_ENDPOINT` switch them).
+- **Gates are code, not prompts.** The agent loop stops on `stop_reason`; tools are
+  least-privilege per agent; errors are structured (`errorCategory`, `isRetryable`);
+  `extract_fields` is the source of truth and `assess_confidence` can only add review
+  items; `requireHumanApproval` runs last in `service/src/orchestrator.ts`. Rules:
+  `.claude/rules/agent-architecture.md`. Service tests use a fake Messages client.
+- **Intake is validated.** `POST /scenario` output goes through `validateScenario`
+  (known key, typed value, quote present in the text and stating the amount).
+- **Design tokens rule the UI.** `site/src/styles/global.css` `@theme` holds them:
+  graphite shell, warm-white text, one green accent, IBM Plex, radius 8px or less,
+  borders over shadows. Reuse the primitives in `site/src/components/`. Body text
+  holds 4.5:1; one entrance animation (the hero), reduced motion respected. Details:
+  `docs/design-contract.md`, `.claude/rules/design-system.md`.
+- **SEO** lives in `site/src/layouts/Base.astro` and `site/src/lib/seo.ts`;
+  `sitemap.xml`, `robots.txt`, and `llms.txt` are endpoints in `site/src/pages/`.
+  The sitemap excludes `/app/*` (noindex). New pages are picked up by the e2e suite
+  through the sitemap.
+- **Voice:** short, plain, sentence case, no emoji, no em dashes in new text.
 
-- No autonomous filing. No training on client data. Documents stay in the workspace;
-  nothing ships unreviewed.
-- Honeypot and email validation on the contact form (mock adapter + Worker).
-- Secrets only in `.env` / Wrangler secrets / Actions secrets — never committed.
-- **Attribution:** commits use only the repository owner's git identity. Never add
-  Claude, Anthropic, an AI, or a bot as author, co-author, committer, trailer,
-  reviewer, or in any file. No "generated with" notes.
+## Safety rules
 
-## AI configuration maintenance
+- Demo data is synthetic: placeholder IDs such as EIN `00-0000001` and TIN
+  `00-0000002`, invented names. Never add real taxpayer data or real-looking IDs.
+- Secrets only in `.env`, Wrangler secrets, or Actions secrets. Never commit them.
+- No autonomous filing, no training on client data, nothing ships unreviewed.
+- Commits use the owner's git identity only. No AI or bot author, co-author,
+  trailer, or "generated with" note anywhere.
+- Do not touch: `package-lock.json` files by hand, `site/src/content/insights.json`
+  (generated by `npm run pull-insights`), GitHub repo or Pages settings, `LICENSE`.
 
-- This `AGENTS.md` is canonical. Update it only when durable repository knowledge
-  changes, then re-sync the thin adapters (`CLAUDE.md`,
-  `.github/copilot-instructions.md`).
-- Use repository-shared files and remote HTTPS MCP servers only.
-- Never commit `CLAUDE.local.md`, `.claude/settings.local.json`, or machine paths.
+## Shipping a change
+
+1. Branch from `main` (`feat/`, `fix/`, `docs/`, `chore/`); worktrees go in
+   `.worktrees/<name>` or `.claude/worktrees/`.
+2. One logical change per Conventional Commit, each passing `npm run verify:fast`.
+3. Add an Unreleased entry to `CHANGELOG.md`.
+4. Run `npm run verify`, push, and open a PR against `main`.
 
 ## Definition of done
 
-- Requested behavior is complete.
-- `npm run check`, `npm run lint`, and `npm run typecheck` pass.
-- Security and error paths were reviewed.
-- Durable documentation and instructions are current.
-- Commands run and unresolved risks are reported.
+- The requested behavior works and has a test.
+- `npm run verify` passes; for UI work, the page was checked in the preview.
+- `README.md`, `AGENTS.md`, and `CHANGELOG.md` match the code.
+- Commands run, results, and anything unverified are reported.
