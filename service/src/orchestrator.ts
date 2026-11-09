@@ -6,7 +6,13 @@
 // gate that blocks any final "ship" output until a human approves. Agents are
 // spokes: isolated context, explicit task input, no agent-to-agent calls.
 
-import { runAgent, MAX_ITERATIONS, type AgentDefinition, type MessagesClient, type RunAgentOutput } from './agent.js';
+import {
+  runAgent,
+  MAX_ITERATIONS,
+  type AgentDefinition,
+  type MessagesClient,
+  type RunAgentOutput,
+} from './agent.js';
 import { intake } from './agents/intake.js';
 import { extraction } from './agents/extraction.js';
 import { research } from './agents/research.js';
@@ -53,8 +59,25 @@ export interface OrchestratorTask {
    * final output is withheld until this is true. Defaults to false.
    */
   approved?: boolean;
-  /** Cap on handoffs followed, as a routing backstop (not the primary stop). */
+  /**
+   * Cap on agents run, as a routing backstop (not the primary stop). Clamped by
+   * clampMaxHops. If the cap stops the chain before it ends, a review item says so.
+   */
   maxHops?: number;
+}
+
+/** Hop cap used when the caller gives none or gives a value that is not a finite number. */
+export const DEFAULT_MAX_HOPS = 5;
+/** Upper bound on the hop cap: one run per registered agent. */
+export const MAX_HOPS_LIMIT = Object.keys(REGISTRY).length;
+
+/**
+ * Clamp a client-supplied hop cap to 1..MAX_HOPS_LIMIT. At least the entry agent
+ * always runs, and no client can ask for an unbounded chain.
+ */
+export function clampMaxHops(value: number | undefined): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return DEFAULT_MAX_HOPS;
+  return Math.min(MAX_HOPS_LIMIT, Math.max(1, Math.floor(value)));
 }
 
 /**
@@ -157,7 +180,13 @@ export function aggregateToolOutputs(
       for (const f of fields) {
         extracted.set(fieldKey(f), f);
         const reason = reviewReason(f);
-        if (reason) review.push({ reason, label: f.label, value: f.value, confidence: validConfidence(f.confidence) });
+        if (reason)
+          review.push({
+            reason,
+            label: f.label,
+            value: f.value,
+            confidence: validConfidence(f.confidence),
+          });
       }
     }
 
@@ -187,14 +216,21 @@ export function aggregateToolOutputs(
  * a refusal, or the iteration backstop all mean the draft may be incomplete, so a
  * person has to look before it can ship.
  */
-export function runIssues(agentName: string, run: Pick<RunAgentOutput, 'error' | 'hitBackstop' | 'stopReason'>): ReviewItem[] {
+export function runIssues(
+  agentName: string,
+  run: Pick<RunAgentOutput, 'error' | 'hitBackstop' | 'stopReason'>,
+): ReviewItem[] {
   const out: ReviewItem[] = [];
   if (run.error) {
     const retry = run.error.isRetryable ? 'retryable' : 'not retryable';
-    out.push({ reason: `agent "${agentName}" failed: ${run.error.message} (${run.error.errorCategory}, ${retry})` });
+    out.push({
+      reason: `agent "${agentName}" failed: ${run.error.message} (${run.error.errorCategory}, ${retry})`,
+    });
   }
   if (run.hitBackstop) {
-    out.push({ reason: `agent "${agentName}" hit the ${MAX_ITERATIONS}-turn backstop before finishing` });
+    out.push({
+      reason: `agent "${agentName}" hit the ${MAX_ITERATIONS}-turn backstop before finishing`,
+    });
   }
   if (run.stopReason === 'max_tokens') {
     out.push({ reason: `agent "${agentName}" output was cut off at the token limit` });
@@ -248,7 +284,10 @@ async function rememberApprovedFindings(result: OrchestratorResult): Promise<voi
     });
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.warn('memory.remember failed (continuous learning skipped):', err instanceof Error ? err.message : err);
+    console.warn(
+      'memory.remember failed (continuous learning skipped):',
+      err instanceof Error ? err.message : err,
+    );
   }
 }
 
@@ -256,14 +295,15 @@ async function rememberApprovedFindings(result: OrchestratorResult): Promise<voi
  * Run a task through the fleet: start at the entry agent, follow handoffs,
  * aggregate everything, then apply the approval gate. Returns one structured
  * result. The handoff hop-count is a backstop only — the chain naturally ends at
- * an agent whose `handoff` is null.
+ * an agent whose `handoff` is null. If the backstop (or an error) ends the chain
+ * early, the result carries a review item saying which agent did not run.
  */
 export async function orchestrate(
   task: OrchestratorTask,
   options: { client?: MessagesClient } = {},
 ): Promise<OrchestratorResult> {
   const entry = task.agent ?? pickEntryAgent(task.task);
-  const maxHops = task.maxHops ?? 5;
+  const maxHops = clampMaxHops(task.maxHops);
 
   const allCitations: Citation[] = [];
   const allFields: ExtractedField[] = [];
@@ -280,7 +320,10 @@ export async function orchestrate(
 
   while (current && hops < maxHops) {
     const agent: AgentDefinition | undefined = REGISTRY[current];
-    if (!agent) break;
+    if (!agent) {
+      allReview.push({ reason: `chain stopped: no agent named "${current}"` });
+      break;
+    }
 
     const run = await runAgent(agent, { task: task.task, context }, options);
     trace.push(run.step);
@@ -310,6 +353,15 @@ export async function orchestrate(
     // Routing: follow the static handoff. The orchestrator owns this decision.
     current = (agent.handoff as AgentName | null) ?? null;
     hops += 1;
+  }
+
+  // Human-in-the-loop guarantee: every early stop is visible to the reviewer. The
+  // break paths above add their own item; this covers the hop cap. A result with
+  // an open review item is never written to memory, even when approved.
+  if (current && hops >= maxHops) {
+    allReview.push({
+      reason: `chain stopped at the ${maxHops}-hop limit before agent "${current}" ran`,
+    });
   }
 
   const draft: OrchestratorResult = {

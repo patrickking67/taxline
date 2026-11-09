@@ -59,7 +59,9 @@ export const DATA_BOUNDARY =
 
 /** The slice of the Anthropic client the loop uses. Injectable for tests. */
 export interface MessagesClient {
-  messages: { create(params: Anthropic.MessageCreateParamsNonStreaming): Promise<Anthropic.Message> };
+  messages: {
+    create(params: Anthropic.MessageCreateParamsNonStreaming): Promise<Anthropic.Message>;
+  };
 }
 
 export interface RunAgentOptions {
@@ -292,7 +294,9 @@ async function stubRun(
   toolOutputs: { name: string; result: ToolResult<unknown> }[],
   toolCalls: { name: string; ok: boolean }[],
 ): Promise<string> {
-  const lines: string[] = [`[offline mode — no ANTHROPIC_API_KEY set; deterministic tool run by "${agent.name}"]`];
+  const lines: string[] = [
+    `[offline mode — no ANTHROPIC_API_KEY set; deterministic tool run by "${agent.name}"]`,
+  ];
 
   const ctx = (input.context ?? {}) as Record<string, unknown>;
   const docId = typeof ctx.docId === 'string' ? ctx.docId : undefined;
@@ -309,10 +313,12 @@ async function stubRun(
     citations.push(...harvestCitations(r));
   };
 
-  if (toolMap.has('classify_document')) await tryTool('classify_document', { text: docId ?? input.task });
+  if (toolMap.has('classify_document'))
+    await tryTool('classify_document', { text: docId ?? input.task });
   if (toolMap.has('extract_fields') && docId) await tryTool('extract_fields', { docId });
   if (toolMap.has('kb_search')) await tryTool('kb_search', { query: input.task, k: 3 });
-  if (toolMap.has('compute_deadline')) await tryTool('compute_deadline', { form: '1120-S', taxYear: 2024 });
+  if (toolMap.has('compute_deadline'))
+    await tryTool('compute_deadline', { form: '1120-S', taxYear: 2024 });
 
   lines.push(`Task: ${input.task}`);
   lines.push('Set ANTHROPIC_API_KEY in service/.env to run the live agentic loop.');

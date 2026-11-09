@@ -33,7 +33,13 @@ export default [
   ...astro.configs.recommended,
   {
     // Backend + tooling: Node runtime, console logging is expected.
-    files: ['service/**/*.ts', 'workers/**/*.ts', 'knowledge-base/**/*.ts', 'scripts/**/*.mjs', 'packages/**/*.ts'],
+    files: [
+      'service/**/*.ts',
+      'workers/**/*.ts',
+      'knowledge-base/**/*.ts',
+      'scripts/**/*.mjs',
+      'packages/**/*.ts',
+    ],
     languageOptions: { globals: globals.node },
     rules: { 'no-console': 'off' },
   },

@@ -22,7 +22,9 @@ test('income tax: edits update the URL and survive a reload', async ({ page }) =
   await expect(wages).toHaveValue(/120,?000/);
 });
 
-test('intake: low-confidence fields start unchecked; Apply writes only checked ones', async ({ page }) => {
+test('intake: low-confidence fields start unchecked; Apply writes only checked ones', async ({
+  page,
+}) => {
   await page.goto('tools/income-tax/?status=single&wages=100000&medWages=300000');
   await page.locator('textarea').first().fill('Married, I earned 90k.');
   await page.locator('[data-intake-run]').click();

@@ -59,27 +59,84 @@ const limits = [
   <ScenarioIntake
     form="calc"
     map={{
-      status: 'status', children: 'children', wages: 'wages', federalWithholding: 'withholding', selfEmploymentProfit: 'se',
-      interest: 'interest', ordinaryDividends: 'ordDiv', qualifiedDividends: 'qualDiv', longTermGain: 'ltcg', shortTermGain: 'stcg',
-      otherIncome: 'other', adjustments: 'adj', itemized: 'itemized', estimatedPayments: 'estimates',
+      status: 'status',
+      children: 'children',
+      wages: 'wages',
+      federalWithholding: 'withholding',
+      selfEmploymentProfit: 'se',
+      interest: 'interest',
+      ordinaryDividends: 'ordDiv',
+      qualifiedDividends: 'qualDiv',
+      longTermGain: 'ltcg',
+      shortTermGain: 'stcg',
+      otherIncome: 'other',
+      adjustments: 'adj',
+      itemized: 'itemized',
+      estimatedPayments: 'estimates',
     }}
   />
 
   <div class="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
     <form id="calc" class="grid gap-4" autocomplete="off">
       <Fieldset legend="Filing">
-        <Field name="status" label="Filing status" kind="select" options={statuses} value="single" class="sm:col-span-2" />
-        <Field name="children" label="Qualifying children under 17" kind="number" value="0" min={0} max={12} step={1} />
+        <Field
+          name="status"
+          label="Filing status"
+          kind="select"
+          options={statuses}
+          value="single"
+          class="sm:col-span-2"
+        />
+        <Field
+          name="children"
+          label="Qualifying children under 17"
+          kind="number"
+          value="0"
+          min={0}
+          max={12}
+          step={1}
+        />
       </Fieldset>
       <Fieldset legend="Earned income">
         <Field name="wages" label="W-2 wages (box 1)" value="85000" />
-        <Field name="se" label="Schedule C net profit" value="0" hint="Negative for a loss. Drives SE tax and QBI." />
+        <Field
+          name="se"
+          label="Schedule C net profit"
+          value="0"
+          hint="Negative for a loss. Drives SE tax and QBI."
+        />
         <Field name="other" label="Other ordinary income" value="0" />
-        <Field name="ownerSs" label="Sch C owner's own W-2 box 3" value="" hint="Blank: same as wages (single), none (joint)." />
-        <Field name="medWages" label="Medicare wages (box 5)" value="" hint="Blank: same as box 1." />
-        <Field name="qbiWages" label="W-2 wages the business paid" value="" hint="QBI wage limit above $201,750 ($403,500 joint)." />
-        <Field name="ubia" label="Qualified property (UBIA)" value="" hint="Unadjusted basis of depreciable property." />
-        <Field name="sstb" label="Specified service business" kind="toggle" class="sm:col-span-2" hint="Law, health, consulting, accounting… (QBI phase-out)" />
+        <Field
+          name="ownerSs"
+          label="Sch C owner's own W-2 box 3"
+          value=""
+          hint="Blank: same as wages (single), none (joint)."
+        />
+        <Field
+          name="medWages"
+          label="Medicare wages (box 5)"
+          value=""
+          hint="Blank: same as box 1."
+        />
+        <Field
+          name="qbiWages"
+          label="W-2 wages the business paid"
+          value=""
+          hint="QBI wage limit above $201,750 ($403,500 joint)."
+        />
+        <Field
+          name="ubia"
+          label="Qualified property (UBIA)"
+          value=""
+          hint="Unadjusted basis of depreciable property."
+        />
+        <Field
+          name="sstb"
+          label="Specified service business"
+          kind="toggle"
+          class="sm:col-span-2"
+          hint="Law, health, consulting, accounting… (QBI phase-out)"
+        />
       </Fieldset>
       <Fieldset legend="Investments">
         <Field name="interest" label="Taxable interest" value="0" />
@@ -89,13 +146,27 @@ const limits = [
         <Field name="stcg" label="Net short-term gain" value="0" />
       </Fieldset>
       <Fieldset legend="Deductions and payments">
-        <Field name="adj" label="Other adjustments" value="0" hint="IRA, HSA, student loan interest." />
-        <Field name="itemized" label="Itemized deductions" value="0" hint="Leave 0 to take the standard." />
+        <Field
+          name="adj"
+          label="Other adjustments"
+          value="0"
+          hint="IRA, HSA, student loan interest."
+        />
+        <Field
+          name="itemized"
+          label="Itemized deductions"
+          value="0"
+          hint="Leave 0 to take the standard."
+        />
         <Field name="withholding" label="Federal tax withheld" value="9000" />
         <Field name="estimates" label="Estimated payments" value="0" />
       </Fieldset>
       <div class="flex items-center justify-between gap-3">
-        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <button
+          type="reset"
+          class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg"
+          >Reset</button
+        >
         <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
       </div>
     </form>
@@ -111,7 +182,9 @@ const limits = [
       <div class="rounded-lg border border-border bg-panel p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <h2 class="text-[13px] font-semibold text-fg">Bracket fill</h2>
-          <span class="font-mono text-[11px] text-fg-faint">ordinary taxable income by rate · <span data-out="ordinary"></span></span>
+          <span class="font-mono text-[11px] text-fg-faint"
+            >ordinary taxable income by rate · <span data-out="ordinary"></span></span
+          >
         </div>
         <div data-fill class="mt-3 flex h-7 w-full gap-[2px] overflow-hidden rounded-sm"></div>
         <div data-fill-legend class="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4"></div>
@@ -119,37 +192,119 @@ const limits = [
 
       <div class="rounded-lg border border-border bg-panel p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 class="text-[13px] font-semibold text-fg">Effective income-tax rate by taxable income</h2>
-          <span class="font-mono text-[11px] text-fg-faint">shaded bands = brackets · hover for values</span>
+          <h2 class="text-[13px] font-semibold text-fg">
+            Effective income-tax rate by taxable income
+          </h2>
+          <span class="font-mono text-[11px] text-fg-faint"
+            >shaded bands = brackets · hover for values</span
+          >
         </div>
         <div data-curve class="mt-3"></div>
       </div>
 
-      <Workpaper title="Form 1040: federal estimate" subtitle="Tax year 2026" code="WP-1040" id="wp" />
+      <Workpaper
+        title="Form 1040: federal estimate"
+        subtitle="Tax year 2026"
+        code="WP-1040"
+        id="wp"
+      />
     </div>
   </div>
 
   <Fragment slot="formulas">
-    <Formula title="Progressive tax (1040 L16)" plain="tax(T) = sum over brackets of r_i times max(0, min(T, f_(i+1)) minus f_i)" note="f are the bracket floors and r the rates from Rev. Proc. 2025-32 §4.01. Below $100,000 the Tax Table evaluates this at the midpoint of a $50 row.">
-      <math display="block"><mrow><mi>tax</mi><mo>(</mo><mi>T</mi><mo>)</mo><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder><msub><mi>r</mi><mi>i</mi></msub><mo>·</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>min</mi><mo>(</mo><mi>T</mi><mo>,</mo><msub><mi>f</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>)</mo><mo>−</mo><msub><mi>f</mi><mi>i</mi></msub><mo>)</mo></mrow></math>
+    <Formula
+      title="Progressive tax (1040 L16)"
+      plain="tax(T) = sum over brackets of r_i times max(0, min(T, f_(i+1)) minus f_i)"
+      note="f are the bracket floors and r the rates from Rev. Proc. 2025-32 §4.01. Below $100,000 the Tax Table evaluates this at the midpoint of a $50 row."
+    >
+      <math display="block"
+        ><mrow
+          ><mi>tax</mi><mo>(</mo><mi>T</mi><mo>)</mo><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder
+          ><msub><mi>r</mi><mi>i</mi></msub><mo>·</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi
+            >min</mi
+          ><mo>(</mo><mi>T</mi><mo>,</mo><msub
+            ><mi>f</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub
+          ><mo>)</mo><mo>−</mo><msub><mi>f</mi><mi>i</mi></msub><mo>)</mo></mrow
+        ></math
+      >
     </Formula>
-    <Formula title="Taxable income (1040 L15)" plain="T = max(0, AGI minus max(standard, itemized) minus QBI)" note="AGI = total income − ½ SE tax − other adjustments. QBI is the §199A deduction, limited to 20% of taxable income before it, less net capital gain.">
-      <math display="block"><mrow><mi>T</mi><mo>=</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>AGI</mi><mo>−</mo><mi>max</mi><mo>(</mo><msub><mi>D</mi><mi>std</mi></msub><mo>,</mo><msub><mi>D</mi><mi>item</mi></msub><mo>)</mo><mo>−</mo><mi>QBI</mi><mo>)</mo></mrow></math>
+    <Formula
+      title="Taxable income (1040 L15)"
+      plain="T = max(0, AGI minus max(standard, itemized) minus QBI)"
+      note="AGI = total income − ½ SE tax − other adjustments. QBI is the §199A deduction, limited to 20% of taxable income before it, less net capital gain."
+    >
+      <math display="block"
+        ><mrow
+          ><mi>T</mi><mo>=</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>AGI</mi><mo>−</mo><mi
+            >max</mi
+          ><mo>(</mo><msub><mi>D</mi><mi>std</mi></msub><mo>,</mo><msub
+            ><mi>D</mi><mi>item</mi></msub
+          ><mo>)</mo><mo>−</mo><mi>QBI</mi><mo>)</mo></mrow
+        ></math
+      >
     </Formula>
-    <Formula title="Preferential income stacking" plain="z = max(0, min(T, cap0) minus O); f = max(0, min(T, cap15) minus O minus z); tax = tax(O) + 0.15 f + 0.20 (P minus z minus f)" note="P = qualified dividends + net long-term gain, O = T − P. The result is capped at the regular tax on T.">
-      <math display="block"><mrow><mi>tax</mi><mo>=</mo><mi>tax</mi><mo>(</mo><mi>O</mi><mo>)</mo><mo>+</mo><mn>0.15</mn><mo>·</mo><msub><mi>P</mi><mn>15</mn></msub><mo>+</mo><mn>0.20</mn><mo>·</mo><msub><mi>P</mi><mn>20</mn></msub></mrow></math>
-      <math display="block" class="mt-2"><mrow><msub><mi>P</mi><mn>15</mn></msub><mo>=</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>min</mi><mo>(</mo><mi>T</mi><mo>,</mo><msub><mi>c</mi><mn>15</mn></msub><mo>)</mo><mo>−</mo><mi>O</mi><mo>−</mo><msub><mi>P</mi><mn>0</mn></msub><mo>)</mo></mrow></math>
+    <Formula
+      title="Preferential income stacking"
+      plain="z = max(0, min(T, cap0) minus O); f = max(0, min(T, cap15) minus O minus z); tax = tax(O) + 0.15 f + 0.20 (P minus z minus f)"
+      note="P = qualified dividends + net long-term gain, O = T − P. The result is capped at the regular tax on T."
+    >
+      <math display="block"
+        ><mrow
+          ><mi>tax</mi><mo>=</mo><mi>tax</mi><mo>(</mo><mi>O</mi><mo>)</mo><mo>+</mo><mn>0.15</mn
+          ><mo>·</mo><msub><mi>P</mi><mn>15</mn></msub><mo>+</mo><mn>0.20</mn><mo>·</mo><msub
+            ><mi>P</mi><mn>20</mn></msub
+          ></mrow
+        ></math
+      >
+      <math display="block" class="mt-2"
+        ><mrow
+          ><msub><mi>P</mi><mn>15</mn></msub><mo>=</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi
+            >min</mi
+          ><mo>(</mo><mi>T</mi><mo>,</mo><msub><mi>c</mi><mn>15</mn></msub><mo>)</mo><mo>−</mo><mi
+            >O</mi
+          ><mo>−</mo><msub><mi>P</mi><mn>0</mn></msub><mo>)</mo></mrow
+        ></math
+      >
     </Formula>
-    <Formula title="True marginal rate" plain="m = (L(I + 100) minus L(I)) / 100" note="L is net liability (total tax less refundable credits) from a full recomputation. It captures phase-outs and limits a bracket table cannot.">
-      <math display="block"><mrow><mi>m</mi><mo>=</mo><mfrac><mrow><mi>L</mi><mo>(</mo><mi>I</mi><mo>+</mo><mn>100</mn><mo>)</mo><mo>−</mo><mi>L</mi><mo>(</mo><mi>I</mi><mo>)</mo></mrow><mn>100</mn></mfrac></mrow></math>
+    <Formula
+      title="True marginal rate"
+      plain="m = (L(I + 100) minus L(I)) / 100"
+      note="L is net liability (total tax less refundable credits) from a full recomputation. It captures phase-outs and limits a bracket table cannot."
+    >
+      <math display="block"
+        ><mrow
+          ><mi>m</mi><mo>=</mo><mfrac
+            ><mrow
+              ><mi>L</mi><mo>(</mo><mi>I</mi><mo>+</mo><mn>100</mn><mo>)</mo><mo>−</mo><mi>L</mi><mo
+                >(</mo
+              ><mi>I</mi><mo>)</mo></mrow
+            ><mn>100</mn></mfrac
+          ></mrow
+        ></math
+      >
     </Formula>
   </Fragment>
 </ToolShell>
 
 <script>
-  import { TY2026, computeReturn, fmtPct, fmtUsd, scheduleTax, type FilingStatus, type ReturnResult } from '@taxline/tax-engine';
+  import {
+    TY2026,
+    computeReturn,
+    fmtPct,
+    fmtUsd,
+    scheduleTax,
+    type FilingStatus,
+    type ReturnResult,
+  } from '@taxline/tax-engine';
   import { bindCalculator, num, opt } from '../../lib/tools/form';
-  import { h, renderTrace, setOutputs, setTone, traceToText, wireCopy } from '../../lib/tools/render';
+  import {
+    h,
+    renderTrace,
+    setOutputs,
+    setTone,
+    traceToText,
+    wireCopy,
+  } from '../../lib/tools/render';
   import { compactUsd, lineChart, onResize } from '../../lib/tools/charts';
 
   const form = document.getElementById('calc') as HTMLFormElement;
@@ -169,7 +324,9 @@ const limits = [
     r.slices.forEach((x, i) => {
       const weight = (i + 1) / r.slices.length;
       if (x.amount > 0) {
-        const seg = h('div', 'h-full', undefined, { title: `${fmtPct(x.rate, 0)}: ${fmtUsd(x.amount)} taxed ${fmtUsd(x.tax)}` });
+        const seg = h('div', 'h-full', undefined, {
+          title: `${fmtPct(x.rate, 0)}: ${fmtUsd(x.amount)} taxed ${fmtUsd(x.tax)}`,
+        });
         seg.style.flex = `${x.amount} 0 0`;
         seg.style.background = 'var(--color-accent)';
         seg.style.opacity = String(0.25 + weight * 0.75);
@@ -179,7 +336,11 @@ const limits = [
       const sw = h('span', 'size-2.5 shrink-0 rounded-[2px]');
       sw.style.background = x.amount > 0 ? 'var(--color-accent)' : 'var(--color-border)';
       sw.style.opacity = x.amount > 0 ? String(0.25 + weight * 0.75) : '1';
-      row.append(sw, h('span', x.amount > 0 ? 'text-fg' : 'text-fg-faint', fmtPct(x.rate, 0)), h('span', 'text-fg-muted', x.amount > 0 ? fmtUsd(x.tax) : '—'));
+      row.append(
+        sw,
+        h('span', x.amount > 0 ? 'text-fg' : 'text-fg-faint', fmtPct(x.rate, 0)),
+        h('span', 'text-fg-muted', x.amount > 0 ? fmtUsd(x.tax) : '—'),
+      );
       legend.append(row);
     });
   }
@@ -194,7 +355,12 @@ const limits = [
       const t = (xMax * k) / 160;
       pts.push([t, scheduleTax(t, b) / t]);
     }
-    const bands = b.map((x, i) => ({ from: x.floor, to: b[i + 1]?.floor ?? xMax, label: fmtPct(x.rate, 0), weight: (i + 1) / b.length }));
+    const bands = b.map((x, i) => ({
+      from: x.floor,
+      to: b[i + 1]?.floor ?? xMax,
+      label: fmtPct(x.rate, 0),
+      weight: (i + 1) / b.length,
+    }));
     const you = Math.max(r.preferential.ordinary, xMax / 160);
     lineChart(curve, {
       label: 'Effective income-tax rate by taxable income',
@@ -202,8 +368,14 @@ const limits = [
       bands,
       xFmt: compactUsd,
       yFmt: (y) => `${Math.round(y * 100)}%`,
-      marker: r.preferential.ordinary > 0 ? { x: you, label: `you · ${fmtPct(scheduleTax(you, b) / you)}` } : undefined,
-      tipLines: (p) => [`${fmtPct(p[1])} effective`, `${fmtUsd(p[0])} taxable · tax ${fmtUsd(scheduleTax(p[0], b))}`],
+      marker:
+        r.preferential.ordinary > 0
+          ? { x: you, label: `you · ${fmtPct(scheduleTax(you, b) / you)}` }
+          : undefined,
+      tipLines: (p) => [
+        `${fmtPct(p[1])} effective`,
+        `${fmtUsd(p[0])} taxable · tax ${fmtUsd(scheduleTax(p[0], b))}`,
+      ],
     });
   }
 
@@ -248,5 +420,7 @@ const limits = [
   });
 
   onResize(curve, drawCurve);
-  wireCopy(document.querySelector('[data-copy="wp"]'), () => (last ? traceToText('Form 1040 — federal estimate, TY2026', last.r.lines) : ''));
+  wireCopy(document.querySelector('[data-copy="wp"]'), () =>
+    last ? traceToText('Form 1040 — federal estimate, TY2026', last.r.lines) : '',
+  );
 </script>

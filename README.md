@@ -70,7 +70,7 @@ flowchart LR
   G -->|not approved| HOLD["draft withheld<br/>review queue"]
 ```
 
-Every agent except intake runs on `claude-opus-5-5`. The chain ends at compliance, and a hop cap of 5 is a backstop, not the stop rule. After each agent the hub does three things in code:
+Every agent except intake runs on `claude-opus-5-5`. The chain ends at compliance, and a hop cap of 5 is a backstop, not the stop rule. A client `maxHops` is clamped to 1 through 5, and if the cap ends the chain early the result carries a review item naming the agent that did not run. After each agent the hub does three things in code:
 
 1. **Confidence.** Fields come from `extract_fields`, and any field under 0.85, with no score, or with a score outside 0 to 1 goes to review. `assess_confidence` can raise the bar but never lower it, and a field it calls "passed" only counts if it matches an extracted field, so the model cannot restate a score or invent a value.
 2. **Errors.** Every tool failure becomes a review item. A failed model call (rate limit, outage, bad key) returns a structured error instead of throwing, is labeled retryable or not, and stops the chain. A truncated answer, a refusal, or the 12-turn loop backstop is also flagged.

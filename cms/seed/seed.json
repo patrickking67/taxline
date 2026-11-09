@@ -16,14 +16,7 @@
       "label": "Insights",
       "labelSingular": "Insight",
       "urlPattern": "/insights/{slug}",
-      "supports": [
-        "drafts",
-        "revisions",
-        "preview",
-        "scheduling",
-        "search",
-        "seo"
-      ],
+      "supports": ["drafts", "revisions", "preview", "scheduling", "search", "seo"],
       "fields": [
         {
           "slug": "title",
@@ -64,9 +57,7 @@
       "label": "Categories",
       "labelSingular": "Category",
       "hierarchical": false,
-      "collections": [
-        "insights"
-      ],
+      "collections": ["insights"],
       "terms": [
         {
           "slug": "tax-year-2026",
@@ -109,9 +100,7 @@
                   "_type": "span",
                   "_key": "k2",
                   "text": "Rev. Proc. 2025-32",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -237,9 +226,7 @@
                   "_type": "span",
                   "_key": "k19",
                   "text": "$16,100",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -251,9 +238,7 @@
                   "_type": "span",
                   "_key": "k21",
                   "text": "$32,200",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -265,9 +250,7 @@
                   "_type": "span",
                   "_key": "k23",
                   "text": "$24,150",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -338,9 +321,7 @@
           "reading_minutes": 5
         },
         "taxonomies": {
-          "category": [
-            "tax-year-2026"
-          ]
+          "category": ["tax-year-2026"]
         }
       },
       {
@@ -367,9 +348,7 @@
                   "_type": "span",
                   "_key": "k35",
                   "text": "quarterly estimates",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -409,9 +388,7 @@
                   "_type": "span",
                   "_key": "k41",
                   "text": "90% of this year's tax",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -423,9 +400,7 @@
                   "_type": "span",
                   "_key": "k43",
                   "text": "100% of last year's tax",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -437,9 +412,7 @@
                   "_type": "span",
                   "_key": "k45",
                   "text": "110%",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -527,9 +500,7 @@
                   "_type": "span",
                   "_key": "k57",
                   "text": "$22,600",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -618,9 +589,7 @@
           "reading_minutes": 4
         },
         "taxonomies": {
-          "category": [
-            "planning"
-          ]
+          "category": ["planning"]
         }
       },
       {
@@ -691,9 +660,7 @@
                   "_type": "span",
                   "_key": "k77",
                   "text": "$37,604.33",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 }
               ]
             },
@@ -715,9 +682,7 @@
                   "_type": "span",
                   "_key": "k80",
                   "text": "$30,328.72",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 }
               ]
             },
@@ -739,9 +704,7 @@
                   "_type": "span",
                   "_key": "k83",
                   "text": "$7,275.61",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -777,9 +740,7 @@
                   "_type": "span",
                   "_key": "k88",
                   "text": "QBI.",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -801,9 +762,7 @@
                   "_type": "span",
                   "_key": "k91",
                   "text": "The wage base.",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -825,9 +784,7 @@
                   "_type": "span",
                   "_key": "k94",
                   "text": "Overhead.",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -870,9 +827,7 @@
           "reading_minutes": 6
         },
         "taxonomies": {
-          "category": [
-            "planning"
-          ]
+          "category": ["planning"]
         }
       },
       {
@@ -923,9 +878,7 @@
                   "_type": "span",
                   "_key": "k105",
                   "text": "Models draft.",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -947,9 +900,7 @@
                   "_type": "span",
                   "_key": "k108",
                   "text": "Code computes.",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -971,9 +922,7 @@
                   "_type": "span",
                   "_key": "k111",
                   "text": "People approve.",
-                  "marks": [
-                    "strong"
-                  ]
+                  "marks": ["strong"]
                 },
                 {
                   "_type": "span",
@@ -1044,9 +993,7 @@
           "reading_minutes": 4
         },
         "taxonomies": {
-          "category": [
-            "product"
-          ]
+          "category": ["product"]
         }
       }
     ]

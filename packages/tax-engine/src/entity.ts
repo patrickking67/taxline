@@ -39,7 +39,14 @@ export interface FicaSplit {
 
 export interface EntityResult {
   sole: { ret: ReturnResult; total: number };
-  scorp: { ret: ReturnResult; fica: FicaSplit; overhead: number; k1: number; salary: number; total: number };
+  scorp: {
+    ret: ReturnResult;
+    fica: FicaSplit;
+    overhead: number;
+    k1: number;
+    salary: number;
+    total: number;
+  };
   savings: number;
   trace: Trace;
 }
@@ -75,7 +82,10 @@ export function compareEntity(i: EntityInput, y: TaxYear = TY2026): EntityResult
   // Salary cannot exceed what the business can pay after its own FICA and overhead.
   const salary = Math.min(Math.max(0, i.salary), maxSalary(profit, overhead, y));
 
-  const soleRet = computeReturn({ ...i.household, status: i.status, selfEmploymentProfit: profit }, y);
+  const soleRet = computeReturn(
+    { ...i.household, status: i.status, selfEmploymentProfit: profit },
+    y,
+  );
   // Only the owner's own other W-2 Social Security wages share their wage base.
   const ownerOtherSs = i.household?.seOwnerSsWages ?? (i.status === 'mfj' ? 0 : otherWages);
   const fica = payrollFica(salary, ownerOtherSs, y);
@@ -86,7 +96,8 @@ export function compareEntity(i: EntityInput, y: TaxYear = TY2026): EntityResult
       status: i.status,
       wages: otherWages + salary,
       // Salary adds to any wage bases the household already reported, never replaces them.
-      medicareWages: i.household?.medicareWages != null ? i.household.medicareWages + salary : undefined,
+      medicareWages:
+        i.household?.medicareWages != null ? i.household.medicareWages + salary : undefined,
       qbiW2Wages: (i.household?.qbiW2Wages ?? 0) + salary,
       passThroughIncome: k1,
     },
@@ -98,17 +109,62 @@ export function compareEntity(i: EntityInput, y: TaxYear = TY2026): EntityResult
   const savings = round2(soleTotal - scorpTotal);
 
   const trace: Trace = [
-    { id: 'ent.sole.it', label: 'Sole prop · income tax after credits', value: round2(soleRet.netLiability - soleRet.seTax), ref: 'Sch C' },
-    { id: 'ent.sole.se', label: 'Sole prop · self-employment tax', value: soleRet.seTax, ref: 'Sch SE', formula: `${fmtUsd(profit)} × 92.35% × 15.3% (SS capped)` },
+    {
+      id: 'ent.sole.it',
+      label: 'Sole prop · income tax after credits',
+      value: round2(soleRet.netLiability - soleRet.seTax),
+      ref: 'Sch C',
+    },
+    {
+      id: 'ent.sole.se',
+      label: 'Sole prop · self-employment tax',
+      value: soleRet.seTax,
+      ref: 'Sch SE',
+      formula: `${fmtUsd(profit)} × 92.35% × 15.3% (SS capped)`,
+    },
     { id: 'ent.sole', label: 'Sole prop · total', value: soleTotal, emphasis: 'subtotal' },
     { id: 'ent.sc.salary', label: 'S corp · owner salary (W-2)', value: salary, ref: '1120-S L7' },
-    { id: 'ent.sc.er', label: 'S corp · employer FICA', value: fica.employer, ref: '941', formula: `7.65% of ${fmtUsd(salary)} (SS capped)` },
-    { id: 'ent.sc.oh', label: 'S corp · payroll and entity overhead', value: overhead, ref: '1120-S L19' },
-    { id: 'ent.sc.k1', label: 'S corp · K-1 ordinary income', value: k1, ref: 'K-1 L1', formula: `${fmtUsd(profit)} − ${fmtUsd(salary)} − ${fmtUsd(fica.employer)} − ${fmtUsd(overhead)}` },
-    { id: 'ent.sc.it', label: 'S corp · income tax after credits', value: scorpRet.netLiability, ref: '1040 L24', formula: `QBI ${fmtUsd(scorpRet.qbi.deduction)} (20% of K-1, W-2 wage limit)` },
+    {
+      id: 'ent.sc.er',
+      label: 'S corp · employer FICA',
+      value: fica.employer,
+      ref: '941',
+      formula: `7.65% of ${fmtUsd(salary)} (SS capped)`,
+    },
+    {
+      id: 'ent.sc.oh',
+      label: 'S corp · payroll and entity overhead',
+      value: overhead,
+      ref: '1120-S L19',
+    },
+    {
+      id: 'ent.sc.k1',
+      label: 'S corp · K-1 ordinary income',
+      value: k1,
+      ref: 'K-1 L1',
+      formula: `${fmtUsd(profit)} − ${fmtUsd(salary)} − ${fmtUsd(fica.employer)} − ${fmtUsd(overhead)}`,
+    },
+    {
+      id: 'ent.sc.it',
+      label: 'S corp · income tax after credits',
+      value: scorpRet.netLiability,
+      ref: '1040 L24',
+      formula: `QBI ${fmtUsd(scorpRet.qbi.deduction)} (20% of K-1, W-2 wage limit)`,
+    },
     { id: 'ent.sc.ee', label: 'S corp · employee FICA', value: fica.employee, ref: 'W-2 L4/L6' },
-    { id: 'ent.sc', label: 'S corp · total (tax + FICA + overhead)', value: scorpTotal, emphasis: 'subtotal' },
-    { id: 'ent.save', label: savings >= 0 ? 'Annual savings with the election' : 'Annual cost of the election', value: Math.abs(savings), formula: `${fmtUsd(soleTotal)} − ${fmtUsd(scorpTotal)}`, emphasis: 'total' },
+    {
+      id: 'ent.sc',
+      label: 'S corp · total (tax + FICA + overhead)',
+      value: scorpTotal,
+      emphasis: 'subtotal',
+    },
+    {
+      id: 'ent.save',
+      label: savings >= 0 ? 'Annual savings with the election' : 'Annual cost of the election',
+      value: Math.abs(savings),
+      formula: `${fmtUsd(soleTotal)} − ${fmtUsd(scorpTotal)}`,
+      emphasis: 'total',
+    },
   ];
 
   return {

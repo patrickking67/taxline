@@ -33,7 +33,10 @@ const path = Astro.url.pathname.replace(/\/?$/, '/');
 const canonical = new URL(path, Astro.site).href;
 const ogImage = absolute('social-preview.png', Astro.site);
 // CMS text reaches this graph; escape "<" so a "</script>" in a title cannot end the block.
-const graph = JSON.stringify({ '@context': 'https://schema.org', '@graph': [organization(Astro.site), website(Astro.site), ...schema] }).replace(/</g, '\\u003c');
+const graph = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [organization(Astro.site), website(Astro.site), ...schema],
+}).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>
@@ -43,7 +46,13 @@ const graph = JSON.stringify({ '@context': 'https://schema.org', '@graph': [orga
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
+    {
+      noindex ? (
+        <meta name="robots" content="noindex, follow" />
+      ) : (
+        <link rel="canonical" href={canonical} />
+      )
+    }
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#0e0f10" />
     <meta property="og:site_name" content="Taxline" />
@@ -56,7 +65,10 @@ const graph = JSON.stringify({ '@context': 'https://schema.org', '@graph': [orga
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1280" />
     <meta property="og:image:height" content="640" />
-    <meta property="og:image:alt" content="Taxline operations console: queue, agent activity, and extraction confidence" />
+    <meta
+      property="og:image:alt"
+      content="Taxline operations console: queue, agent activity, and extraction confidence"
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
@@ -66,7 +78,11 @@ const graph = JSON.stringify({ '@context': 'https://schema.org', '@graph': [orga
     <script is:inline type="application/ld+json" set:html={graph} />
   </head>
   <body class="min-h-screen bg-base text-fg antialiased">
-    <a href="#main" class="sr-only z-[100] rounded-md bg-accent px-3 py-2 text-sm font-medium text-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-3">Skip to content</a>
+    <a
+      href="#main"
+      class="sr-only z-[100] rounded-md bg-accent px-3 py-2 text-sm font-medium text-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-3"
+      >Skip to content</a
+    >
     <slot />
   </body>
 </html>

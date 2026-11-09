@@ -39,5 +39,13 @@ export function preferentialTax(
   const ordinaryTax = ordinaryTaxFn(O, brackets);
   const withPref = round2(ordinaryTax + 0.15 * atFifteen + 0.2 * atTwenty);
   const regular = ordinaryTaxFn(T, brackets);
-  return { ordinary: O, preferential: P, atZero, atFifteen, atTwenty, ordinaryTax, tax: Math.min(withPref, regular) };
+  return {
+    ordinary: O,
+    preferential: P,
+    atZero,
+    atFifteen,
+    atTwenty,
+    ordinaryTax,
+    tax: Math.min(withPref, regular),
+  };
 }

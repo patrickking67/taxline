@@ -6,7 +6,6 @@ import type { AppDoc } from '../../lib/api/types';
 import { docs } from '../../lib/data/app';
 import { u } from '../../lib/url';
 
-
 const byClient = new Map<string, AppDoc[]>();
 for (const d of docs) {
   const arr = byClient.get(d.client) ?? [];
@@ -20,7 +19,13 @@ const clients = [...byClient.entries()].map(([client, list]) => {
   return { client, list, mean, forms };
 });
 const confColor = (c: number | null): string =>
-  c == null ? 'text-fg-faint' : c >= 0.85 ? 'text-ok-bright' : c >= 0.6 ? 'text-warn-bright' : 'text-danger-bright';
+  c == null
+    ? 'text-fg-faint'
+    : c >= 0.85
+      ? 'text-ok-bright'
+      : c >= 0.6
+        ? 'text-warn-bright'
+        : 'text-danger-bright';
 ---
 
 <AppShell title="Clients" active="app/clients">
@@ -43,7 +48,9 @@ const confColor = (c: number | null): string =>
                 <h2 class="text-[15px] font-semibold text-fg">{c.client}</h2>
                 <div class="mt-1 flex flex-wrap gap-1.5">
                   {c.forms.map((f) => (
-                    <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[10px] text-fg-muted">{f}</span>
+                    <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[10px] text-fg-muted">
+                      {f}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -51,16 +58,21 @@ const confColor = (c: number | null): string =>
                 <div class={`font-mono text-lg font-semibold tabular-nums ${confColor(c.mean)}`}>
                   {c.mean == null ? '—' : c.mean.toFixed(2)}
                 </div>
-                <div class="font-mono text-[10px] uppercase tracking-wider text-fg-faint">mean conf</div>
+                <div class="font-mono text-[10px] uppercase tracking-wider text-fg-faint">
+                  mean conf
+                </div>
               </div>
             </div>
             <div class="mt-4 divide-y divide-border-faint border-t border-border-faint">
               {c.list.map((d) => (
                 <a
                   href={u('app/' + d.id)}
-                  class="-mx-2 flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-raised">
+                  class="-mx-2 flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-raised"
+                >
                   <Icon name="lucide:file-text" class="size-4 shrink-0 text-fg-faint" />
-                  <span class="min-w-0 flex-1 truncate font-mono text-[12px] text-fg">{d.name}</span>
+                  <span class="min-w-0 flex-1 truncate font-mono text-[12px] text-fg">
+                    {d.name}
+                  </span>
                   <StatusPill status={d.status} />
                 </a>
               ))}

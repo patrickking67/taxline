@@ -33,11 +33,19 @@ export interface DeadlineOutput {
 // Extensions (4868/7004) and estimates (1040-ES Q1) keyed to the primary return.
 const RULES: Record<string, { monthsAfter: number; day: number; rule: string }> = {
   '1040': { monthsAfter: 4, day: 15, rule: '15th day of the 4th month after year-end' },
-  '1040-ES': { monthsAfter: 4, day: 15, rule: 'Q1 estimate: 15th day of the 4th month after year-end' },
+  '1040-ES': {
+    monthsAfter: 4,
+    day: 15,
+    rule: 'Q1 estimate: 15th day of the 4th month after year-end',
+  },
   '4868': { monthsAfter: 4, day: 15, rule: 'Individual extension request: same date as the 1040' },
   '1120': { monthsAfter: 4, day: 15, rule: 'C-corp: 15th day of the 4th month after year-end' },
   '1120-S': { monthsAfter: 3, day: 15, rule: 'S-corp: 15th day of the 3rd month after year-end' },
-  '1065': { monthsAfter: 3, day: 15, rule: 'Partnership: 15th day of the 3rd month after year-end' },
+  '1065': {
+    monthsAfter: 3,
+    day: 15,
+    rule: 'Partnership: 15th day of the 3rd month after year-end',
+  },
   '7004': { monthsAfter: 3, day: 15, rule: 'Business extension: keyed to the underlying return' },
   '990': { monthsAfter: 5, day: 15, rule: 'Exempt org: 15th day of the 5th month after year-end' },
 };
@@ -67,7 +75,12 @@ function isoToParts(iso: string): { y: number; m: number; d: number } | null {
   const parts = { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) };
   // Reject dates that Date.UTC would silently roll over (2024-02-30, 2024-13-01).
   const check = new Date(Date.UTC(parts.y, parts.m - 1, parts.d));
-  if (check.getUTCFullYear() !== parts.y || check.getUTCMonth() !== parts.m - 1 || check.getUTCDate() !== parts.d) return null;
+  if (
+    check.getUTCFullYear() !== parts.y ||
+    check.getUTCMonth() !== parts.m - 1 ||
+    check.getUTCDate() !== parts.d
+  )
+    return null;
   return parts;
 }
 
@@ -93,7 +106,9 @@ function isHoliday(d: Date): boolean {
   const iso = toIso(d);
   const y = d.getUTCFullYear();
   // New Year's Day on a Saturday is observed on December 31 of the year before.
-  return [y, y + 1].some((year) => SEED_HOLIDAYS.some((h) => observedDate(year, h.month, h.day) === iso));
+  return [y, y + 1].some((year) =>
+    SEED_HOLIDAYS.some((h) => observedDate(year, h.month, h.day) === iso),
+  );
 }
 
 /**

@@ -21,7 +21,18 @@ body:
     attributes:
       label: Area
       multiple: true
-      options: [site, calculators, product app, service (agent fleet), tax engine, contact Worker, CMS, knowledge base, tooling]
+      options:
+        [
+          site,
+          calculators,
+          product app,
+          service (agent fleet),
+          tax engine,
+          contact Worker,
+          CMS,
+          knowledge base,
+          tooling,
+        ]
   - type: textarea
     id: notes
     attributes:

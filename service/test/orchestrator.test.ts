@@ -6,7 +6,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import Anthropic from '@anthropic-ai/sdk';
 import type { MessagesClient } from '../src/agent.js';
-import { aggregateToolOutputs, orchestrate, pickEntryAgent, requireHumanApproval, runIssues } from '../src/orchestrator.js';
+import {
+  aggregateToolOutputs,
+  clampMaxHops,
+  DEFAULT_MAX_HOPS,
+  MAX_HOPS_LIMIT,
+  orchestrate,
+  pickEntryAgent,
+  requireHumanApproval,
+  runIssues,
+} from '../src/orchestrator.js';
 import { fail, ok, type ExtractedField, type OrchestratorResult } from '../src/types.js';
 import { citationFile } from '../src/kb/retrieve.js';
 
@@ -27,7 +36,10 @@ const draft = (over: Partial<OrchestratorResult> = {}): OrchestratorResult => ({
 });
 
 test('the gate withholds output until a person approves', () => {
-  const blocked = requireHumanApproval(draft({ needsHumanReview: [{ reason: 'confidence 0.74 < 0.85', label: 'State w/h' }] }), false);
+  const blocked = requireHumanApproval(
+    draft({ needsHumanReview: [{ reason: 'confidence 0.74 < 0.85', label: 'State w/h' }] }),
+    false,
+  );
   assert.equal(blocked.approved, false);
   assert.match(blocked.output, /^HUMAN APPROVAL REQUIRED/);
   assert.match(blocked.output, /Draft workpaper\.$/);
@@ -44,10 +56,19 @@ test('every extracted field is kept and low-confidence ones are flagged without 
   const agg = aggregateToolOutputs([
     {
       name: 'extract_fields',
-      result: ok({ fields: [field('Wages', '$100.00', 0.97), field('State w/h', '$6.00', 0.74), field('Local code', null, 0.41)] }),
+      result: ok({
+        fields: [
+          field('Wages', '$100.00', 0.97),
+          field('State w/h', '$6.00', 0.74),
+          field('Local code', null, 0.41),
+        ],
+      }),
     },
   ]);
-  assert.deepEqual(agg.fields.map((f) => f.label), ['Wages', 'State w/h', 'Local code']);
+  assert.deepEqual(
+    agg.fields.map((f) => f.label),
+    ['Wages', 'State w/h', 'Local code'],
+  );
   assert.deepEqual(
     agg.review.map((r) => [r.label, r.reason]),
     [
@@ -69,7 +90,12 @@ test('the model cannot raise a score or launder a value through assess_confidenc
           // Same field, score restated by the model.
           { label: 'State w/h', value: '$6.00', confidence: 0.99, citations: [] },
           // A value no tool extracted, with a made-up citation.
-          { label: 'Wages', value: '$999,999.00', confidence: 0.99, citations: [{ file: 'irs.gov/made-up' }] },
+          {
+            label: 'Wages',
+            value: '$999,999.00',
+            confidence: 0.99,
+            citations: [{ file: 'irs.gov/made-up' }],
+          },
         ],
         needsReview: [],
       }),
@@ -89,20 +115,40 @@ test('the model cannot raise a score or launder a value through assess_confidenc
 });
 
 test('tool errors are collected for the hub and shown to the reviewer', () => {
-  const agg = aggregateToolOutputs([{ name: 'extract_fields', result: fail('business', 'No document with id "x".') }]);
+  const agg = aggregateToolOutputs([
+    { name: 'extract_fields', result: fail('business', 'No document with id "x".') },
+  ]);
   assert.equal(agg.errors.length, 1);
   assert.equal(agg.errors[0]?.errorCategory, 'business');
   assert.equal(agg.errors[0]?.isRetryable, false);
-  assert.deepEqual(agg.review, [{ reason: 'tool "extract_fields" failed (business): No document with id "x".' }]);
+  assert.deepEqual(agg.review, [
+    { reason: 'tool "extract_fields" failed (business): No document with id "x".' },
+  ]);
 });
 
 test('an unfinished run always becomes a review item', () => {
   assert.deepEqual(runIssues('research', { hitBackstop: false, stopReason: 'end_turn' }), []);
-  assert.match(runIssues('research', { hitBackstop: true, stopReason: 'tool_use' })[0]!.reason, /backstop/);
-  assert.match(runIssues('research', { hitBackstop: false, stopReason: 'max_tokens' })[0]!.reason, /cut off/);
-  assert.match(runIssues('research', { hitBackstop: false, stopReason: 'refusal' })[0]!.reason, /declined/);
-  const failed = runIssues('research', { hitBackstop: false, stopReason: null, error: fail('transient', 'The model is temporarily unavailable.') });
-  assert.equal(failed[0]?.reason, 'agent "research" failed: The model is temporarily unavailable. (transient, retryable)');
+  assert.match(
+    runIssues('research', { hitBackstop: true, stopReason: 'tool_use' })[0]!.reason,
+    /backstop/,
+  );
+  assert.match(
+    runIssues('research', { hitBackstop: false, stopReason: 'max_tokens' })[0]!.reason,
+    /cut off/,
+  );
+  assert.match(
+    runIssues('research', { hitBackstop: false, stopReason: 'refusal' })[0]!.reason,
+    /declined/,
+  );
+  const failed = runIssues('research', {
+    hitBackstop: false,
+    stopReason: null,
+    error: fail('transient', 'The model is temporarily unavailable.'),
+  });
+  assert.equal(
+    failed[0]?.reason,
+    'agent "research" failed: The model is temporarily unavailable. (transient, retryable)',
+  );
 });
 
 test('the entry agent is chosen from the task text', () => {
@@ -114,8 +160,15 @@ test('the entry agent is chosen from the task text', () => {
 });
 
 test('offline, the full chain runs and holds low-confidence fields for review', async () => {
-  const r = await orchestrate({ task: 'Extract the W-2', agent: 'extraction', docId: 'acme_w2_2024' });
-  assert.deepEqual(r.trace.map((s) => s.agent), ['extraction', 'workpaper', 'compliance']);
+  const r = await orchestrate({
+    task: 'Extract the W-2',
+    agent: 'extraction',
+    docId: 'acme_w2_2024',
+  });
+  assert.deepEqual(
+    r.trace.map((s) => s.agent),
+    ['extraction', 'workpaper', 'compliance'],
+  );
   assert.equal(r.approved, false);
   assert.match(r.output, /^HUMAN APPROVAL REQUIRED/);
   assert.equal(r.fields?.length, 6);
@@ -129,7 +182,13 @@ test('offline, an unknown document invents no fields and the failure is surfaced
   // A business error does not stop the chain, but it must reach the reviewer.
   assert.equal(r.fields, undefined);
   assert.equal(r.approved, false);
-  assert.ok(r.needsHumanReview.some((x) => x.reason === 'tool "extract_fields" failed (business): No document with id "no_such_doc" in the queue.'));
+  assert.ok(
+    r.needsHumanReview.some(
+      (x) =>
+        x.reason ===
+        'tool "extract_fields" failed (business): No document with id "no_such_doc" in the queue.',
+    ),
+  );
 });
 
 test('a failed model call is reported, not thrown, and stops the chain', async () => {
@@ -140,18 +199,93 @@ test('a failed model call is reported, not thrown, and stops the chain', async (
       },
     },
   };
-  const r = await orchestrate({ task: 'Extract the W-2', agent: 'extraction', docId: 'acme_w2_2024' }, { client });
+  const r = await orchestrate(
+    { task: 'Extract the W-2', agent: 'extraction', docId: 'acme_w2_2024' },
+    { client },
+  );
   assert.equal(r.trace.length, 1);
   assert.equal(r.approved, false);
   assert.ok(
-    r.needsHumanReview.some((x) => x.reason === 'agent "extraction" failed: The model is temporarily unavailable. (transient, retryable)'),
+    r.needsHumanReview.some(
+      (x) =>
+        x.reason ===
+        'agent "extraction" failed: The model is temporarily unavailable. (transient, retryable)',
+    ),
     JSON.stringify(r.needsHumanReview),
   );
 });
 
+test('a chain cut short by the hop limit is flagged for the reviewer', async () => {
+  const r = await orchestrate({
+    task: 'Extract the W-2',
+    agent: 'extraction',
+    docId: 'acme_w2_2024',
+    maxHops: 1,
+  });
+  assert.deepEqual(
+    r.trace.map((s) => s.agent),
+    ['extraction'],
+  );
+  assert.equal(r.approved, false);
+  assert.ok(
+    r.needsHumanReview.some(
+      (x) => x.reason === 'chain stopped at the 1-hop limit before agent "workpaper" ran',
+    ),
+    JSON.stringify(r.needsHumanReview),
+  );
+});
+
+test('a zero or negative hop limit still runs the entry agent and flags the stop', async () => {
+  for (const maxHops of [0, -3]) {
+    const r = await orchestrate({
+      task: 'Extract the W-2',
+      agent: 'extraction',
+      docId: 'acme_w2_2024',
+      maxHops,
+    });
+    assert.deepEqual(
+      r.trace.map((s) => s.agent),
+      ['extraction'],
+    );
+    assert.ok(
+      r.needsHumanReview.some((x) => /hop limit before agent "workpaper" ran/.test(x.reason)),
+    );
+  }
+});
+
+test('a chain that finishes inside the hop limit adds no hop item', async () => {
+  const r = await orchestrate({
+    task: 'Extract the W-2',
+    agent: 'extraction',
+    docId: 'acme_w2_2024',
+    maxHops: 3,
+  });
+  assert.deepEqual(
+    r.trace.map((s) => s.agent),
+    ['extraction', 'workpaper', 'compliance'],
+  );
+  assert.ok(!r.needsHumanReview.some((x) => /hop limit/.test(x.reason)));
+});
+
+test('client hop limits are clamped to a safe range', () => {
+  assert.equal(clampMaxHops(undefined), DEFAULT_MAX_HOPS);
+  assert.equal(clampMaxHops(Number.NaN), DEFAULT_MAX_HOPS);
+  assert.equal(clampMaxHops(Number.POSITIVE_INFINITY), DEFAULT_MAX_HOPS);
+  assert.equal(clampMaxHops(0), 1);
+  assert.equal(clampMaxHops(-3), 1);
+  assert.equal(clampMaxHops(2.7), 2);
+  assert.equal(clampMaxHops(1_000_000), MAX_HOPS_LIMIT);
+});
+
 test('remembered records are never cited as knowledge-base files', () => {
-  assert.equal(citationFile({ kind: 'kb', file: 'tax/filing-deadlines.md' }), 'tax/filing-deadlines.md');
-  assert.equal(citationFile({ kind: 'finding', file: 'tax/filing-deadlines.md' }), 'memory:finding:tax/filing-deadlines.md');
+  assert.equal(
+    citationFile({ kind: 'kb', file: 'tax/filing-deadlines.md' }),
+    'tax/filing-deadlines.md',
+  );
+  assert.equal(
+    citationFile({ kind: 'finding', file: 'tax/filing-deadlines.md' }),
+    'memory:finding:tax/filing-deadlines.md',
+  );
   assert.equal(citationFile({ kind: 'finding' }), 'memory:finding');
   assert.equal(citationFile({}), 'memory:finding');
 });

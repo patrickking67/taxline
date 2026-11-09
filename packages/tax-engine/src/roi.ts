@@ -84,8 +84,12 @@ export function firmRoi(i: RoiInput): RoiResult {
   const subscription = Math.max(0, i.seats) * Math.max(0, i.pricePerSeatMonth) * 12;
   const netAnnual = laborValue - subscription;
   // Bounded here, not only in the UI: flows are allocated per month.
-  const years = Number.isFinite(i.years) ? Math.min(MAX_YEARS, Math.max(1, Math.round(i.years))) : 1;
-  const ramp = Number.isFinite(i.rampMonths ?? 0) ? Math.min(years * 12, Math.max(0, Math.round(i.rampMonths ?? 0))) : 0;
+  const years = Number.isFinite(i.years)
+    ? Math.min(MAX_YEARS, Math.max(1, Math.round(i.years)))
+    : 1;
+  const ramp = Number.isFinite(i.rampMonths ?? 0)
+    ? Math.min(years * 12, Math.max(0, Math.round(i.rampMonths ?? 0)))
+    : 0;
 
   // Monthly flows with an adoption ramp; subscription is paid from month 1.
   const monthly: number[] = [-Math.max(0, i.onboardingCost)];
@@ -99,7 +103,8 @@ export function firmRoi(i: RoiInput): RoiResult {
 
   // Annual flows for NPV/IRR (sum of each year's months).
   const annual: number[] = [monthly[0]!];
-  for (let yr = 0; yr < years; yr++) annual.push(monthly.slice(1 + yr * 12, 13 + yr * 12).reduce((a, b) => a + b, 0));
+  for (let yr = 0; yr < years; yr++)
+    annual.push(monthly.slice(1 + yr * 12, 13 + yr * 12).reduce((a, b) => a + b, 0));
 
   const paybackIdx = cumulative.findIndex((c, m) => m > 0 && c >= 0);
   let paybackMonths: number | null = null;

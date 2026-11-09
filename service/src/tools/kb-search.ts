@@ -42,7 +42,12 @@ export const kbSearch: Tool<KbSearchInput, KbSearchOutput> = {
       const hits = await retrieve(input.query, k);
       const results = hits.map((h) => ({
         text: h.text,
-        source: { file: h.source.file, heading: h.source.heading, score: h.score, snippet: h.text.slice(0, 280) },
+        source: {
+          file: h.source.file,
+          heading: h.source.heading,
+          score: h.score,
+          snippet: h.text.slice(0, 280),
+        },
       }));
       // Valid empty result is a success with empty:true, NOT an error.
       return ok({ results, empty: results.length === 0 });

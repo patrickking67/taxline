@@ -28,8 +28,17 @@ export function amount(v: unknown): number {
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
-const usd0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-const usd2 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const usd0 = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+});
+const usd2 = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 const num0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 
 export const fmtUsd = (n: number, cents = false) => (cents ? usd2 : usd0).format(n);

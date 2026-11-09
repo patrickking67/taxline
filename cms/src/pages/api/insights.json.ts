@@ -36,7 +36,10 @@ export const GET: APIRoute = async () => {
     }),
   );
 
-  return new Response(JSON.stringify({ source: 'emdash', generatedAt: new Date().toISOString(), entries: out }), {
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
-  });
+  return new Response(
+    JSON.stringify({ source: 'emdash', generatedAt: new Date().toISOString(), entries: out }),
+    {
+      headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+    },
+  );
 };

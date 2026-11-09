@@ -11,9 +11,7 @@
   "files.associations": {
     "*.css": "tailwindcss"
   },
-  "tailwindCSS.experimental.classRegex": [
-    ["class:list=\\{([^}]*)\\}", "[\"'`]([^\"'`]*)[\"'`]"]
-  ],
+  "tailwindCSS.experimental.classRegex": [["class:list=\\{([^}]*)\\}", "[\"'`]([^\"'`]*)[\"'`]"]],
   "files.exclude": {
     "**/node_modules": true,
     "**/dist": true,

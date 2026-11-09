@@ -1,4 +1,12 @@
-import type { AppDoc, FleetService, FleetHealth, RunInput, RunResult, MemoryHit, ScenarioExtraction } from './types';
+import type {
+  AppDoc,
+  FleetService,
+  FleetHealth,
+  RunInput,
+  RunResult,
+  MemoryHit,
+  ScenarioExtraction,
+} from './types';
 
 // Live fleet adapter — talks to the deployed Node service (service/) over its
 // JSON endpoints. Selected at build time when PUBLIC_API_ADAPTER is non-mock and
@@ -120,9 +128,16 @@ export function serviceFleet(endpoint: string): FleetService {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ text }),
       });
-      const body = (await res.json().catch(() => ({}))) as Partial<ScenarioExtraction> & { ok?: boolean; error?: string };
+      const body = (await res.json().catch(() => ({}))) as Partial<ScenarioExtraction> & {
+        ok?: boolean;
+        error?: string;
+      };
       if (!res.ok || body.ok === false) throw new Error(body.error || `scenario → ${res.status}`);
-      return { extractor: body.extractor ?? 'service', fields: body.fields ?? [], unplaced: body.unplaced ?? [] };
+      return {
+        extractor: body.extractor ?? 'service',
+        fields: body.fields ?? [],
+        unplaced: body.unplaced ?? [],
+      };
     },
   };
 }

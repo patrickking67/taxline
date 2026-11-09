@@ -70,6 +70,9 @@ The API key is read from `.env` via `dotenv` at startup — it is **never** hard
 | GET    | `/memory/search` | `?q=&k=` → cosine top-k over the vector memory.                |
 
 `POST /agents/run` returns `{ output, citations[], fields?, needsHumanReview[], trace[], approved }`.
+`maxHops` is clamped to 1 through 5 (default 5). If it stops the chain before the
+last agent, `needsHumanReview` gets an item naming the agent that did not run, so
+an early stop is never silent and the result is never written to memory.
 Until `approved: true` is passed, `output` is the **withheld draft** and `needsHumanReview`
 includes "human approval required before shipping".
 

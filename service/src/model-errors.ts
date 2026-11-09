@@ -16,7 +16,10 @@ export function classifyModelError(err: unknown): StructuredError {
   ) {
     return fail('transient', 'The model is temporarily unavailable.', err.message);
   }
-  if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
+  if (
+    err instanceof Anthropic.AuthenticationError ||
+    err instanceof Anthropic.PermissionDeniedError
+  ) {
     return fail('permission', 'The service API key was rejected.', err.message);
   }
   if (err instanceof Anthropic.BadRequestError) {
@@ -26,5 +29,9 @@ export function classifyModelError(err: unknown): StructuredError {
     return fail('business', `Model request failed (${err.status ?? 'no status'}).`, err.message);
   }
   // Not an API error: most likely a bug on our side, so retrying will not help.
-  return fail('business', 'The model call failed unexpectedly.', err instanceof Error ? err.message : String(err));
+  return fail(
+    'business',
+    'The model call failed unexpectedly.',
+    err instanceof Error ? err.message : String(err),
+  );
 }

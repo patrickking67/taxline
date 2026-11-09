@@ -7,12 +7,24 @@ import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../dist/', import.meta.url));
-const base = `/${(process.env.BASE_PATH ?? '/taxline').replace(/^\/+|\/+$/g, '')}`.replace(/^\/$/, '');
+const base = `/${(process.env.BASE_PATH ?? '/taxline').replace(/^\/+|\/+$/g, '')}`.replace(
+  /^\/$/,
+  '',
+);
 const port = Number(process.env.PORT ?? 4173);
 const types = {
-  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
-  '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8',
-  '.woff': 'font/woff', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json',
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon',
+  '.xml': 'application/xml',
+  '.txt': 'text/plain; charset=utf-8',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.webmanifest': 'application/manifest+json',
 };
 
 async function resolve(path) {
@@ -20,7 +32,10 @@ async function resolve(path) {
   if (!file.startsWith(root)) return null;
   const s = await stat(file).catch(() => null);
   if (s?.isFile()) return file;
-  if (s?.isDirectory()) return (await stat(join(file, 'index.html')).catch(() => null)) ? join(file, 'index.html') : null;
+  if (s?.isDirectory())
+    return (await stat(join(file, 'index.html')).catch(() => null))
+      ? join(file, 'index.html')
+      : null;
   return null;
 }
 

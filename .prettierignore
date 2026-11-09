@@ -9,3 +9,15 @@ service/.data
 site/public
 # Prose is hand-formatted (hard line breaks, tables) — leave markdown alone.
 *.md
+# Generated files: their tools rewrite them, so formatting would only churn.
+cms/.emdash
+cms/emdash-env.d.ts
+cms/uploads
+cms/data.db*
+knowledge-base/manifest.json
+site/src/content/insights.json
+site/test-results
+site/playwright-report
+# prettier-plugin-astro cannot parse HTML comments inside JSX expressions here.
+site/src/pages/agents.astro
+site/src/pages/app/[[]id].astro

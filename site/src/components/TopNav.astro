@@ -4,7 +4,6 @@ import Button from './Button.astro';
 import MegaMenu from './MegaMenu.astro';
 import { Icon } from 'astro-icon/components';
 import { u } from '../lib/url';
-
 ---
 
 <header class="sticky top-0 z-50 border-b border-border bg-base">
@@ -23,12 +22,32 @@ import { u } from '../lib/url';
       <a href={u('')} class="flex items-center" aria-label="Taxline home"><Logo /></a>
     </div>
     <nav class="flex items-center gap-2 sm:gap-3" aria-label="Primary">
-      <a href={u('product')} class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg md:inline">Product</a>
-      <a href={u('tools')} class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg md:inline">Free tools</a>
-      <a href={u('insights')} class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg lg:inline">Insights</a>
-      <a href={u('pricing')} class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg md:inline">Pricing</a>
+      <a
+        href={u('product')}
+        class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg md:inline"
+        >Product</a
+      >
+      <a
+        href={u('tools')}
+        class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg md:inline"
+        >Free tools</a
+      >
+      <a
+        href={u('insights')}
+        class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg lg:inline"
+        >Insights</a
+      >
+      <a
+        href={u('pricing')}
+        class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg md:inline"
+        >Pricing</a
+      >
       <span class="hidden h-4 w-px bg-border md:inline-block" aria-hidden="true"></span>
-      <a href={u('app')} class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg sm:inline">Sign in</a>
+      <a
+        href={u('app')}
+        class="hidden rounded-md px-2 py-1 text-sm text-fg-muted transition-colors hover:text-fg sm:inline"
+        >Sign in</a
+      >
       <Button href={u('contact')} size="sm">Book a demo</Button>
     </nav>
   </div>
