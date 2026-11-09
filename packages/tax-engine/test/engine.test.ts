@@ -30,9 +30,18 @@ const near = (actual: number, expected: number, tol = 0.011) =>
   assert.ok(Math.abs(actual - expected) <= tol, `expected ${expected}, got ${actual}`);
 
 test('bracket base amounts match the Rev. Proc. 2025-32 tables', () => {
-  assert.deepEqual(baseAmounts(TY2026.brackets.single), [0, 1_240, 5_800, 17_966, 41_024, 58_448, 192_979.25]);
-  assert.deepEqual(baseAmounts(TY2026.brackets.mfj), [0, 2_480, 11_600, 35_932, 82_048, 116_896, 206_583.5]);
-  assert.deepEqual(baseAmounts(TY2026.brackets.hoh), [0, 1_770, 7_740, 16_155, 39_207, 56_631, 191_171]);
+  assert.deepEqual(
+    baseAmounts(TY2026.brackets.single),
+    [0, 1_240, 5_800, 17_966, 41_024, 58_448, 192_979.25],
+  );
+  assert.deepEqual(
+    baseAmounts(TY2026.brackets.mfj),
+    [0, 2_480, 11_600, 35_932, 82_048, 116_896, 206_583.5],
+  );
+  assert.deepEqual(
+    baseAmounts(TY2026.brackets.hoh),
+    [0, 1_770, 7_740, 16_155, 39_207, 56_631, 191_171],
+  );
   assert.equal(baseAmounts(TY2026.brackets.mfs).at(-1), 103_291.75);
 });
 
@@ -53,7 +62,10 @@ test('Tax Table uses the row midpoint below $100,000', () => {
   assert.equal(taxTableTax(50_020, TY2026.brackets.single), 5_755);
   assert.equal(taxTableTax(3, TY2026.brackets.single), 0);
   assert.equal(taxTableTax(30, TY2026.brackets.single), 4);
-  assert.equal(taxTableTax(150_000, TY2026.brackets.single), scheduleTax(150_000, TY2026.brackets.single));
+  assert.equal(
+    taxTableTax(150_000, TY2026.brackets.single),
+    scheduleTax(150_000, TY2026.brackets.single),
+  );
 });
 
 test('self-employment tax', () => {
@@ -129,13 +141,23 @@ test('QBI: below threshold, limited to 20% of taxable income', () => {
 
 test('QBI: phase-in and SSTB phase-out', () => {
   // Halfway through the single range (201,750 + 37,500).
-  const mid = qbiDeduction({ status: 'single', qbi: 200_000, taxableBeforeQbi: 239_250, w2Wages: 20_000 });
+  const mid = qbiDeduction({
+    status: 'single',
+    qbi: 200_000,
+    taxableBeforeQbi: 239_250,
+    w2Wages: 20_000,
+  });
   assert.equal(mid.phaseIn, 0.5);
   // tentative 40,000; wage limit 10,000; 40,000 − 0.5 × 30,000 = 25,000
   assert.equal(mid.deduction, 25_000);
   // Fully phased out above the range: the SSTB's qualifying income is zero, so
   // the OBBBA $400 minimum (which tests income after the exclusion) does not apply.
-  const sstb = qbiDeduction({ status: 'single', qbi: 200_000, taxableBeforeQbi: 300_000, sstb: true });
+  const sstb = qbiDeduction({
+    status: 'single',
+    qbi: 200_000,
+    taxableBeforeQbi: 300_000,
+    sstb: true,
+  });
   assert.equal(sstb.deduction, 0);
   assert.equal(sstb.minimumApplied, false);
   // A small non-SSTB business below the threshold still gets the minimum.
@@ -144,38 +166,79 @@ test('QBI: phase-in and SSTB phase-out', () => {
 });
 
 test('estimated tax safe harbor', () => {
-  const a = estimatedTax({ status: 'single', currentYearTax: 20_000, withholding: 5_000, priorYearTax: 15_000, priorYearAgi: 100_000 });
+  const a = estimatedTax({
+    status: 'single',
+    currentYearTax: 20_000,
+    withholding: 5_000,
+    priorYearTax: 15_000,
+    priorYearAgi: 100_000,
+  });
   assert.equal(a.safeHarbor, 15_000);
   assert.equal(a.basis, 'prior-year');
   assert.equal(a.dueFromEstimates, 10_000);
-  assert.deepEqual(a.installments.map((x) => x.amount), [2_500, 2_500, 2_500, 2_500]);
+  assert.deepEqual(
+    a.installments.map((x) => x.amount),
+    [2_500, 2_500, 2_500, 2_500],
+  );
   assert.equal(a.installments[3]?.due, '2027-01-15');
 
-  const b = estimatedTax({ status: 'single', currentYearTax: 20_000, withholding: 5_000, priorYearTax: 15_000, priorYearAgi: 200_000 });
+  const b = estimatedTax({
+    status: 'single',
+    currentYearTax: 20_000,
+    withholding: 5_000,
+    priorYearTax: 15_000,
+    priorYearAgi: 200_000,
+  });
   assert.equal(b.priorYearTarget, 16_500);
   assert.equal(b.dueFromEstimates, 11_500);
 
-  const c = estimatedTax({ status: 'single', currentYearTax: 5_500, withholding: 4_800, priorYearTax: 9_000 });
+  const c = estimatedTax({
+    status: 'single',
+    currentYearTax: 5_500,
+    withholding: 4_800,
+    priorYearTax: 9_000,
+  });
   assert.equal(c.required, false);
 
   // Prior-year AGI unknown: the conservative 110% test applies.
-  const u = estimatedTax({ status: 'single', currentYearTax: 32_000, withholding: 6_000, priorYearTax: 26_000 });
+  const u = estimatedTax({
+    status: 'single',
+    currentYearTax: 32_000,
+    withholding: 6_000,
+    priorYearTax: 26_000,
+  });
   assert.equal(u.priorYearTarget, 28_600);
   assert.equal(u.safeHarbor, 28_600);
 
-  const d = estimatedTax({ status: 'single', currentYearTax: 10_001, withholding: 0, priorYearFull: false });
+  const d = estimatedTax({
+    status: 'single',
+    currentYearTax: 10_001,
+    withholding: 0,
+    priorYearFull: false,
+  });
   const sum = d.installments.reduce((s, x) => s + x.amount, 0);
   near(sum, 9_000.9, 1e-6);
 });
 
 test('MACRS Table A-1 matches first-principles derivation', () => {
-  for (const [life, factor] of [[3, 2], [5, 2], [7, 2], [10, 2], [15, 1.5], [20, 1.5]] as const) {
+  for (const [life, factor] of [
+    [3, 2],
+    [5, 2],
+    [7, 2],
+    [10, 2],
+    [15, 1.5],
+    [20, 1.5],
+  ] as const) {
     const derived = deriveHalfYearRates(life, factor);
     const table = TABLE_A1[String(life) as keyof typeof TABLE_A1];
     assert.equal(derived.length, table.length, `${life}-year length`);
     // The published table is rounded and nudged so each column sums to 100.
     derived.forEach((d, k) => near(d, table[k]!, life === 20 ? 0.0011 : 0.011));
-    near(table.reduce((a, b) => a + b, 0), 100, 0.002);
+    near(
+      table.reduce((a, b) => a + b, 0),
+      100,
+      0.002,
+    );
   }
 });
 
@@ -186,24 +249,44 @@ test('real property mid-month rates', () => {
   // because it steps from December in rounded 0.214 increments; both are accepted.
   near(realPropertyRates(39, 1)[0]!, 2.457, 0.001);
   near(realPropertyRates(39, 12)[0]!, 0.107, 0.001);
-  near(realPropertyRates(27.5, 6).reduce((a, b) => a + b, 0), 100, 1e-9);
+  near(
+    realPropertyRates(27.5, 6).reduce((a, b) => a + b, 0),
+    100,
+    1e-9,
+  );
 });
 
 test('depreciation schedule: MACRS, bonus, and §179 phase-out', () => {
   const plain = depreciate({ cost: 10_000, recoveryClass: '5', bonusPct: 0 });
   assert.equal(plain.firstYear, 2_000);
-  near(plain.rows.reduce((s, r) => s + r.total, 0), 10_000, 1e-9);
+  near(
+    plain.rows.reduce((s, r) => s + r.total, 0),
+    10_000,
+    1e-9,
+  );
   assert.equal(plain.rows.length, 6);
 
   assert.equal(depreciate({ cost: 10_000, recoveryClass: '5' }).firstYear, 10_000);
 
-  const phased = depreciate({ cost: 100_000, recoveryClass: '7', section179: 100_000, total179Property: 4_200_000, bonusPct: 0 });
+  const phased = depreciate({
+    cost: 100_000,
+    recoveryClass: '7',
+    section179: 100_000,
+    total179Property: 4_200_000,
+    bonusPct: 0,
+  });
   assert.equal(phased.section179Limit, 2_450_000);
   assert.equal(phased.section179, 100_000);
 
   // The income limit defers §179; the disallowed $30,000 carries forward and is
   // NOT returned to the MACRS basis.
-  const capped = depreciate({ cost: 50_000, recoveryClass: '7', section179: 50_000, businessIncome: 20_000, bonusPct: 0 });
+  const capped = depreciate({
+    cost: 50_000,
+    recoveryClass: '7',
+    section179: 50_000,
+    businessIncome: 20_000,
+    bonusPct: 0,
+  });
   assert.equal(capped.section179Elected, 50_000);
   assert.equal(capped.section179, 20_000);
   assert.equal(capped.carryforward, 30_000);
@@ -215,18 +298,32 @@ test('depreciation schedule: MACRS, bonus, and §179 phase-out', () => {
   assert.equal(building.bonus, 0);
 
   // 40% business use: no §179 (needs >50%), but ordinary property still gets bonus…
-  const furniture = depreciate({ cost: 40_000, recoveryClass: '7', businessUsePct: 0.4, section179: 10_000 });
+  const furniture = depreciate({
+    cost: 40_000,
+    recoveryClass: '7',
+    businessUsePct: 0.4,
+    section179: 10_000,
+  });
   assert.equal(furniture.basis, 16_000);
   assert.equal(furniture.section179, 0);
   assert.equal(furniture.bonus, 16_000);
   // …while listed property (§280F) gets neither.
   // At ≤50% business use, listed property also moves to ADS straight line:
   // 5-year, half-year → 10% of the $16,000 business basis in year one.
-  const car = depreciate({ cost: 40_000, recoveryClass: '5', businessUsePct: 0.4, listedProperty: true });
+  const car = depreciate({
+    cost: 40_000,
+    recoveryClass: '5',
+    businessUsePct: 0.4,
+    listedProperty: true,
+  });
   assert.equal(car.bonus, 0);
   near(car.firstYear, 1_600);
   assert.equal(car.rows.length, 6);
-  near(car.rows.reduce((s, r) => s + r.total, 0), 16_000, 1e-6);
+  near(
+    car.rows.reduce((s, r) => s + r.total, 0),
+    16_000,
+    1e-6,
+  );
 });
 
 test('tax shield PV favors accelerated recovery', () => {
@@ -243,8 +340,15 @@ test('NPV, IRR, and firm ROI', () => {
   assert.equal(irr([-1, 1_000_000]), Infinity);
 
   const r = firmRoi({
-    returnsPerYear: 600, hoursPerReturn: 6, reduction: 0.4, loadedHourlyCost: 85,
-    seats: 5, pricePerSeatMonth: 59, onboardingCost: 5_000, discountRate: 0.1, years: 3,
+    returnsPerYear: 600,
+    hoursPerReturn: 6,
+    reduction: 0.4,
+    loadedHourlyCost: 85,
+    seats: 5,
+    pricePerSeatMonth: 59,
+    onboardingCost: 5_000,
+    discountRate: 0.1,
+    years: 3,
   });
   assert.equal(r.hoursSaved, 1_440);
   assert.equal(r.laborValue, 122_400);
@@ -276,11 +380,23 @@ test('1040: a Schedule C loss offsets other income', () => {
 test('1040: a spouse’s wages do not use up the SE owner’s wage base', () => {
   const joint = computeReturn({ status: 'mfj', wages: 185_000, selfEmploymentProfit: 100_000 });
   near(joint.seTax, 14_129.55);
-  const own = computeReturn({ status: 'mfj', wages: 185_000, seOwnerSsWages: 185_000, selfEmploymentProfit: 100_000 });
+  const own = computeReturn({
+    status: 'mfj',
+    wages: 185_000,
+    seOwnerSsWages: 185_000,
+    selfEmploymentProfit: 100_000,
+  });
   near(own.seTax, 2_678.15);
 });
 
 test('1040: Additional Medicare uses box 5 wages; NIIT nets the capital loss', () => {
-  near(computeReturn({ status: 'single', wages: 200_000, medicareWages: 220_000 }).addlMedicare, 180);
-  near(computeReturn({ status: 'single', wages: 300_000, interest: 10_000, shortTermGain: -3_000 }).niit, 266);
+  near(
+    computeReturn({ status: 'single', wages: 200_000, medicareWages: 220_000 }).addlMedicare,
+    180,
+  );
+  near(
+    computeReturn({ status: 'single', wages: 300_000, interest: 10_000, shortTermGain: -3_000 })
+      .niit,
+    266,
+  );
 });

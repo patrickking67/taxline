@@ -9,7 +9,18 @@ body:
     id: area
     attributes:
       label: Area
-      options: [site, calculators, product app, service (agent fleet), tax engine, contact Worker, CMS, knowledge base, tooling]
+      options:
+        [
+          site,
+          calculators,
+          product app,
+          service (agent fleet),
+          tax engine,
+          contact Worker,
+          CMS,
+          knowledge base,
+          tooling,
+        ]
     validations:
       required: true
   - type: textarea

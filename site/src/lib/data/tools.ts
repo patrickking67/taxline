@@ -16,7 +16,8 @@ export const tools: ToolMeta[] = [
     name: 'Federal income tax calculator',
     short: 'Income tax',
     icon: 'lucide:landmark',
-    blurb: 'A full Form 1040 estimate: brackets, capital gains, QBI, child tax credit, SE tax, and NIIT, traced line by line.',
+    blurb:
+      'A full Form 1040 estimate: brackets, capital gains, QBI, child tax credit, SE tax, and NIIT, traced line by line.',
     computes: ['1040 L1–L37', 'marginal vs effective', 'bracket fill'],
   },
   {
@@ -24,7 +25,8 @@ export const tools: ToolMeta[] = [
     name: 'Self-employment tax calculator',
     short: 'Self-employment tax',
     icon: 'lucide:briefcase',
-    blurb: 'Schedule SE with the 92.35% adjustment, the $184,500 wage base, W-2 coordination, and Additional Medicare.',
+    blurb:
+      'Schedule SE with the 92.35% adjustment, the $184,500 wage base, W-2 coordination, and Additional Medicare.',
     computes: ['Sch SE L4–L13', 'wage-base cap', 'Form 8959'],
   },
   {
@@ -32,7 +34,8 @@ export const tools: ToolMeta[] = [
     name: 'Estimated tax calculator',
     short: 'Estimated tax',
     icon: 'lucide:calendar-clock',
-    blurb: 'The §6654 safe harbor — 90% of this year or 100%/110% of last — and the four 1040-ES installments.',
+    blurb:
+      'The §6654 safe harbor — 90% of this year or 100%/110% of last — and the four 1040-ES installments.',
     computes: ['safe harbor', '4 installments', 'due dates'],
   },
   {
@@ -40,7 +43,8 @@ export const tools: ToolMeta[] = [
     name: 'S corporation election calculator',
     short: 'S-corp election',
     icon: 'lucide:scale',
-    blurb: 'Sole proprietor vs. S corp on the same profit: SE tax vs. payroll FICA, QBI, overhead, and a salary sweep.',
+    blurb:
+      'Sole proprietor vs. S corp on the same profit: SE tax vs. payroll FICA, QBI, overhead, and a salary sweep.',
     computes: ['SE vs FICA', 'K-1 + QBI', 'salary sweep'],
   },
   {
@@ -48,7 +52,8 @@ export const tools: ToolMeta[] = [
     name: 'Depreciation calculator',
     short: 'Depreciation',
     icon: 'lucide:layers',
-    blurb: '§179, bonus, and MACRS schedules for one asset, with the present value of the tax shield.',
+    blurb:
+      '§179, bonus, and MACRS schedules for one asset, with the present value of the tax shield.',
     computes: ['Form 4562', 'Pub 946 Table A-1', 'tax-shield PV'],
   },
   {

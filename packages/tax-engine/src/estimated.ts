@@ -56,8 +56,10 @@ export function estimatedTax(i: EstimatedInput, y: TaxYear = TY2026): EstimatedR
   const priorPct = highIncome ? e.priorYearHighPct : e.priorYearPct;
   const priorYearTarget = hasPrior ? round2(Math.max(0, i.priorYearTax ?? 0) * priorPct) : null;
 
-  const safeHarbor = priorYearTarget == null ? currentYearTarget : Math.min(currentYearTarget, priorYearTarget);
-  const basis: EstimatedResult['basis'] = priorYearTarget != null && priorYearTarget < currentYearTarget ? 'prior-year' : 'current-year';
+  const safeHarbor =
+    priorYearTarget == null ? currentYearTarget : Math.min(currentYearTarget, priorYearTarget);
+  const basis: EstimatedResult['basis'] =
+    priorYearTarget != null && priorYearTarget < currentYearTarget ? 'prior-year' : 'current-year';
 
   let required = true;
   let reason = 'Withholding does not cover the safe harbor.';
@@ -85,14 +87,57 @@ export function estimatedTax(i: EstimatedInput, y: TaxYear = TY2026): EstimatedR
 
   const trace: Trace = [
     { id: 'est.tax', label: 'Expected total tax this year', value: tax, ref: '1040-ES L10' },
-    { id: 'est.cur', label: '90% of this year’s tax', value: currentYearTarget, ref: '1040-ES L12a', formula: `${fmtUsd(tax)} × 90%`, authority: cite.estimated },
+    {
+      id: 'est.cur',
+      label: '90% of this year’s tax',
+      value: currentYearTarget,
+      ref: '1040-ES L12a',
+      formula: `${fmtUsd(tax)} × 90%`,
+      authority: cite.estimated,
+    },
     ...(priorYearTarget != null
-      ? [{ id: 'est.prior', label: `${Math.round(priorPct * 100)}% of last year’s tax`, value: priorYearTarget, ref: '1040-ES L12b', formula: `${fmtUsd(i.priorYearTax ?? 0)} × ${Math.round(priorPct * 100)}%${agiUnknown ? ' (prior AGI unknown: 110% assumed)' : highIncome ? ' (AGI over threshold)' : ''}`, authority: cite.estimated }]
+      ? [
+          {
+            id: 'est.prior',
+            label: `${Math.round(priorPct * 100)}% of last year’s tax`,
+            value: priorYearTarget,
+            ref: '1040-ES L12b',
+            formula: `${fmtUsd(i.priorYearTax ?? 0)} × ${Math.round(priorPct * 100)}%${agiUnknown ? ' (prior AGI unknown: 110% assumed)' : highIncome ? ' (AGI over threshold)' : ''}`,
+            authority: cite.estimated,
+          },
+        ]
       : []),
-    { id: 'est.safe', label: 'Required annual payment (safe harbor)', value: safeHarbor, ref: '1040-ES L12c', formula: priorYearTarget == null ? 'current-year test only' : `min(${fmtUsd(currentYearTarget)}, ${fmtUsd(priorYearTarget)})`, emphasis: 'subtotal' },
+    {
+      id: 'est.safe',
+      label: 'Required annual payment (safe harbor)',
+      value: safeHarbor,
+      ref: '1040-ES L12c',
+      formula:
+        priorYearTarget == null
+          ? 'current-year test only'
+          : `min(${fmtUsd(currentYearTarget)}, ${fmtUsd(priorYearTarget)})`,
+      emphasis: 'subtotal',
+    },
     { id: 'est.wh', label: 'Expected withholding', value: wh, ref: '1040-ES L13' },
-    { id: 'est.due', label: 'Due through estimates', value: dueFromEstimates, ref: '1040-ES L14a', formula: required ? `${fmtUsd(safeHarbor)} − ${fmtUsd(wh)}` : reason, emphasis: 'total' },
+    {
+      id: 'est.due',
+      label: 'Due through estimates',
+      value: dueFromEstimates,
+      ref: '1040-ES L14a',
+      formula: required ? `${fmtUsd(safeHarbor)} − ${fmtUsd(wh)}` : reason,
+      emphasis: 'total',
+    },
   ];
 
-  return { required, reason, basis: required ? basis : 'none', currentYearTarget, priorYearTarget, safeHarbor, dueFromEstimates, installments, trace };
+  return {
+    required,
+    reason,
+    basis: required ? basis : 'none',
+    currentYearTarget,
+    priorYearTarget,
+    safeHarbor,
+    dueFromEstimates,
+    installments,
+    trace,
+  };
 }

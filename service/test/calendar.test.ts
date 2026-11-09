@@ -45,7 +45,13 @@ test('observed dates move Saturday back and Sunday forward', () => {
 });
 
 test('impossible dates and years are validation errors, not rolled-over dates', async () => {
-  for (const args of [{ yearEnd: '2025-02-30' }, { yearEnd: '2025-13-01' }, { yearEnd: '12/31/2025' }, { taxYear: 2025.5 }, { taxYear: 25 }]) {
+  for (const args of [
+    { yearEnd: '2025-02-30' },
+    { yearEnd: '2025-13-01' },
+    { yearEnd: '12/31/2025' },
+    { taxYear: 2025.5 },
+    { taxYear: 25 },
+  ]) {
     const r = await calendar.run({ form: '1040', ...args });
     assert.equal(r.ok, false, JSON.stringify(args));
     if (!r.ok) assert.equal(r.errorCategory, 'validation');

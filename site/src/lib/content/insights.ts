@@ -32,7 +32,9 @@ export interface Insight {
 }
 
 export const insightsSource: string = snapshot.source;
-export const insights: Insight[] = (snapshot.entries as Insight[]).toSorted((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+export const insights: Insight[] = (snapshot.entries as Insight[]).toSorted((a, b) =>
+  b.publishedAt.localeCompare(a.publishedAt),
+);
 
 export const categoryLabel: Record<string, string> = {
   'tax-year-2026': 'Tax year 2026',

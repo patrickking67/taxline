@@ -40,5 +40,11 @@ export function childTaxCredit(
     c.refundablePerChild * n,
     c.refundRate * Math.max(0, earnedIncome - c.earnedFloor),
   );
-  return { gross, reduction, allowed, nonrefundable: round2(nonrefundable), refundable: round2(Math.max(0, refundable)) };
+  return {
+    gross,
+    reduction,
+    allowed,
+    nonrefundable: round2(nonrefundable),
+    refundable: round2(Math.max(0, refundable)),
+  };
 }

@@ -4,15 +4,36 @@ import { Icon } from 'astro-icon/components';
 
 const deadlines = [
   { form: 'Sales/use · TX', client: 'Northgate Co', days: 2, rule: 'monthly state remittance' },
-  { form: '1040-ES · Q2', client: 'Acme Studios LLC', days: 6, rule: 'quarterly individual estimate' },
-  { form: '1120 · Meadow LP', client: 'Meadow LP', days: 21, rule: '15th day of the 4th month after year-end' },
-  { form: '1120-S · Acme Studios', client: 'Acme Studios LLC', days: 34, rule: '15th day of the 3rd month after year-end' },
-  { form: '990 · Northgate Fund', client: 'Northgate Co', days: 51, rule: '15th day of the 5th month after year-end' },
+  {
+    form: '1040-ES · Q2',
+    client: 'Acme Studios LLC',
+    days: 6,
+    rule: 'quarterly individual estimate',
+  },
+  {
+    form: '1120 · Meadow LP',
+    client: 'Meadow LP',
+    days: 21,
+    rule: '15th day of the 4th month after year-end',
+  },
+  {
+    form: '1120-S · Acme Studios',
+    client: 'Acme Studios LLC',
+    days: 34,
+    rule: '15th day of the 3rd month after year-end',
+  },
+  {
+    form: '990 · Northgate Fund',
+    client: 'Northgate Co',
+    days: 51,
+    rule: '15th day of the 5th month after year-end',
+  },
 ].sort((a, b) => a.days - b.days);
 
 const dayClass = (d: number): string =>
   d <= 3 ? 'text-danger-bright' : d <= 7 ? 'text-warn-bright' : 'text-fg-muted';
-const dotClass = (d: number): string => (d <= 3 ? 'bg-danger' : d <= 7 ? 'bg-warn' : 'bg-border-strong');
+const dotClass = (d: number): string =>
+  d <= 3 ? 'bg-danger' : d <= 7 ? 'bg-warn' : 'bg-border-strong';
 ---
 
 <AppShell title="Compliance" active="app/compliance">
@@ -35,7 +56,9 @@ const dotClass = (d: number): string => (d <= 3 ? 'bg-danger' : d <= 7 ? 'bg-war
                 <div class="truncate font-mono text-[13px] text-fg">{d.form}</div>
                 <div class="mt-0.5 truncate text-[12px] text-fg-muted">{d.client}</div>
               </div>
-              <span class={`inline-flex shrink-0 items-center gap-1.5 font-mono text-[13px] font-medium tabular-nums ${dayClass(d.days)}`}>
+              <span
+                class={`inline-flex shrink-0 items-center gap-1.5 font-mono text-[13px] font-medium tabular-nums ${dayClass(d.days)}`}
+              >
                 <span class={`size-1.5 rounded-full ${dotClass(d.days)}`} />
                 {d.days}d
               </span>
@@ -49,8 +72,9 @@ const dotClass = (d: number): string => (d <= 3 ? 'bg-danger' : d <= 7 ? 'bg-war
     </div>
 
     <p class="inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
-      <Icon name="lucide:shield-check" class="size-4 text-accent" />Computed from the rule and shifted off
-      weekends/holidays — verify each date against the current IRS source before relying on it.
+      <Icon name="lucide:shield-check" class="size-4 text-accent" />Computed from the rule and
+      shifted off weekends/holidays — verify each date against the current IRS source before relying
+      on it.
     </p>
   </div>
 </AppShell>

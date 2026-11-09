@@ -19,7 +19,8 @@ import {
 
 const near = (actual: number, expected: number, tol = 0.02) =>
   assert.ok(Math.abs(actual - expected) <= tol, `expected ${expected}, got ${actual}`);
-const val = (r: ReturnType<typeof extractScenario>, key: string) => r.fields.find((f) => f.key === key)?.value;
+const val = (r: ReturnType<typeof extractScenario>, key: string) =>
+  r.fields.find((f) => f.key === key)?.value;
 
 test('parseAmount reads the ways people write money', () => {
   assert.equal(parseAmount('$85k'), 85_000);
@@ -45,7 +46,9 @@ test('offline extractor: joint filers with W-2, freelance, and investments', () 
 });
 
 test('offline extractor: losses keep their sign, assumptions route to review', () => {
-  const r = extractScenario('Single. Sold stock for a $12,000 long-term gain and a short-term loss of $3,000.');
+  const r = extractScenario(
+    'Single. Sold stock for a $12,000 long-term gain and a short-term loss of $3,000.',
+  );
   assert.equal(val(r, 'longTermGain'), 12_000);
   assert.equal(val(r, 'shortTermGain'), -3_000);
 
@@ -53,7 +56,10 @@ test('offline extractor: losses keep their sign, assumptions route to review', (
   const status = m.fields.find((f) => f.key === 'status')!;
   assert.equal(status.value, 'mfj');
   assert.ok(status.confidence! < 0.85, 'joint filing was assumed, not stated');
-  assert.ok(m.fields.find((f) => f.key === 'wages')!.confidence! < 0.85, 'income source was not stated');
+  assert.ok(
+    m.fields.find((f) => f.key === 'wages')!.confidence! < 0.85,
+    'income source was not stated',
+  );
 });
 
 test('offline extractor returns nothing it cannot ground', () => {
@@ -88,7 +94,9 @@ test('validation drops unknown keys and keeps nulls as nulls', () => {
 });
 
 test('scenarioToInput keeps qualified dividends inside ordinary dividends', () => {
-  const input = scenarioToInput([{ key: 'qualifiedDividends', value: 4_000, confidence: 0.9, evidence: 'x' }]);
+  const input = scenarioToInput([
+    { key: 'qualifiedDividends', value: 4_000, confidence: 0.9, evidence: 'x' },
+  ]);
   assert.equal(input.ordinaryDividends, 4_000);
 });
 
@@ -112,7 +120,10 @@ test('S corp vs sole prop at $150,000 profit, $60,000 salary, $2,000 overhead', 
   near(r.scorp.ret.taxable, 110_628);
   near(r.scorp.total, 30_328.72);
   near(r.savings, 7_275.61);
-  assert.equal(r.sole.total, computeReturn({ status: 'single', selfEmploymentProfit: 150_000 }).netLiability);
+  assert.equal(
+    r.sole.total,
+    computeReturn({ status: 'single', selfEmploymentProfit: 150_000 }).netLiability,
+  );
 });
 
 test('salary is capped at what the business can pay, and the sweep is ordered', () => {
@@ -134,15 +145,25 @@ test('salary ceiling stops employer Social Security at the wage base', () => {
 
 test('ROI horizon is bounded in the engine, not only the UI', () => {
   const r = firmRoi({
-    returnsPerYear: 100, hoursPerReturn: 5, reduction: 0.3, loadedHourlyCost: 80,
-    seats: 1, pricePerSeatMonth: 59, onboardingCost: 0, discountRate: 0.1, years: 1e9, rampMonths: 1e9,
+    returnsPerYear: 100,
+    hoursPerReturn: 5,
+    reduction: 0.3,
+    loadedHourlyCost: 80,
+    seats: 1,
+    pricePerSeatMonth: 59,
+    onboardingCost: 0,
+    discountRate: 0.1,
+    years: 1e9,
+    rampMonths: 1e9,
   });
   assert.equal(r.cumulative.length, 30 * 12 + 1);
 });
 
 test('S-corp salary adds to existing Medicare and QBI wage bases', () => {
   const r = compareEntity({
-    status: 'single', profit: 150_000, salary: 60_000,
+    status: 'single',
+    profit: 150_000,
+    salary: 60_000,
     household: { wages: 200_000, medicareWages: 200_000, qbiW2Wages: 100_000 },
   });
   // (200,000 + 60,000 − 200,000) × 0.9%

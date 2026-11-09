@@ -34,14 +34,16 @@ const examples = [
     <div class="mt-3 flex flex-wrap items-center gap-2">
       <select
         id="fr-doc"
-        class="rounded-md border border-border bg-raised px-2.5 py-[7px] font-mono text-[12px] text-fg-muted focus:border-accent focus:outline-none">
+        class="rounded-md border border-border bg-raised px-2.5 py-[7px] font-mono text-[12px] text-fg-muted focus:border-accent focus:outline-none"
+      >
         <option value="">no document</option>
         {docs.map((d) => <option value={d.id}>{d.name}</option>)}
       </select>
       <button
         id="fr-run"
         type="button"
-        class="inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-[7px] text-[13px] font-medium text-on-accent transition-colors hover:bg-accent-hover active:bg-accent-press">
+        class="inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-[7px] text-[13px] font-medium text-on-accent transition-colors hover:bg-accent-hover active:bg-accent-press"
+      >
         <Icon name="lucide:play" class="size-4" />Run
       </button>
       <span class="ml-auto flex flex-wrap gap-1.5">
@@ -50,7 +52,8 @@ const examples = [
             <button
               type="button"
               class="fr-ex rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
-              data-ex={ex}>
+              data-ex={ex}
+            >
               {ex}
             </button>
           ))

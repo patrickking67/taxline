@@ -4,7 +4,6 @@ import Logo from '../components/Logo.astro';
 import { Icon } from 'astro-icon/components';
 import { u } from '../lib/url';
 
-
 const nav = [
   {
     group: 'Get started',
@@ -45,15 +44,23 @@ const nav = [
       <!-- Left: logo + docs badge -->
       <a href={u('')} class="flex shrink-0 items-center gap-2">
         <Logo size={26} />
-        <span class="rounded-sm border border-border bg-raised px-1.5 py-0.5 font-mono text-[11px] text-fg-muted">docs</span>
+        <span
+          class="rounded-sm border border-border bg-raised px-1.5 py-0.5 font-mono text-[11px] text-fg-muted"
+          >docs</span
+        >
       </a>
 
       <!-- Search (non-functional, decorative) -->
       <div class="ml-2 hidden min-w-0 flex-1 sm:flex">
-        <div class="flex w-full max-w-xs items-center gap-2 rounded-md border border-border bg-raised px-3 py-1.5">
+        <div
+          class="flex w-full max-w-xs items-center gap-2 rounded-md border border-border bg-raised px-3 py-1.5"
+        >
           <Icon name="lucide:search" class="size-3.5 shrink-0 text-fg-faint" />
           <span class="truncate text-[13px] text-fg-faint">Search docs…</span>
-          <kbd class="ml-auto rounded-sm border border-border bg-base px-1.5 py-0.5 font-mono text-[10px] text-fg-faint">⌘K</kbd>
+          <kbd
+            class="ml-auto rounded-sm border border-border bg-base px-1.5 py-0.5 font-mono text-[10px] text-fg-faint"
+            >⌘K</kbd
+          >
         </div>
       </div>
 
@@ -68,31 +75,35 @@ const nav = [
   <!-- Body -->
   <div class="flex">
     <!-- Left sidebar -->
-    <aside class="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-60 shrink-0 overflow-y-auto border-r border-border px-4 py-8 md:block">
+    <aside
+      class="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-60 shrink-0 overflow-y-auto border-r border-border px-4 py-8 md:block"
+    >
       <nav class="space-y-7">
-        {nav.map((section) => (
-          <div>
-            <p class="px-2 font-mono text-[11px] uppercase tracking-[0.14em] text-fg-faint">{section.group}</p>
-            <ul class="mt-2 space-y-0.5">
-              {section.items.map((item) => (
-                <li>
-                  <a
-                    href={item.href}
-                    aria-current={item.active ? 'page' : undefined}
-                    class:list={[
-                      'block rounded-md px-2 py-1.5 text-[13px] transition-colors',
-                      item.active
-                        ? 'bg-accent-soft text-fg'
-                        : 'text-fg-muted hover:text-fg',
-                    ]}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        {
+          nav.map((section) => (
+            <div>
+              <p class="px-2 font-mono text-[11px] uppercase tracking-[0.14em] text-fg-faint">
+                {section.group}
+              </p>
+              <ul class="mt-2 space-y-0.5">
+                {section.items.map((item) => (
+                  <li>
+                    <a
+                      href={item.href}
+                      aria-current={item.active ? 'page' : undefined}
+                      class:list={[
+                        'block rounded-md px-2 py-1.5 text-[13px] transition-colors',
+                        item.active ? 'bg-accent-soft text-fg' : 'text-fg-muted hover:text-fg',
+                      ]}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
       </nav>
     </aside>
 
@@ -106,26 +117,33 @@ const nav = [
 
         <p class="ds-lead mt-4">
           The Research agent answers tax questions with citations — retrieval over a living
-          knowledge base, never freeform guessing. It runs behind the orchestrator and hands
-          cited findings to Workpaper.
+          knowledge base, never freeform guessing. It runs behind the orchestrator and hands cited
+          findings to Workpaper.
         </p>
 
         <h2 class="ds-h2 mt-12">The pattern</h2>
         <p class="ds-body mt-4 text-fg-muted">
-          Each agent is a tool-using worker with a narrow job. The orchestrator routes a request
-          to the agent best suited to it, collects the output, and passes control on. Nothing is
+          Each agent is a tool-using worker with a narrow job. The orchestrator routes a request to
+          the agent best suited to it, collects the output, and passes control on. Nothing is
           autonomous end to end — a human approves before output ships.
         </p>
 
         <!-- Code block -->
         <div class="mt-6 overflow-hidden rounded-md border border-border">
-          <div class="flex items-center justify-between border-b border-border bg-panel px-3 py-1.5">
+          <div
+            class="flex items-center justify-between border-b border-border bg-panel px-3 py-1.5"
+          >
             <span class="font-mono text-[11px] text-fg-muted">service/agents/research.ts</span>
-            <button type="button" aria-label="Copy code" class="text-fg-faint transition-colors hover:text-fg">
+            <button
+              type="button"
+              aria-label="Copy code"
+              class="text-fg-faint transition-colors hover:text-fg"
+            >
               <Icon name="lucide:copy" class="size-3.5" />
             </button>
           </div>
-          <pre class="overflow-x-auto bg-inset p-4 font-mono text-[12px] leading-relaxed text-fg"><code>export const research = defineAgent(&#123;
+          <pre
+            class="overflow-x-auto bg-inset p-4 font-mono text-[12px] leading-relaxed text-fg"><code>export const research = defineAgent(&#123;
   name: <span class="text-ok-bright">'research'</span>,
   instructions: <span class="text-ok-bright">'Answer with citations from the knowledge base. Never guess.'</span>,
   tools: [kbSearch],            <span class="text-fg-faint">// retrieval over knowledge-base/</span>
@@ -135,7 +153,10 @@ const nav = [
 
         <!-- Next -->
         <div class="mt-10 border-t border-border pt-6">
-          <a href="#workpaper" class="inline-flex items-center gap-1.5 text-[14px] font-medium text-accent transition-colors hover:text-accent-hover">
+          <a
+            href="#workpaper"
+            class="inline-flex items-center gap-1.5 text-[14px] font-medium text-accent transition-colors hover:text-accent-hover"
+          >
             Next: Workpaper
             <Icon name="lucide:arrow-right" class="size-4" />
           </a>

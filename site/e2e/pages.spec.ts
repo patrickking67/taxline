@@ -36,16 +36,23 @@ test('every sitemap page renders cleanly and passes axe', async ({ page }) => {
     if (!(await page.title()).trim()) failures.push(`${path}: empty <title>`);
     if ((await page.locator('h1').count()) !== 1) failures.push(`${path}: expected one <h1>`);
     const canonical = await page.locator('link[rel=canonical]').getAttribute('href');
-    if (!canonical || new URL(canonical).pathname !== path) failures.push(`${path}: canonical ${canonical}`);
+    if (!canonical || new URL(canonical).pathname !== path)
+      failures.push(`${path}: canonical ${canonical}`);
     const ld = await page.locator('script[type="application/ld+json"]').first().textContent();
     try {
       JSON.parse(ld ?? '');
     } catch {
       failures.push(`${path}: invalid JSON-LD`);
     }
-    const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
-    for (const v of axe.violations.filter((x) => x.impact === 'serious' || x.impact === 'critical')) {
-      failures.push(`${path}: axe ${v.id} (${v.impact}) × ${v.nodes.length}: ${v.nodes[0]?.target.join(' ')}`);
+    const axe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+    for (const v of axe.violations.filter(
+      (x) => x.impact === 'serious' || x.impact === 'critical',
+    )) {
+      failures.push(
+        `${path}: axe ${v.id} (${v.impact}) × ${v.nodes.length}: ${v.nodes[0]?.target.join(' ')}`,
+      );
     }
     failures.push(...errors.map((e) => `${path}: ${e}`));
     page.removeAllListeners('pageerror');
@@ -75,7 +82,9 @@ test('every internal link on every page resolves', async ({ page }) => {
   const links = new Map<string, string>();
   for (const path of await sitemapPaths(page)) {
     await page.goto(path);
-    for (const href of await page.locator('a[href]').evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href))) {
+    for (const href of await page
+      .locator('a[href]')
+      .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href))) {
       const url = new URL(href);
       if (url.origin !== origin) continue;
       url.hash = '';
@@ -85,7 +94,8 @@ test('every internal link on every page resolves', async ({ page }) => {
   const broken: string[] = [];
   for (const [href, from] of links) {
     const res = await page.request.get(href);
-    if (res.status() !== 200) broken.push(`${res.status()} ${new URL(href).pathname} (linked from ${from})`);
+    if (res.status() !== 200)
+      broken.push(`${res.status()} ${new URL(href).pathname} (linked from ${from})`);
   }
   expect(links.size).toBeGreaterThan(20);
   expect(broken, broken.join('\n')).toEqual([]);

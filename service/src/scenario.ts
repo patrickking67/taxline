@@ -38,11 +38,18 @@ const TOOL: Anthropic.Tool = {
         items: {
           type: 'object',
           properties: {
-            key: { type: 'string', enum: SCENARIO_FIELDS.map((f) => f.key), description: SCENARIO_FIELDS.map((f) => `${f.key}: ${f.hint}`).join('; ') },
+            key: {
+              type: 'string',
+              enum: SCENARIO_FIELDS.map((f) => f.key),
+              description: SCENARIO_FIELDS.map((f) => `${f.key}: ${f.hint}`).join('; '),
+            },
             value: { type: ['number', 'string', 'null'] },
             confidence: { type: ['number', 'null'] },
             evidence: { type: ['string', 'null'] },
-            note: { type: 'string', description: 'Any assumption you made, in one short sentence.' },
+            note: {
+              type: 'string',
+              description: 'Any assumption you made, in one short sentence.',
+            },
           },
           required: ['key', 'value', 'confidence', 'evidence'],
         },
@@ -69,7 +76,8 @@ let client: Anthropic | null = null;
 export async function extractScenarioLive(text: string): Promise<ToolResult<ScenarioExtraction>> {
   const trimmed = typeof text === 'string' ? text.trim() : '';
   if (!trimmed) return fail('validation', '`text` (non-empty string) is required.');
-  if (trimmed.length > MAX_SCENARIO_CHARS) return fail('validation', `Description is over ${MAX_SCENARIO_CHARS} characters.`);
+  if (trimmed.length > MAX_SCENARIO_CHARS)
+    return fail('validation', `Description is over ${MAX_SCENARIO_CHARS} characters.`);
 
   if (!hasApiKey) return ok(extractScenario(trimmed));
 
@@ -91,13 +99,22 @@ export async function extractScenarioLive(text: string): Promise<ToolResult<Scen
     return classifyModelError(err);
   }
 
-  if (response.stop_reason === 'refusal') return fail('business', 'The model declined this description.');
-  if (response.stop_reason === 'max_tokens') return fail('business', 'The model ran out of output tokens before recording the scenario.');
-  const call = response.content.find((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use' && b.name === TOOL.name);
-  if (!call) return fail('business', 'The model did not record a scenario.', { stop_reason: response.stop_reason });
+  if (response.stop_reason === 'refusal')
+    return fail('business', 'The model declined this description.');
+  if (response.stop_reason === 'max_tokens')
+    return fail('business', 'The model ran out of output tokens before recording the scenario.');
+  const call = response.content.find(
+    (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use' && b.name === TOOL.name,
+  );
+  if (!call)
+    return fail('business', 'The model did not record a scenario.', {
+      stop_reason: response.stop_reason,
+    });
 
   const input = call.input as { fields?: unknown; unplaced?: unknown };
   const rawFields = Array.isArray(input.fields) ? (input.fields as ScenarioField[]) : [];
-  const unplaced = Array.isArray(input.unplaced) ? input.unplaced.filter((x): x is string => typeof x === 'string') : [];
+  const unplaced = Array.isArray(input.unplaced)
+    ? input.unplaced.filter((x): x is string => typeof x === 'string')
+    : [];
   return ok({ extractor: response.model, fields: validateScenario(trimmed, rawFields), unplaced });
 }

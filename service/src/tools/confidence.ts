@@ -8,7 +8,14 @@
 // threshold stricter but never looser, and a score that is not a number in [0, 1]
 // is treated as no score at all.
 
-import { ok, fail, CONFIDENCE_THRESHOLD, type Tool, type ExtractedField, type ReviewItem } from '../types.js';
+import {
+  ok,
+  fail,
+  CONFIDENCE_THRESHOLD,
+  type Tool,
+  type ExtractedField,
+  type ReviewItem,
+} from '../types.js';
 
 export interface ConfidenceInput {
   fields: ExtractedField[];
@@ -35,7 +42,10 @@ export function validConfidence(c: unknown): number | null {
  * to lower it (or a value outside [0, 1]) falls back to CONFIDENCE_THRESHOLD.
  */
 export function effectiveThreshold(requested: unknown): number {
-  return typeof requested === 'number' && Number.isFinite(requested) && requested <= 1 && requested > CONFIDENCE_THRESHOLD
+  return typeof requested === 'number' &&
+    Number.isFinite(requested) &&
+    requested <= 1 &&
+    requested > CONFIDENCE_THRESHOLD
     ? requested
     : CONFIDENCE_THRESHOLD;
 }
@@ -50,7 +60,8 @@ export function reviewReason(
   const c = validConfidence(field.confidence);
   if (c == null) return 'invalid confidence score';
   // Truncate rather than round, so 0.849 reads "0.84 < 0.85", not "0.85 < 0.85".
-  if (c < threshold) return `confidence ${(Math.floor(c * 100 + 1e-9) / 100).toFixed(2)} < ${threshold}`;
+  if (c < threshold)
+    return `confidence ${(Math.floor(c * 100 + 1e-9) / 100).toFixed(2)} < ${threshold}`;
   return null;
 }
 
@@ -77,7 +88,10 @@ export const confidence: Tool<ConfidenceInput, ConfidenceOutput> = {
           required: ['label'],
         },
       },
-      threshold: { type: 'number', description: 'Optional stricter cutoff (0.85 to 1). Lower values are ignored.' },
+      threshold: {
+        type: 'number',
+        description: 'Optional stricter cutoff (0.85 to 1). Lower values are ignored.',
+      },
     },
     required: ['fields'],
   },
@@ -92,7 +106,12 @@ export const confidence: Tool<ConfidenceInput, ConfidenceOutput> = {
     for (const f of input.fields) {
       const reason = reviewReason(f, threshold);
       if (reason) {
-        needsReview.push({ reason, label: f.label, value: f.value ?? null, confidence: validConfidence(f.confidence) });
+        needsReview.push({
+          reason,
+          label: f.label,
+          value: f.value ?? null,
+          confidence: validConfidence(f.confidence),
+        });
       } else {
         passed.push(f);
       }

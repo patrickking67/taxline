@@ -6,7 +6,13 @@
 // gate that blocks any final "ship" output until a human approves. Agents are
 // spokes: isolated context, explicit task input, no agent-to-agent calls.
 
-import { runAgent, MAX_ITERATIONS, type AgentDefinition, type MessagesClient, type RunAgentOutput } from './agent.js';
+import {
+  runAgent,
+  MAX_ITERATIONS,
+  type AgentDefinition,
+  type MessagesClient,
+  type RunAgentOutput,
+} from './agent.js';
 import { intake } from './agents/intake.js';
 import { extraction } from './agents/extraction.js';
 import { research } from './agents/research.js';
@@ -174,7 +180,13 @@ export function aggregateToolOutputs(
       for (const f of fields) {
         extracted.set(fieldKey(f), f);
         const reason = reviewReason(f);
-        if (reason) review.push({ reason, label: f.label, value: f.value, confidence: validConfidence(f.confidence) });
+        if (reason)
+          review.push({
+            reason,
+            label: f.label,
+            value: f.value,
+            confidence: validConfidence(f.confidence),
+          });
       }
     }
 
@@ -204,14 +216,21 @@ export function aggregateToolOutputs(
  * a refusal, or the iteration backstop all mean the draft may be incomplete, so a
  * person has to look before it can ship.
  */
-export function runIssues(agentName: string, run: Pick<RunAgentOutput, 'error' | 'hitBackstop' | 'stopReason'>): ReviewItem[] {
+export function runIssues(
+  agentName: string,
+  run: Pick<RunAgentOutput, 'error' | 'hitBackstop' | 'stopReason'>,
+): ReviewItem[] {
   const out: ReviewItem[] = [];
   if (run.error) {
     const retry = run.error.isRetryable ? 'retryable' : 'not retryable';
-    out.push({ reason: `agent "${agentName}" failed: ${run.error.message} (${run.error.errorCategory}, ${retry})` });
+    out.push({
+      reason: `agent "${agentName}" failed: ${run.error.message} (${run.error.errorCategory}, ${retry})`,
+    });
   }
   if (run.hitBackstop) {
-    out.push({ reason: `agent "${agentName}" hit the ${MAX_ITERATIONS}-turn backstop before finishing` });
+    out.push({
+      reason: `agent "${agentName}" hit the ${MAX_ITERATIONS}-turn backstop before finishing`,
+    });
   }
   if (run.stopReason === 'max_tokens') {
     out.push({ reason: `agent "${agentName}" output was cut off at the token limit` });
@@ -265,7 +284,10 @@ async function rememberApprovedFindings(result: OrchestratorResult): Promise<voi
     });
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.warn('memory.remember failed (continuous learning skipped):', err instanceof Error ? err.message : err);
+    console.warn(
+      'memory.remember failed (continuous learning skipped):',
+      err instanceof Error ? err.message : err,
+    );
   }
 }
 
@@ -337,7 +359,9 @@ export async function orchestrate(
   // break paths above add their own item; this covers the hop cap. A result with
   // an open review item is never written to memory, even when approved.
   if (current && hops >= maxHops) {
-    allReview.push({ reason: `chain stopped at the ${maxHops}-hop limit before agent "${current}" ran` });
+    allReview.push({
+      reason: `chain stopped at the ${maxHops}-hop limit before agent "${current}" ran`,
+    });
   }
 
   const draft: OrchestratorResult = {

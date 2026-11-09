@@ -52,18 +52,58 @@ const limits = [
   <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
     <form id="calc" class="grid gap-4" autocomplete="off">
       <Fieldset legend="The business">
-        <Field name="profit" label="Net profit before owner pay" value="150000" class="sm:col-span-2" />
-        <Field name="salary" label="Owner salary (W-2)" value="60000" hint="Must be reasonable for the work." />
-        <Field name="overhead" label="Annual overhead" value="2000" hint="Payroll service, 1120-S prep, state fees." />
+        <Field
+          name="profit"
+          label="Net profit before owner pay"
+          value="150000"
+          class="sm:col-span-2"
+        />
+        <Field
+          name="salary"
+          label="Owner salary (W-2)"
+          value="60000"
+          hint="Must be reasonable for the work."
+        />
+        <Field
+          name="overhead"
+          label="Annual overhead"
+          value="2000"
+          hint="Payroll service, 1120-S prep, state fees."
+        />
       </Fieldset>
       <Fieldset legend="The household">
-        <Field name="status" label="Filing status" kind="select" options={statuses} value="single" class="sm:col-span-2" />
+        <Field
+          name="status"
+          label="Filing status"
+          kind="select"
+          options={statuses}
+          value="single"
+          class="sm:col-span-2"
+        />
         <Field name="otherWages" label="Other W-2 wages" value="0" />
-        <Field name="children" label="Qualifying children" kind="number" value="0" min={0} max={12} step={1} />
-        <Field name="sstb" label="Specified service business" kind="toggle" class="sm:col-span-2" hint="Law, health, consulting, accounting… QBI phases out above $201,750 ($403,500 joint)." />
+        <Field
+          name="children"
+          label="Qualifying children"
+          kind="number"
+          value="0"
+          min={0}
+          max={12}
+          step={1}
+        />
+        <Field
+          name="sstb"
+          label="Specified service business"
+          kind="toggle"
+          class="sm:col-span-2"
+          hint="Law, health, consulting, accounting… QBI phases out above $201,750 ($403,500 joint)."
+        />
       </Fieldset>
       <div class="flex items-center justify-between gap-3">
-        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <button
+          type="reset"
+          class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg"
+          >Reset</button
+        >
         <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
       </div>
     </form>
@@ -78,27 +118,69 @@ const limits = [
       <div class="rounded-lg border border-border bg-panel p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <h2 class="text-[13px] font-semibold text-fg">Savings by owner salary</h2>
-          <span class="font-mono text-[11px] text-fg-faint">above zero, the election saves · hover for values</span>
+          <span class="font-mono text-[11px] text-fg-faint"
+            >above zero, the election saves · hover for values</span
+          >
         </div>
         <div data-curve class="mt-3"></div>
-        <p class="mt-2 text-[11px] leading-relaxed text-fg-faint">The low-salary end is where the IRS looks hardest. Read the chart as a trade-off, not a target.</p>
+        <p class="mt-2 text-[11px] leading-relaxed text-fg-faint">
+          The low-salary end is where the IRS looks hardest. Read the chart as a trade-off, not a
+          target.
+        </p>
       </div>
-      <Workpaper title="Entity comparison: sole proprietor vs. S corporation" subtitle="Tax year 2026 · federal" code="WP-ENT" id="wp" />
+      <Workpaper
+        title="Entity comparison: sole proprietor vs. S corporation"
+        subtitle="Tax year 2026 · federal"
+        code="WP-ENT"
+        id="wp"
+      />
     </div>
   </div>
 
   <Fragment slot="formulas">
-    <Formula title="Sole proprietor" plain="C_SP = tax(profit as Schedule C) + SE(0.9235 profit)" note="SE = 12.4% Social Security up to the $184,500 base + 2.9% Medicare; half of SE is deductible above the line.">
-      <math display="block"><mrow><msub><mi>C</mi><mi>SP</mi></msub><mo>=</mo><mi>tax</mi><mo>(</mo><mi>π</mi><mo>)</mo><mo>+</mo><mi>SE</mi><mo>(</mo><mn>0.9235</mn><mo>·</mo><mi>π</mi><mo>)</mo></mrow></math>
+    <Formula
+      title="Sole proprietor"
+      plain="C_SP = tax(profit as Schedule C) + SE(0.9235 profit)"
+      note="SE = 12.4% Social Security up to the $184,500 base + 2.9% Medicare; half of SE is deductible above the line."
+    >
+      <math display="block"
+        ><mrow
+          ><msub><mi>C</mi><mi>SP</mi></msub><mo>=</mo><mi>tax</mi><mo>(</mo><mi>π</mi><mo>)</mo><mo
+            >+</mo
+          ><mi>SE</mi><mo>(</mo><mn>0.9235</mn><mo>·</mo><mi>π</mi><mo>)</mo></mrow
+        ></math
+      >
     </Formula>
-    <Formula title="S corporation" plain="K1 = profit minus S minus F_er minus O; C_SC = tax(S + K1) + F_ee + F_er + O" note="S = salary, F = FICA (7.65% each side, Social Security capped), O = overhead. K-1 income is QBI; salary is not.">
-      <math display="block"><mrow><msub><mi>C</mi><mi>SC</mi></msub><mo>=</mo><mi>tax</mi><mo>(</mo><mi>S</mi><mo>+</mo><mi>K</mi><mo>)</mo><mo>+</mo><msub><mi>F</mi><mi>ee</mi></msub><mo>+</mo><msub><mi>F</mi><mi>er</mi></msub><mo>+</mo><mi>O</mi><mo>,</mo><mspace width="0.5em"/><mi>K</mi><mo>=</mo><mi>π</mi><mo>−</mo><mi>S</mi><mo>−</mo><msub><mi>F</mi><mi>er</mi></msub><mo>−</mo><mi>O</mi></mrow></math>
+    <Formula
+      title="S corporation"
+      plain="K1 = profit minus S minus F_er minus O; C_SC = tax(S + K1) + F_ee + F_er + O"
+      note="S = salary, F = FICA (7.65% each side, Social Security capped), O = overhead. K-1 income is QBI; salary is not."
+    >
+      <math display="block"
+        ><mrow
+          ><msub><mi>C</mi><mi>SC</mi></msub><mo>=</mo><mi>tax</mi><mo>(</mo><mi>S</mi><mo>+</mo><mi
+            >K</mi
+          ><mo>)</mo><mo>+</mo><msub><mi>F</mi><mi>ee</mi></msub><mo>+</mo><msub
+            ><mi>F</mi><mi>er</mi></msub
+          ><mo>+</mo><mi>O</mi><mo>,</mo><mspace width="0.5em"></mspace><mi>K</mi><mo>=</mo><mi
+            >π</mi
+          ><mo>−</mo><mi>S</mi><mo>−</mo><msub><mi>F</mi><mi>er</mi></msub><mo>−</mo><mi>O</mi
+          ></mrow
+        ></math
+      >
     </Formula>
   </Fragment>
 </ToolShell>
 
 <script>
-  import { compareEntity, fmtUsd, salarySweep, type EntityInput, type EntityResult, type FilingStatus } from '@taxline/tax-engine';
+  import {
+    compareEntity,
+    fmtUsd,
+    salarySweep,
+    type EntityInput,
+    type EntityResult,
+    type FilingStatus,
+  } from '@taxline/tax-engine';
   import { bindCalculator, num } from '../../lib/tools/form';
   import { renderTrace, setOutputs, setTone, traceToText, wireCopy } from '../../lib/tools/render';
   import { compactUsd, lineChart, onResize } from '../../lib/tools/charts';
@@ -117,7 +199,10 @@ const limits = [
       xFmt: compactUsd,
       yFmt: compactUsd,
       marker: { x: last.r.scorp.salary, label: `your salary · ${fmtUsd(last.r.savings)}` },
-      tipLines: (p) => [`${p[1] >= 0 ? 'saves' : 'costs'} ${fmtUsd(Math.abs(p[1]))}`, `at ${fmtUsd(p[0])} salary`],
+      tipLines: (p) => [
+        `${p[1] >= 0 ? 'saves' : 'costs'} ${fmtUsd(Math.abs(p[1]))}`,
+        `at ${fmtUsd(p[0])} salary`,
+      ],
     });
   }
 
@@ -140,9 +225,14 @@ const limits = [
       qbi: `QBI ${fmtUsd(r.scorp.ret.qbi.deduction)} vs ${fmtUsd(r.sole.ret.qbi.deduction)}`,
     });
     setTone(document, 'savings', r.savings >= 0 ? 'ok' : 'warn');
-    renderTrace(document.querySelector('[data-trace="wp"]')!, r.trace, { showZero: true, cents: true });
+    renderTrace(document.querySelector('[data-trace="wp"]')!, r.trace, {
+      showZero: true,
+      cents: true,
+    });
     draw();
   });
   onResize(curve, draw);
-  wireCopy(document.querySelector('[data-copy="wp"]'), () => (last ? traceToText('Entity comparison — TY2026', last.r.trace) : ''));
+  wireCopy(document.querySelector('[data-copy="wp"]'), () =>
+    last ? traceToText('Entity comparison — TY2026', last.r.trace) : '',
+  );
 </script>

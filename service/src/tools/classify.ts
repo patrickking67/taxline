@@ -28,17 +28,37 @@ interface Rule {
 
 // Ordered most-specific first. These mirror the forms in the KB's forms-by-document.
 const RULES: Rule[] = [
-  { docType: '1099-NEC', routeTo: 'extraction', patterns: [/1099[\s_-]?nec/i, /nonemployee comp/i] },
+  {
+    docType: '1099-NEC',
+    routeTo: 'extraction',
+    patterns: [/1099[\s_-]?nec/i, /nonemployee comp/i],
+  },
   { docType: '1099-MISC', routeTo: 'extraction', patterns: [/1099[\s_-]?misc/i] },
   { docType: '1099-INT', routeTo: 'extraction', patterns: [/1099[\s_-]?int/i, /interest income/i] },
   { docType: '1099-DIV', routeTo: 'extraction', patterns: [/1099[\s_-]?div/i, /dividends/i] },
-  { docType: '1099-B', routeTo: 'extraction', patterns: [/1099[\s_-]?b\b/i, /proceeds from broker/i] },
+  {
+    docType: '1099-B',
+    routeTo: 'extraction',
+    patterns: [/1099[\s_-]?b\b/i, /proceeds from broker/i],
+  },
   { docType: 'W-2', routeTo: 'extraction', patterns: [/\bw[\s_-]?2\b/i, /wage and tax/i] },
   { docType: 'K-1', routeTo: 'extraction', patterns: [/\bk[\s_-]?1\b/i, /schedule k-1/i] },
   { docType: '1098', routeTo: 'extraction', patterns: [/\b1098\b/i, /mortgage interest/i] },
-  { docType: 'Brokerage composite', routeTo: 'extraction', patterns: [/composite/i, /consolidated 1099/i] },
-  { docType: 'Expense batch', routeTo: 'extraction', patterns: [/invoice/i, /receipt/i, /expense/i] },
-  { docType: 'Depreciation schedule', routeTo: 'workpaper', patterns: [/deprec/i, /macrs/i, /§?\s?168/i, /§?\s?179/i] },
+  {
+    docType: 'Brokerage composite',
+    routeTo: 'extraction',
+    patterns: [/composite/i, /consolidated 1099/i],
+  },
+  {
+    docType: 'Expense batch',
+    routeTo: 'extraction',
+    patterns: [/invoice/i, /receipt/i, /expense/i],
+  },
+  {
+    docType: 'Depreciation schedule',
+    routeTo: 'workpaper',
+    patterns: [/deprec/i, /macrs/i, /§?\s?168/i, /§?\s?179/i],
+  },
 ];
 
 export const classify: Tool<ClassifyInput, ClassifyOutput> = {

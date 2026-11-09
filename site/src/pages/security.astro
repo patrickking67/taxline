@@ -6,7 +6,6 @@ import Button from '../components/Button.astro';
 import { Icon } from 'astro-icon/components';
 import { u } from '../lib/url';
 
-
 const controls = [
   {
     icon: 'lucide:shield-check',
@@ -84,7 +83,10 @@ const never = [
 ];
 ---
 
-<Base title="Security — Taxline" description="How Taxline keeps a human in the loop and your data yours: human-in-the-loop approval, no training on your data, encryption, audit logs, and provenance on every field.">
+<Base
+  title="Security — Taxline"
+  description="How Taxline keeps a human in the loop and your data yours: human-in-the-loop approval, no training on your data, encryption, audit logs, and provenance on every field."
+>
   <TopNav />
   <main id="main">
     <!-- Hero -->
@@ -114,17 +116,19 @@ const never = [
         <p class="ds-eyebrow">Controls</p>
         <h2 class="ds-h2 mt-3 max-w-2xl">Designed for high-trust tax operations.</h2>
         <p class="ds-lead mt-3 max-w-2xl">
-          Measures that protect your data and keep a person in control. Some are live today; SOC 2 is
-          in progress.
+          Measures that protect your data and keep a person in control. Some are live today; SOC 2
+          is in progress.
         </p>
         <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {controls.map((c) => (
-            <div class="rounded-lg border border-border bg-panel p-5 shadow-1">
-              <Icon name={c.icon} class="size-5 text-accent" />
-              <h3 class="ds-h3 mt-4">{c.title}</h3>
-              <p class="ds-small mt-2">{c.body}</p>
-            </div>
-          ))}
+          {
+            controls.map((c) => (
+              <div class="rounded-lg border border-border bg-panel p-5 shadow-1">
+                <Icon name={c.icon} class="size-5 text-accent" />
+                <h3 class="ds-h3 mt-4">{c.title}</h3>
+                <p class="ds-small mt-2">{c.body}</p>
+              </div>
+            ))
+          }
         </div>
       </div>
     </section>
@@ -134,22 +138,27 @@ const never = [
       <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
         <p class="ds-eyebrow">How your data flows</p>
         <h2 class="ds-h2 mt-3 max-w-2xl">Your data stays yours, end to end.</h2>
-        <div class="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3">
-          {flow.map((s) => (
-            <div class="flex flex-col gap-3 bg-base p-5">
-              <div class="flex items-center justify-between">
-                <Icon name={s.icon} class="size-5 text-accent" />
-                <span class="font-mono text-[11px] tabular-nums text-fg-faint">{s.n}</span>
+        <div
+          class="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3"
+        >
+          {
+            flow.map((s) => (
+              <div class="flex flex-col gap-3 bg-base p-5">
+                <div class="flex items-center justify-between">
+                  <Icon name={s.icon} class="size-5 text-accent" />
+                  <span class="font-mono text-[11px] tabular-nums text-fg-faint">{s.n}</span>
+                </div>
+                <div>
+                  <div class="text-[15px] font-semibold text-fg">{s.t}</div>
+                  <p class="mt-1 text-[13px] leading-relaxed text-fg-muted">{s.d}</p>
+                </div>
               </div>
-              <div>
-                <div class="text-[15px] font-semibold text-fg">{s.t}</div>
-                <p class="mt-1 text-[13px] leading-relaxed text-fg-muted">{s.d}</p>
-              </div>
-            </div>
-          ))}
+            ))
+          }
         </div>
         <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
-          <Icon name="lucide:user-check" class="size-4 text-accent" />A human approves before output ships — every time.
+          <Icon name="lucide:user-check" class="size-4 text-accent" />A human approves before output
+          ships — every time.
         </p>
       </div>
     </section>
@@ -159,23 +168,31 @@ const never = [
       <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
         <p class="ds-eyebrow">Boundaries</p>
         <h2 class="ds-h2 mt-3 max-w-2xl">What Taxline never does.</h2>
-        <div class="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
-          {never.map((line) => (
-            <div class="flex items-start gap-3 bg-base p-5">
-              <Icon name="lucide:lock" class="mt-0.5 size-4 shrink-0 text-accent" />
-              <p class="ds-body">{line}</p>
-            </div>
-          ))}
+        <div
+          class="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2"
+        >
+          {
+            never.map((line) => (
+              <div class="flex items-start gap-3 bg-base p-5">
+                <Icon name="lucide:lock" class="mt-0.5 size-4 shrink-0 text-accent" />
+                <p class="ds-body">{line}</p>
+              </div>
+            ))
+          }
         </div>
       </div>
     </section>
 
     <!-- CTA -->
     <section class="border-b border-border">
-      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
+      <div
+        class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6"
+      >
         <div>
           <h2 class="ds-h2 max-w-xl">Have a security question? Put it to us.</h2>
-          <p class="ds-small mt-2">Talk to security or see the controls run on your own documents.</p>
+          <p class="ds-small mt-2">
+            Talk to security or see the controls run on your own documents.
+          </p>
         </div>
         <div class="flex gap-3">
           <Button href={u('contact')}>Talk to security</Button>

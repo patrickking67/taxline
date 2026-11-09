@@ -27,7 +27,14 @@ interface Lead {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Field caps. A demo request is a few lines; anything past this is truncated. */
-export const LIMITS = { email: 254, firm: 200, engagement: 120, message: 4_000, seats: 100_000, bodyBytes: 32_000 } as const;
+export const LIMITS = {
+  email: 254,
+  firm: 200,
+  engagement: 120,
+  message: 4_000,
+  seats: 100_000,
+  bodyBytes: 32_000,
+} as const;
 
 function corsHeaders(env: Env): Record<string, string> {
   return {

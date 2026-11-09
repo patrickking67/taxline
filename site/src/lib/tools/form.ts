@@ -26,7 +26,9 @@ function readValue(el: HTMLInputElement | HTMLSelectElement): string | number | 
 }
 
 const fields = (form: HTMLFormElement) =>
-  Array.from(form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input[name], select[name]'));
+  Array.from(
+    form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input[name], select[name]'),
+  );
 
 /** Restore from the URL, compute now, and recompute on every edit. */
 export function bindCalculator(form: HTMLFormElement, compute: (v: FormValues) => void): void {
@@ -45,7 +47,8 @@ export function bindCalculator(form: HTMLFormElement, compute: (v: FormValues) =
   for (const el of form.querySelectorAll<HTMLInputElement>('input[data-kind="money"]')) {
     const tidy = () => {
       const n = Number(el.value.replace(/[$,\s]/g, ''));
-      if (el.value.trim() !== '' && Number.isFinite(n)) el.value = n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+      if (el.value.trim() !== '' && Number.isFinite(n))
+        el.value = n.toLocaleString('en-US', { maximumFractionDigits: 2 });
     };
     el.addEventListener('blur', tidy);
     tidy();
@@ -61,9 +64,13 @@ export function bindCalculator(form: HTMLFormElement, compute: (v: FormValues) =
       const next = new URLSearchParams();
       for (const el of fields(form)) {
         const v = values[el.name];
-        const def = el instanceof HTMLInputElement && el.type === 'checkbox' ? el.defaultChecked : (el as HTMLInputElement).defaultValue ?? '';
+        const def =
+          el instanceof HTMLInputElement && el.type === 'checkbox'
+            ? el.defaultChecked
+            : ((el as HTMLInputElement).defaultValue ?? '');
         const cur = typeof v === 'boolean' ? v : String(el.value);
-        if (typeof v === 'boolean' ? v !== def : cur !== def) next.set(el.name, typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
+        if (typeof v === 'boolean' ? v !== def : cur !== def)
+          next.set(el.name, typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
       }
       const qs = next.toString();
       history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
@@ -76,7 +83,9 @@ export function bindCalculator(form: HTMLFormElement, compute: (v: FormValues) =
   run();
 }
 
-export const num = (v: FormValues[string] | undefined) => (typeof v === 'number' ? v : Number(v) || 0);
+export const num = (v: FormValues[string] | undefined) =>
+  typeof v === 'number' ? v : Number(v) || 0;
 /** Optional amount: undefined when the field was left blank. */
-export const opt = (v: FormValues[string] | undefined) => (v === '' || v === undefined ? undefined : num(v));
+export const opt = (v: FormValues[string] | undefined) =>
+  v === '' || v === undefined ? undefined : num(v);
 export const pct = (v: FormValues[string] | undefined) => num(v) / 100;

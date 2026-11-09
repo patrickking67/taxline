@@ -3,7 +3,12 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { confidence, effectiveThreshold, reviewReason, validConfidence } from '../src/tools/confidence.js';
+import {
+  confidence,
+  effectiveThreshold,
+  reviewReason,
+  validConfidence,
+} from '../src/tools/confidence.js';
 import { CONFIDENCE_THRESHOLD, type ToolResult } from '../src/types.js';
 import type { ConfidenceOutput } from '../src/tools/confidence.js';
 
@@ -52,8 +57,14 @@ test('assess_confidence ignores a request to lower the threshold', () => {
     }),
   );
   assert.equal(out.threshold, CONFIDENCE_THRESHOLD);
-  assert.deepEqual(out.passed.map((f) => f.label), ['EIN']);
-  assert.deepEqual(out.needsReview.map((r) => r.label), ['Wages']);
+  assert.deepEqual(
+    out.passed.map((f) => f.label),
+    ['EIN'],
+  );
+  assert.deepEqual(
+    out.needsReview.map((r) => r.label),
+    ['Wages'],
+  );
 });
 
 test('assess_confidence sends malformed scores to review instead of passing them', () => {
@@ -78,7 +89,12 @@ test('assess_confidence sends malformed scores to review instead of passing them
 });
 
 test('a stricter threshold flags fields the default would pass', () => {
-  const out = data(confidence.run({ threshold: 0.95, fields: [{ label: 'Wages', value: '$1', confidence: 0.91, citations: [] }] }));
+  const out = data(
+    confidence.run({
+      threshold: 0.95,
+      fields: [{ label: 'Wages', value: '$1', confidence: 0.91, citations: [] }],
+    }),
+  );
   assert.equal(out.passed.length, 0);
   assert.equal(out.needsReview[0]?.reason, 'confidence 0.91 < 0.95');
 });

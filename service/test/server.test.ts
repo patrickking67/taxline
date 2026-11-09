@@ -77,11 +77,20 @@ test('a client hop limit is clamped and an early stop reaches the reviewer', asy
   await withServer(async (base) => {
     const res = await post(
       base + '/agents/run',
-      JSON.stringify({ task: 'Extract the W-2', agent: 'extraction', docId: 'acme_w2_2024', maxHops: 0 }),
+      JSON.stringify({
+        task: 'Extract the W-2',
+        agent: 'extraction',
+        docId: 'acme_w2_2024',
+        maxHops: 0,
+      }),
     );
     assert.equal(res.status, 200);
     const json = (await res.json()) as { trace: unknown[]; needsHumanReview: { reason: string }[] };
     assert.equal(json.trace.length, 1);
-    assert.ok(json.needsHumanReview.some((x) => x.reason === 'chain stopped at the 1-hop limit before agent "workpaper" ran'));
+    assert.ok(
+      json.needsHumanReview.some(
+        (x) => x.reason === 'chain stopped at the 1-hop limit before agent "workpaper" ran',
+      ),
+    );
   });
 });

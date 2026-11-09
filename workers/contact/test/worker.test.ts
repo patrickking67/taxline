@@ -16,7 +16,10 @@ function harness(opts: { slack?: boolean } = {}) {
     SLACK_WEBHOOK: opts.slack ? 'https://hooks.example.test/T000/B000' : undefined,
     ALLOWED_ORIGIN: 'https://example.test',
   };
-  const ctx = { waitUntil: (p: Promise<unknown>) => void pending.push(p), passThroughOnException() {} };
+  const ctx = {
+    waitUntil: (p: Promise<unknown>) => void pending.push(p),
+    passThroughOnException() {},
+  };
   const realFetch = globalThis.fetch;
   globalThis.fetch = (async (_url: string, init?: { body?: string }) => {
     posts.push(String(init?.body ?? ''));
@@ -31,7 +34,11 @@ function harness(opts: { slack?: boolean } = {}) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await worker.fetch(req, env as any, ctx as any);
     await Promise.all(pending);
-    return { status: res.status, cors: res.headers.get('access-control-allow-origin'), body: (await res.json()) as Record<string, unknown> };
+    return {
+      status: res.status,
+      cors: res.headers.get('access-control-allow-origin'),
+      body: (await res.json()) as Record<string, unknown>,
+    };
   };
   const restore = () => {
     globalThis.fetch = realFetch;
@@ -41,7 +48,9 @@ function harness(opts: { slack?: boolean } = {}) {
 
 test('a valid request is stored and gets an id', async () => {
   const h = harness();
-  const r = await h.call(JSON.stringify({ email: 'reviewer@example.test', firm: 'Example Firm', seats: 12 }));
+  const r = await h.call(
+    JSON.stringify({ email: 'reviewer@example.test', firm: 'Example Firm', seats: 12 }),
+  );
   h.restore();
   assert.equal(r.status, 200);
   assert.equal(r.body.ok, true);
@@ -78,9 +87,17 @@ test('JSON that is not an object is a 400 with CORS headers, not a crash', async
 test('invalid JSON and bad email are rejected; the honeypot stores nothing', async () => {
   const h = harness();
   assert.equal((await h.call('{nope')).status, 400);
-  assert.equal((await h.call(JSON.stringify({ email: 'not-an-email' }))).body.error, 'invalid_email');
-  assert.equal((await h.call(JSON.stringify({ email: `${'a'.repeat(250)}@example.test` }))).body.error, 'invalid_email');
-  const bot = await h.call(JSON.stringify({ email: 'bot@example.test', company_website: 'https://spam.example.test' }));
+  assert.equal(
+    (await h.call(JSON.stringify({ email: 'not-an-email' }))).body.error,
+    'invalid_email',
+  );
+  assert.equal(
+    (await h.call(JSON.stringify({ email: `${'a'.repeat(250)}@example.test` }))).body.error,
+    'invalid_email',
+  );
+  const bot = await h.call(
+    JSON.stringify({ email: 'bot@example.test', company_website: 'https://spam.example.test' }),
+  );
   h.restore();
   assert.equal(bot.status, 200);
   assert.equal(bot.body.ok, true);
@@ -97,7 +114,13 @@ test('an oversized body is refused before it is parsed', async () => {
 
 test('free text is capped and seats are whole and bounded', async () => {
   const h = harness();
-  await h.call(JSON.stringify({ email: 'c@example.test', message: 'x'.repeat(LIMITS.message + 500), seats: '-3' }));
+  await h.call(
+    JSON.stringify({
+      email: 'c@example.test',
+      message: 'x'.repeat(LIMITS.message + 500),
+      seats: '-3',
+    }),
+  );
   h.restore();
   const lead = JSON.parse(h.puts[0]!.value);
   assert.equal(lead.message.length, LIMITS.message);
@@ -109,7 +132,12 @@ test('free text is capped and seats are whole and bounded', async () => {
 
 test('Slack control sequences in form text are escaped', async () => {
   const h = harness({ slack: true });
-  await h.call(JSON.stringify({ email: 'd@example.test', message: '<!channel> see <https://x.example.test|here> & more' }));
+  await h.call(
+    JSON.stringify({
+      email: 'd@example.test',
+      message: '<!channel> see <https://x.example.test|here> & more',
+    }),
+  );
   h.restore();
   assert.equal(h.posts.length, 1);
   const text = JSON.parse(h.posts[0]!).text as string;

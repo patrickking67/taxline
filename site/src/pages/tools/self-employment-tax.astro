@@ -57,14 +57,26 @@ const limits = [
     <form id="calc" class="grid gap-4" autocomplete="off">
       <Fieldset legend="Self-employment">
         <Field name="profit" label="Net profit (Schedule C)" value="120000" class="sm:col-span-2" />
-        <Field name="status" label="Filing status" kind="select" options={statuses} value="single" class="sm:col-span-2" hint="Only affects the Additional Medicare threshold." />
+        <Field
+          name="status"
+          label="Filing status"
+          kind="select"
+          options={statuses}
+          value="single"
+          class="sm:col-span-2"
+          hint="Only affects the Additional Medicare threshold."
+        />
       </Fieldset>
       <Fieldset legend="W-2 job, if any">
         <Field name="ssWages" label="Social Security wages (box 3)" value="0" />
         <Field name="medWages" label="Medicare wages (box 5)" value="0" />
       </Fieldset>
       <div class="flex items-center justify-between gap-3">
-        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <button
+          type="reset"
+          class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg"
+          >Reset</button
+        >
         <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
       </div>
     </form>
@@ -79,32 +91,87 @@ const limits = [
       <div class="rounded-lg border border-border bg-panel p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <h2 class="text-[13px] font-semibold text-fg">Self-employment tax by net profit</h2>
-          <span class="font-mono text-[11px] text-fg-faint">the kink is the wage base · hover for values</span>
+          <span class="font-mono text-[11px] text-fg-faint"
+            >the kink is the wage base · hover for values</span
+          >
         </div>
         <div data-curve class="mt-3"></div>
       </div>
-      <Workpaper title="Schedule SE: self-employment tax" subtitle="Tax year 2026" code="WP-SE" id="wp" />
+      <Workpaper
+        title="Schedule SE: self-employment tax"
+        subtitle="Tax year 2026"
+        code="WP-SE"
+        id="wp"
+      />
     </div>
   </div>
 
   <Fragment slot="formulas">
-    <Formula title="Net earnings (Sch SE L6)" plain="NE = 0.9235 times profit" note="1 − 0.0765: the employer half of FICA, removed before tax as an employer would deduct it.">
-      <math display="block"><mrow><mi>NE</mi><mo>=</mo><mn>0.9235</mn><mo>·</mo><mi>π</mi></mrow></math>
+    <Formula
+      title="Net earnings (Sch SE L6)"
+      plain="NE = 0.9235 times profit"
+      note="1 − 0.0765: the employer half of FICA, removed before tax as an employer would deduct it."
+    >
+      <math display="block"
+        ><mrow><mi>NE</mi><mo>=</mo><mn>0.9235</mn><mo>·</mo><mi>π</mi></mrow></math
+      >
     </Formula>
-    <Formula title="SE tax (Sch SE L12)" plain="SE = 0.124 min(NE, max(0, B minus W)) + 0.029 NE" note="B = $184,500 wage base (SSA). W = Social Security wages already taxed on a W-2.">
-      <math display="block"><mrow><mi>SE</mi><mo>=</mo><mn>0.124</mn><mo>·</mo><mi>min</mi><mo>(</mo><mi>NE</mi><mo>,</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>B</mi><mo>−</mo><mi>W</mi><mo>)</mo><mo>)</mo><mo>+</mo><mn>0.029</mn><mo>·</mo><mi>NE</mi></mrow></math>
+    <Formula
+      title="SE tax (Sch SE L12)"
+      plain="SE = 0.124 min(NE, max(0, B minus W)) + 0.029 NE"
+      note="B = $184,500 wage base (SSA). W = Social Security wages already taxed on a W-2."
+    >
+      <math display="block"
+        ><mrow
+          ><mi>SE</mi><mo>=</mo><mn>0.124</mn><mo>·</mo><mi>min</mi><mo>(</mo><mi>NE</mi><mo>,</mo
+          ><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>B</mi><mo>−</mo><mi>W</mi><mo>)</mo><mo
+            >)</mo
+          ><mo>+</mo><mn>0.029</mn><mo>·</mo><mi>NE</mi></mrow
+        ></math
+      >
     </Formula>
-    <Formula title="Additional Medicare (Form 8959)" plain="A = 0.009 (max(0, M minus t) + max(0, NE minus max(0, t minus M)))" note="M = Medicare wages, t = threshold by filing status. Wages use the threshold first; SE earnings take what is left.">
-      <math display="block"><mrow><mi>A</mi><mo>=</mo><mn>0.009</mn><mo>·</mo><mo>[</mo><msup><mrow><mo>(</mo><mi>M</mi><mo>−</mo><mi>t</mi><mo>)</mo></mrow><mo>+</mo></msup><mo>+</mo><msup><mrow><mo>(</mo><mi>NE</mi><mo>−</mo><msup><mrow><mo>(</mo><mi>t</mi><mo>−</mo><mi>M</mi><mo>)</mo></mrow><mo>+</mo></msup><mo>)</mo></mrow><mo>+</mo></msup><mo>]</mo></mrow></math>
+    <Formula
+      title="Additional Medicare (Form 8959)"
+      plain="A = 0.009 (max(0, M minus t) + max(0, NE minus max(0, t minus M)))"
+      note="M = Medicare wages, t = threshold by filing status. Wages use the threshold first; SE earnings take what is left."
+    >
+      <math display="block"
+        ><mrow
+          ><mi>A</mi><mo>=</mo><mn>0.009</mn><mo>·</mo><mo>[</mo><msup
+            ><mrow><mo>(</mo><mi>M</mi><mo>−</mo><mi>t</mi><mo>)</mo></mrow><mo>+</mo></msup
+          ><mo>+</mo><msup
+            ><mrow
+              ><mo>(</mo><mi>NE</mi><mo>−</mo><msup
+                ><mrow><mo>(</mo><mi>t</mi><mo>−</mo><mi>M</mi><mo>)</mo></mrow><mo>+</mo></msup
+              ><mo>)</mo></mrow
+            ><mo>+</mo></msup
+          ><mo>]</mo></mrow
+        ></math
+      >
     </Formula>
-    <Formula title="Deduction (Sch 1 L15)" plain="D = SE / 2" note="Above the line: it lowers AGI, and with it the QBI deduction base.">
-      <math display="block"><mrow><mi>D</mi><mo>=</mo><mfrac><mi>SE</mi><mn>2</mn></mfrac></mrow></math>
+    <Formula
+      title="Deduction (Sch 1 L15)"
+      plain="D = SE / 2"
+      note="Above the line: it lowers AGI, and with it the QBI deduction base."
+    >
+      <math display="block"
+        ><mrow><mi>D</mi><mo>=</mo><mfrac><mi>SE</mi><mn>2</mn></mfrac></mrow></math
+      >
     </Formula>
   </Fragment>
 </ToolShell>
 
 <script>
-  import { TY2026, additionalMedicare, fmtPct, fmtUsd, selfEmploymentTax, type FilingStatus, type SeResult, type Trace } from '@taxline/tax-engine';
+  import {
+    TY2026,
+    additionalMedicare,
+    fmtPct,
+    fmtUsd,
+    selfEmploymentTax,
+    type FilingStatus,
+    type SeResult,
+    type Trace,
+  } from '@taxline/tax-engine';
   import { bindCalculator, num } from '../../lib/tools/form';
   import { renderTrace, setOutputs, traceToText, wireCopy } from '../../lib/tools/render';
   import { compactUsd, lineChart, onResize } from '../../lib/tools/charts';
@@ -129,7 +196,10 @@ const limits = [
       xFmt: compactUsd,
       yFmt: compactUsd,
       marker: profit > 0 ? { x: profit, label: `you · ${fmtUsd(state.r.total)}` } : undefined,
-      tipLines: (p) => [`${fmtUsd(p[1])} SE tax`, `on ${fmtUsd(p[0])} profit · ${p[0] ? fmtPct(p[1] / p[0]) : '—'}`],
+      tipLines: (p) => [
+        `${fmtUsd(p[1])} SE tax`,
+        `on ${fmtUsd(p[0])} profit · ${p[0] ? fmtPct(p[1] / p[0]) : '—'}`,
+      ],
     });
   }
 
@@ -137,9 +207,22 @@ const limits = [
     const profit = num(v.profit);
     const ss = num(v.ssWages);
     const r = selfEmploymentTax({ netProfit: profit, w2SsWages: ss });
-    const addl = additionalMedicare(String(v.status) as FilingStatus, num(v.medWages), r.netEarnings);
+    const addl = additionalMedicare(
+      String(v.status) as FilingStatus,
+      num(v.medWages),
+      r.netEarnings,
+    );
     const trace = addl
-      ? [...r.trace, { id: 'se.addl', label: 'Additional Medicare tax (separate, Form 8959)', value: addl, ref: 'Sch 2 L11', formula: `0.9% over ${fmtUsd(TY2026.addlMedicare.threshold[String(v.status) as FilingStatus])}` }]
+      ? [
+          ...r.trace,
+          {
+            id: 'se.addl',
+            label: 'Additional Medicare tax (separate, Form 8959)',
+            value: addl,
+            ref: 'Sch 2 L11',
+            formula: `0.9% over ${fmtUsd(TY2026.addlMedicare.threshold[String(v.status) as FilingStatus])}`,
+          },
+        ]
       : r.trace;
     state = { profit, ss, r, trace };
     setOutputs(document, {
@@ -153,5 +236,7 @@ const limits = [
     draw();
   });
   onResize(curve, draw);
-  wireCopy(document.querySelector('[data-copy="wp"]'), () => (state ? traceToText('Schedule SE, TY2026', state.trace) : ''));
+  wireCopy(document.querySelector('[data-copy="wp"]'), () =>
+    state ? traceToText('Schedule SE, TY2026', state.trace) : '',
+  );
 </script>

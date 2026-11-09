@@ -56,23 +56,79 @@ const limits = [
     <form id="calc" class="grid gap-4" autocomplete="off">
       <Fieldset legend="Your practice">
         <Field name="returns" label="Returns per year" kind="number" value="600" min={0} step={1} />
-        <Field name="hours" label="Hours per return today" kind="number" value="6" min={0} step={0.25} hint="Prep through review." />
+        <Field
+          name="hours"
+          label="Hours per return today"
+          kind="number"
+          value="6"
+          min={0}
+          step={0.25}
+          hint="Prep through review."
+        />
         <Field name="cost" label="Loaded hourly cost" value="85" />
         <Field name="fee" label="Average fee per return" value="650" />
       </Fieldset>
       <Fieldset legend="Assumption to test">
-        <Field name="reduction" label="Share of hours removed" kind="number" value="35" suffix="%" min={0} max={90} step={1} hint="Replace with a pilot measurement." />
-        <Field name="ramp" label="Adoption ramp" kind="number" value="3" suffix="mo" min={0} max={24} step={1} />
+        <Field
+          name="reduction"
+          label="Share of hours removed"
+          kind="number"
+          value="35"
+          suffix="%"
+          min={0}
+          max={90}
+          step={1}
+          hint="Replace with a pilot measurement."
+        />
+        <Field
+          name="ramp"
+          label="Adoption ramp"
+          kind="number"
+          value="3"
+          suffix="mo"
+          min={0}
+          max={24}
+          step={1}
+        />
       </Fieldset>
       <Fieldset legend="Plan and money">
-        <Field name="plan" label="Plan" kind="select" options={plans} value="59" class="sm:col-span-2" />
+        <Field
+          name="plan"
+          label="Plan"
+          kind="select"
+          options={plans}
+          value="59"
+          class="sm:col-span-2"
+        />
         <Field name="seats" label="Seats" kind="number" value="5" min={1} step={1} />
         <Field name="onboarding" label="One-time setup cost" value="5000" />
-        <Field name="disc" label="Discount rate" kind="number" value="10" suffix="%" min={0} max={50} step={0.5} />
-        <Field name="years" label="Horizon" kind="number" value="3" suffix="yr" min={1} max={10} step={1} />
+        <Field
+          name="disc"
+          label="Discount rate"
+          kind="number"
+          value="10"
+          suffix="%"
+          min={0}
+          max={50}
+          step={0.5}
+        />
+        <Field
+          name="years"
+          label="Horizon"
+          kind="number"
+          value="3"
+          suffix="yr"
+          min={1}
+          max={10}
+          step={1}
+        />
       </Fieldset>
       <div class="flex items-center justify-between gap-3">
-        <button type="reset" class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg">Reset</button>
+        <button
+          type="reset"
+          class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg"
+          >Reset</button
+        >
         <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
       </div>
     </form>
@@ -87,26 +143,84 @@ const limits = [
       <div class="rounded-lg border border-border bg-panel p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <h2 class="text-[13px] font-semibold text-fg">Cumulative net cash position</h2>
-          <span class="font-mono text-[11px] text-fg-faint">month 0 = setup · crosses zero at payback</span>
+          <span class="font-mono text-[11px] text-fg-faint"
+            >month 0 = setup · crosses zero at payback</span
+          >
         </div>
         <div data-curve class="mt-3"></div>
       </div>
-      <Workpaper title="Practice economics: annual run rate" subtitle="Steady state, after the adoption ramp" code="WP-ROI" id="wp" />
+      <Workpaper
+        title="Practice economics: annual run rate"
+        subtitle="Steady state, after the adoption ramp"
+        code="WP-ROI"
+        id="wp"
+      />
     </div>
   </div>
 
   <Fragment slot="formulas">
-    <Formula title="Annual net benefit" plain="N = R h rho c minus 12 s p" note="R returns, h hours per return, ρ share removed, c loaded cost, s seats, p price per seat-month.">
-      <math display="block"><mrow><mi>N</mi><mo>=</mo><mi>R</mi><mo>·</mo><mi>h</mi><mo>·</mo><mi>ρ</mi><mo>·</mo><mi>c</mi><mo>−</mo><mn>12</mn><mo>·</mo><mi>s</mi><mo>·</mo><mi>p</mi></mrow></math>
+    <Formula
+      title="Annual net benefit"
+      plain="N = R h rho c minus 12 s p"
+      note="R returns, h hours per return, ρ share removed, c loaded cost, s seats, p price per seat-month."
+    >
+      <math display="block"
+        ><mrow
+          ><mi>N</mi><mo>=</mo><mi>R</mi><mo>·</mo><mi>h</mi><mo>·</mo><mi>ρ</mi><mo>·</mo><mi>c</mi
+          ><mo>−</mo><mn>12</mn><mo>·</mo><mi>s</mi><mo>·</mo><mi>p</mi></mrow
+        ></math
+      >
     </Formula>
-    <Formula title="Net present value" plain="NPV = minus C_0 + sum over t of N_t / (1 + i)^t" note="N_t is each year's net benefit after the ramp; C₀ is the setup cost; i the discount rate.">
-      <math display="block"><mrow><mi>NPV</mi><mo>=</mo><mo>−</mo><msub><mi>C</mi><mn>0</mn></msub><mo>+</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>N</mi><mi>t</mi></msub><msup><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>i</mi><mo>)</mo></mrow><mi>t</mi></msup></mfrac></mrow></math>
+    <Formula
+      title="Net present value"
+      plain="NPV = minus C_0 + sum over t of N_t / (1 + i)^t"
+      note="N_t is each year's net benefit after the ramp; C₀ is the setup cost; i the discount rate."
+    >
+      <math display="block"
+        ><mrow
+          ><mi>NPV</mi><mo>=</mo><mo>−</mo><msub><mi>C</mi><mn>0</mn></msub><mo>+</mo><munderover
+            ><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover
+          ><mfrac
+            ><msub><mi>N</mi><mi>t</mi></msub><msup
+              ><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>i</mi><mo>)</mo></mrow><mi>t</mi></msup
+            ></mfrac
+          ></mrow
+        ></math
+      >
     </Formula>
-    <Formula title="Internal rate of return" plain="IRR: the r where NPV(r) = 0, found by bisection" note="Bisection on [−99%, 1,000%] to a 1e-7 tolerance. Undefined when the flows never change sign.">
-      <math display="block"><mrow><mn>0</mn><mo>=</mo><mo>−</mo><msub><mi>C</mi><mn>0</mn></msub><mo>+</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>N</mi><mi>t</mi></msub><msup><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>IRR</mi><mo>)</mo></mrow><mi>t</mi></msup></mfrac></mrow></math>
+    <Formula
+      title="Internal rate of return"
+      plain="IRR: the r where NPV(r) = 0, found by bisection"
+      note="Bisection on [−99%, 1,000%] to a 1e-7 tolerance. Undefined when the flows never change sign."
+    >
+      <math display="block"
+        ><mrow
+          ><mn>0</mn><mo>=</mo><mo>−</mo><msub><mi>C</mi><mn>0</mn></msub><mo>+</mo><munderover
+            ><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover
+          ><mfrac
+            ><msub><mi>N</mi><mi>t</mi></msub><msup
+              ><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>IRR</mi><mo>)</mo></mrow><mi>t</mi></msup
+            ></mfrac
+          ></mrow
+        ></math
+      >
     </Formula>
-    <Formula title="Capacity" plain="K = floor(R h rho / (h (1 minus rho)))" note="Hours returned divided by the new hours per return: the extra returns the same team could carry.">
-      <math display="block"><mrow><mi>K</mi><mo>=</mo><mrow><mo>⌊</mo><mfrac><mrow><mi>R</mi><mi>h</mi><mi>ρ</mi></mrow><mrow><mi>h</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>ρ</mi><mo>)</mo></mrow></mfrac><mo>⌋</mo></mrow></mrow></math>
+    <Formula
+      title="Capacity"
+      plain="K = floor(R h rho / (h (1 minus rho)))"
+      note="Hours returned divided by the new hours per return: the extra returns the same team could carry."
+    >
+      <math display="block"
+        ><mrow
+          ><mi>K</mi><mo>=</mo><mrow
+            ><mo>⌊</mo><mfrac
+              ><mrow><mi>R</mi><mi>h</mi><mi>ρ</mi></mrow><mrow
+                ><mi>h</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>ρ</mi><mo>)</mo></mrow
+              ></mfrac
+            ><mo>⌋</mo></mrow
+          ></mrow
+        ></math
+      >
     </Formula>
   </Fragment>
 </ToolShell>
@@ -130,7 +244,10 @@ const limits = [
       signed: true,
       xFmt: (m) => `m${Math.round(m)}`,
       yFmt: compactUsd,
-      marker: r.paybackMonths != null ? { x: Math.ceil(r.paybackMonths), label: `payback · ${r.paybackMonths.toFixed(1)} mo` } : undefined,
+      marker:
+        r.paybackMonths != null
+          ? { x: Math.ceil(r.paybackMonths), label: `payback · ${r.paybackMonths.toFixed(1)} mo` }
+          : undefined,
       tipLines: (p) => [`${fmtUsd(p[1])} cumulative`, `month ${p[0]}`],
     });
   }
@@ -151,14 +268,59 @@ const limits = [
     };
     const r = firmRoi(input);
     const trace: Trace = [
-      { id: 'roi.hours', label: 'Hours returned per year', value: r.hoursSaved, unit: 'count', ref: 'A', formula: `${fmtNum(input.returnsPerYear)} returns × ${input.hoursPerReturn} h × ${fmtPct(input.reduction, 0)}` },
-      { id: 'roi.labor', label: 'Labor value of those hours', value: r.laborValue, ref: 'B', formula: `${fmtNum(r.hoursSaved)} h × ${fmtUsd(input.loadedHourlyCost)}` },
-      { id: 'roi.sub', label: 'Subscription', value: -r.subscription, ref: 'C', formula: `${input.seats} seats × ${fmtUsd(input.pricePerSeatMonth)} × 12` },
-      { id: 'roi.net', label: 'Net annual benefit (steady state)', value: r.netAnnual, ref: 'B − C', emphasis: 'subtotal' },
+      {
+        id: 'roi.hours',
+        label: 'Hours returned per year',
+        value: r.hoursSaved,
+        unit: 'count',
+        ref: 'A',
+        formula: `${fmtNum(input.returnsPerYear)} returns × ${input.hoursPerReturn} h × ${fmtPct(input.reduction, 0)}`,
+      },
+      {
+        id: 'roi.labor',
+        label: 'Labor value of those hours',
+        value: r.laborValue,
+        ref: 'B',
+        formula: `${fmtNum(r.hoursSaved)} h × ${fmtUsd(input.loadedHourlyCost)}`,
+      },
+      {
+        id: 'roi.sub',
+        label: 'Subscription',
+        value: -r.subscription,
+        ref: 'C',
+        formula: `${input.seats} seats × ${fmtUsd(input.pricePerSeatMonth)} × 12`,
+      },
+      {
+        id: 'roi.net',
+        label: 'Net annual benefit (steady state)',
+        value: r.netAnnual,
+        ref: 'B − C',
+        emphasis: 'subtotal',
+      },
       { id: 'roi.setup', label: 'One-time setup', value: -input.onboardingCost, ref: 'C₀' },
-      { id: 'roi.npv', label: `NPV over ${input.years} years at ${fmtPct(input.discountRate, 1)}`, value: r.npv, ref: 'NPV', formula: `ramp ${input.rampMonths} mo, annual flows discounted`, emphasis: 'total' },
-      { id: 'roi.cap', label: 'Capacity: additional returns', value: r.capacityReturns, unit: 'count', ref: 'K', formula: `${fmtNum(r.hoursSaved)} h ÷ ${(input.hoursPerReturn * (1 - input.reduction)).toFixed(2)} h per return` },
-      { id: 'roi.rev', label: 'Revenue that capacity could carry', value: r.capacityRevenue, ref: 'K × fee', formula: `${fmtNum(r.capacityReturns)} × ${fmtUsd(input.feePerReturn)}` },
+      {
+        id: 'roi.npv',
+        label: `NPV over ${input.years} years at ${fmtPct(input.discountRate, 1)}`,
+        value: r.npv,
+        ref: 'NPV',
+        formula: `ramp ${input.rampMonths} mo, annual flows discounted`,
+        emphasis: 'total',
+      },
+      {
+        id: 'roi.cap',
+        label: 'Capacity: additional returns',
+        value: r.capacityReturns,
+        unit: 'count',
+        ref: 'K',
+        formula: `${fmtNum(r.hoursSaved)} h ÷ ${(input.hoursPerReturn * (1 - input.reduction)).toFixed(2)} h per return`,
+      },
+      {
+        id: 'roi.rev',
+        label: 'Revenue that capacity could carry',
+        value: r.capacityRevenue,
+        ref: 'K × fee',
+        formula: `${fmtNum(r.capacityReturns)} × ${fmtUsd(input.feePerReturn)}`,
+      },
     ];
     last = { r, trace };
     setOutputs(document, {
@@ -175,5 +337,7 @@ const limits = [
     draw();
   });
   onResize(curve, draw);
-  wireCopy(document.querySelector('[data-copy="wp"]'), () => (last ? traceToText('Practice economics', last.trace) : ''));
+  wireCopy(document.querySelector('[data-copy="wp"]'), () =>
+    last ? traceToText('Practice economics', last.trace) : '',
+  );
 </script>

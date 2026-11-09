@@ -8,7 +8,11 @@
 
 const NS = 'http://www.w3.org/2000/svg';
 
-function s<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number> = {}, style = ''): SVGElementTagNameMap[K] {
+function s<K extends keyof SVGElementTagNameMap>(
+  tag: K,
+  attrs: Record<string, string | number> = {},
+  style = '',
+): SVGElementTagNameMap[K] {
   const el = document.createElementNS(NS, tag);
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
   if (style) el.setAttribute('style', style);
@@ -48,11 +52,18 @@ function frame(host: HTMLElement, label: string, H = 240): Frame {
   host.replaceChildren();
   host.style.position = 'relative';
   const W = Math.max(280, Math.round(host.clientWidth || 640));
-  const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', height: H, role: 'img', 'aria-label': label });
+  const svg = s('svg', {
+    viewBox: `0 0 ${W} ${H}`,
+    width: '100%',
+    height: H,
+    role: 'img',
+    'aria-label': label,
+  });
   svg.style.display = 'block';
   svg.style.overflow = 'visible';
   const tip = document.createElement('div');
-  tip.className = 'pointer-events-none absolute z-10 hidden rounded-md border border-border-strong bg-raised px-2.5 py-1.5 font-mono text-[11px] text-fg shadow-pop';
+  tip.className =
+    'pointer-events-none absolute z-10 hidden rounded-md border border-border-strong bg-raised px-2.5 py-1.5 font-mono text-[11px] text-fg shadow-pop';
   host.append(svg, tip);
   return { svg, W, H, pad: { t: 14, r: 16, b: 26, l: 54 }, tip };
 }
@@ -109,7 +120,13 @@ export function lineChart(host: HTMLElement, o: LineChartOpts): void {
     const bx = X(Math.max(x0, b.from));
     const bw = X(Math.min(x1, b.to)) - bx;
     if (bw <= 0) continue;
-    svg.append(s('rect', { x: bx, y: pad.t, width: bw, height: H - pad.t - pad.b }, `fill:var(--color-accent);opacity:${0.03 + b.weight * 0.09}`));
+    svg.append(
+      s(
+        'rect',
+        { x: bx, y: pad.t, width: bw, height: H - pad.t - pad.b },
+        `fill:var(--color-accent);opacity:${0.03 + b.weight * 0.09}`,
+      ),
+    );
     if (bw > 26) {
       const t = s('text', { x: bx + 4, y: pad.t + 11 }, TEXT);
       t.textContent = b.label;
@@ -118,37 +135,90 @@ export function lineChart(host: HTMLElement, o: LineChartOpts): void {
   }
 
   for (const v of yTicks) {
-    svg.append(s('line', { x1: pad.l, x2: W - pad.r, y1: Y(v), y2: Y(v) }, v === 0 ? 'stroke:var(--color-border-strong);stroke-width:1' : GRID));
+    svg.append(
+      s(
+        'line',
+        { x1: pad.l, x2: W - pad.r, y1: Y(v), y2: Y(v) },
+        v === 0 ? 'stroke:var(--color-border-strong);stroke-width:1' : GRID,
+      ),
+    );
     const t = s('text', { x: pad.l - 8, y: Y(v) + 3, 'text-anchor': 'end' }, TEXT);
     t.textContent = o.yFmt(v);
     svg.append(t);
   }
   for (let k = 0; k <= 4; k++) {
     const xv = x0 + ((x1 - x0) * k) / 4;
-    const t = s('text', { x: X(xv), y: H - 8, 'text-anchor': k === 0 ? 'start' : k === 4 ? 'end' : 'middle' }, TEXT);
+    const t = s(
+      'text',
+      { x: X(xv), y: H - 8, 'text-anchor': k === 0 ? 'start' : k === 4 ? 'end' : 'middle' },
+      TEXT,
+    );
     t.textContent = o.xFmt(xv);
     svg.append(t);
   }
 
-  const d = o.points.map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join('');
-  svg.append(s('path', { d: `${d}L${X(x1)},${Y(Math.max(bottom, 0))}L${X(x0)},${Y(Math.max(bottom, 0))}Z` }, 'fill:var(--color-accent);opacity:0.1'));
-  svg.append(s('path', { d, fill: 'none' }, 'stroke:var(--color-accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round'));
+  const d = o.points
+    .map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`)
+    .join('');
+  svg.append(
+    s(
+      'path',
+      { d: `${d}L${X(x1)},${Y(Math.max(bottom, 0))}L${X(x0)},${Y(Math.max(bottom, 0))}Z` },
+      'fill:var(--color-accent);opacity:0.1',
+    ),
+  );
+  svg.append(
+    s(
+      'path',
+      { d, fill: 'none' },
+      'stroke:var(--color-accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round',
+    ),
+  );
 
-  const nearest = (x: number) => o.points.reduce((a, p) => (Math.abs(p[0] - x) < Math.abs(a[0] - x) ? p : a), o.points[0]!);
+  const nearest = (x: number) =>
+    o.points.reduce((a, p) => (Math.abs(p[0] - x) < Math.abs(a[0] - x) ? p : a), o.points[0]!);
   if (o.marker) {
     const p = nearest(o.marker.x);
-    svg.append(s('line', { x1: X(p[0]), x2: X(p[0]), y1: pad.t, y2: H - pad.b }, 'stroke:var(--color-fg-faint);stroke-width:1'));
-    svg.append(s('circle', { cx: X(p[0]), cy: Y(p[1]), r: 5 }, 'fill:var(--color-accent);stroke:var(--color-panel);stroke-width:2'));
+    svg.append(
+      s(
+        'line',
+        { x1: X(p[0]), x2: X(p[0]), y1: pad.t, y2: H - pad.b },
+        'stroke:var(--color-fg-faint);stroke-width:1',
+      ),
+    );
+    svg.append(
+      s(
+        'circle',
+        { cx: X(p[0]), cy: Y(p[1]), r: 5 },
+        'fill:var(--color-accent);stroke:var(--color-panel);stroke-width:2',
+      ),
+    );
     const left = X(p[0]) > W * 0.7;
-    const t = s('text', { x: X(p[0]) + (left ? -9 : 9), y: Y(p[1]) - 9, 'text-anchor': left ? 'end' : 'start' }, 'fill:var(--color-fg);font:600 11px var(--font-mono)');
+    const t = s(
+      'text',
+      { x: X(p[0]) + (left ? -9 : 9), y: Y(p[1]) - 9, 'text-anchor': left ? 'end' : 'start' },
+      'fill:var(--color-fg);font:600 11px var(--font-mono)',
+    );
     t.textContent = o.marker.label;
     svg.append(t);
   }
 
   // Hover layer: crosshair + dot + tooltip, hit area is the whole plot.
-  const cross = s('line', { y1: pad.t, y2: H - pad.b }, 'stroke:var(--color-fg-muted);stroke-width:1;display:none');
-  const dot = s('circle', { r: 4 }, 'fill:var(--color-fg);stroke:var(--color-panel);stroke-width:2;display:none');
-  const hit = s('rect', { x: pad.l, y: pad.t, width: W - pad.l - pad.r, height: H - pad.t - pad.b }, 'fill:transparent;cursor:crosshair');
+  const cross = s(
+    'line',
+    { y1: pad.t, y2: H - pad.b },
+    'stroke:var(--color-fg-muted);stroke-width:1;display:none',
+  );
+  const dot = s(
+    'circle',
+    { r: 4 },
+    'fill:var(--color-fg);stroke:var(--color-panel);stroke-width:2;display:none',
+  );
+  const hit = s(
+    'rect',
+    { x: pad.l, y: pad.t, width: W - pad.l - pad.r, height: H - pad.t - pad.b },
+    'fill:transparent;cursor:crosshair',
+  );
   svg.append(cross, dot, hit);
   const move = (ev: PointerEvent) => {
     const r = svg.getBoundingClientRect();
@@ -187,7 +257,13 @@ export function barChart(host: HTMLElement, o: BarChartOpts): void {
   const top = ticks[ticks.length - 1]!;
   const Y = (y: number) => pad.t + ((top - y) / top) * (H - pad.t - pad.b);
   for (const v of ticks) {
-    svg.append(s('line', { x1: pad.l, x2: W - pad.r, y1: Y(v), y2: Y(v) }, v === 0 ? 'stroke:var(--color-border-strong);stroke-width:1' : GRID));
+    svg.append(
+      s(
+        'line',
+        { x1: pad.l, x2: W - pad.r, y1: Y(v), y2: Y(v) },
+        v === 0 ? 'stroke:var(--color-border-strong);stroke-width:1' : GRID,
+      ),
+    );
     const t = s('text', { x: pad.l - 8, y: Y(v) + 3, 'text-anchor': 'end' }, TEXT);
     t.textContent = o.yFmt(v);
     svg.append(t);
@@ -202,7 +278,10 @@ export function barChart(host: HTMLElement, o: BarChartOpts): void {
     const r = Math.min(4, bw / 2, hgt);
     // Rounded data end, square at the baseline.
     const x = cx - bw / 2;
-    const path = hgt <= 0 ? '' : `M${x},${Y(0)}V${y + r}Q${x},${y} ${x + r},${y}H${x + bw - r}Q${x + bw},${y} ${x + bw},${y + r}V${Y(0)}Z`;
+    const path =
+      hgt <= 0
+        ? ''
+        : `M${x},${Y(0)}V${y + r}Q${x},${y} ${x + r},${y}H${x + bw - r}Q${x + bw},${y} ${x + bw},${y + r}V${Y(0)}Z`;
     const opacity = o.focus == null || o.focus === i ? 1 : 0.55;
     if (path) svg.append(s('path', { d: path }, `fill:var(--color-accent);opacity:${opacity}`));
     if (i % every === 0) {
@@ -210,8 +289,14 @@ export function barChart(host: HTMLElement, o: BarChartOpts): void {
       t.textContent = b.label;
       svg.append(t);
     }
-    const hit = s('rect', { x: pad.l + slot * i, y: pad.t, width: slot, height: H - pad.t - pad.b }, 'fill:transparent');
-    hit.addEventListener('pointerenter', () => showTip(f, cx, y, b.tip ?? [o.yFmt(b.value), b.label]));
+    const hit = s(
+      'rect',
+      { x: pad.l + slot * i, y: pad.t, width: slot, height: H - pad.t - pad.b },
+      'fill:transparent',
+    );
+    hit.addEventListener('pointerenter', () =>
+      showTip(f, cx, y, b.tip ?? [o.yFmt(b.value), b.label]),
+    );
     hit.addEventListener('pointerleave', () => f.tip.classList.add('hidden'));
     svg.append(hit);
   });

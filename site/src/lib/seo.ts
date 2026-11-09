@@ -14,7 +14,8 @@ export const organization = (site: URL | undefined): Node => ({
   name: 'Taxline',
   url: absolute('', site),
   logo: absolute('favicon.svg', site),
-  description: 'Agentic tax operations. A fleet of AI agents moves tax work from intake to reviewer-ready workpapers, with a human approving before anything ships.',
+  description:
+    'Agentic tax operations. A fleet of AI agents moves tax work from intake to reviewer-ready workpapers, with a human approving before anything ships.',
 });
 
 export const website = (site: URL | undefined): Node => ({
@@ -41,17 +42,32 @@ export const softwareApp = (site: URL | undefined): Node => ({
   ],
 });
 
-export const breadcrumbs = (site: URL | undefined, trail: { name: string; path: string }[]): Node => ({
+export const breadcrumbs = (
+  site: URL | undefined,
+  trail: { name: string; path: string }[],
+): Node => ({
   '@type': 'BreadcrumbList',
-  itemListElement: trail.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: t.name, item: absolute(t.path, site) })),
+  itemListElement: trail.map((t, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: t.name,
+    item: absolute(t.path, site),
+  })),
 });
 
 export const faqPage = (faqs: { q: string; a: string }[]): Node => ({
   '@type': 'FAQPage',
-  mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
 });
 
-export const calculator = (site: URL | undefined, o: { name: string; path: string; description: string }): Node => ({
+export const calculator = (
+  site: URL | undefined,
+  o: { name: string; path: string; description: string },
+): Node => ({
   '@type': 'WebApplication',
   name: o.name,
   url: absolute(o.path, site),
