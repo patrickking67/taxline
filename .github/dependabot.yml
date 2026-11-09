@@ -9,6 +9,13 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # typescript-eslint and @astrojs/check do not support TypeScript 7 yet.
+      - dependency-name: typescript
+        versions: ['>=7']
+      # Keep Node types on the Node 22 line that CI and engines target.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: npm
     directory: '/service'
@@ -17,6 +24,10 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # Keep Node types on the Node 22 line that CI and engines target.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: npm
     directory: '/workers/contact'
@@ -33,6 +44,10 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # @astrojs/check does not support TypeScript 7 yet.
+      - dependency-name: typescript
+        versions: ['>=7']
 
   - package-ecosystem: github-actions
     directory: '/'
