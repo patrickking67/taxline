@@ -99,7 +99,9 @@ const matrix = [
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
           <Button href={u('contact')}>Book a demo</Button>
-          <Button href={u('docs')} variant="ghost">Read the docs</Button>
+          <Button href={u('docs')} variant="ghost">
+            Read the docs
+          </Button>
         </div>
       </div>
     </section>
@@ -114,17 +116,15 @@ const matrix = [
           the console or losing the trail back to source.
         </p>
         <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {
-            surfaces.map((s) => (
-              <div class="rounded-lg border border-border bg-panel p-5 shadow-1">
-                <div class="grid size-8 place-items-center rounded-md border border-border bg-raised">
-                  <Icon name={s.icon} class="size-4 text-fg-muted" />
-                </div>
-                <h3 class="mt-3.5 text-[15px] font-semibold text-fg">{s.name}</h3>
-                <p class="mt-1.5 text-[13px] leading-relaxed text-fg-muted">{s.body}</p>
+          {surfaces.map((s) => (
+            <div class="rounded-lg border border-border bg-panel p-5 shadow-1">
+              <div class="grid size-8 place-items-center rounded-md border border-border bg-raised">
+                <Icon name={s.icon} class="size-4 text-fg-muted" />
               </div>
-            ))
-          }
+              <h3 class="mt-3.5 text-[15px] font-semibold text-fg">{s.name}</h3>
+              <p class="mt-1.5 text-[13px] leading-relaxed text-fg-muted">{s.body}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -142,44 +142,40 @@ const matrix = [
           <table class="w-full min-w-[640px] border-collapse text-left">
             <thead>
               <tr class="border-b border-border">
-                <th class="px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-fg-faint"
-                  >Client</th
-                >
-                {
-                  forms.map((f) => (
-                    <th class="px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-fg-faint">
-                      {f}
-                    </th>
-                  ))
-                }
+                <th class="px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-fg-faint">
+                  Client
+                </th>
+                {forms.map((f) => (
+                  <th class="px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-fg-faint">
+                    {f}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {
-                matrix.map((row) => (
-                  <tr class="border-b border-border-faint last:border-0">
-                    <td class="whitespace-nowrap px-4 py-3.5 text-[13px] font-medium text-fg">
-                      {row.client}
+              {matrix.map((row) => (
+                <tr class="border-b border-border-faint last:border-0">
+                  <td class="whitespace-nowrap px-4 py-3.5 text-[13px] font-medium text-fg">
+                    {row.client}
+                  </td>
+                  {row.cells.map((c) => (
+                    <td class="px-4 py-3.5">
+                      <div class="flex flex-col items-start gap-1.5">
+                        <StatusPill status={c.status} />
+                        <span class="font-mono text-[11px] tabular-nums text-fg-faint">
+                          {c.conf ?? '—'}
+                        </span>
+                      </div>
                     </td>
-                    {row.cells.map((c) => (
-                      <td class="px-4 py-3.5">
-                        <div class="flex flex-col items-start gap-1.5">
-                          <StatusPill status={c.status} />
-                          <span class="font-mono text-[11px] tabular-nums text-fg-faint">
-                            {c.conf ?? '—'}
-                          </span>
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              }
+                  ))}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
         <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
-          <Icon name="lucide:user-check" class="size-4 text-accent" />Cells under 0.85 confidence
-          route to review before approval.
+          <Icon name="lucide:user-check" class="size-4 text-accent" />
+          Cells under 0.85 confidence route to review before approval.
         </p>
       </div>
     </section>
@@ -196,16 +192,16 @@ const matrix = [
           </p>
           <ul class="mt-6 space-y-3">
             <li class="flex items-start gap-2.5 text-[14px] text-fg-muted">
-              <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />Lead schedules
-              built from cited fields, not retyped figures.
+              <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />
+              Lead schedules built from cited fields, not retyped figures.
             </li>
             <li class="flex items-start gap-2.5 text-[14px] text-fg-muted">
-              <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />Every line
-              carries a confidence score and a citation.
+              <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />
+              Every line carries a confidence score and a citation.
             </li>
             <li class="flex items-start gap-2.5 text-[14px] text-fg-muted">
-              <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />Export the
-              package once a human approves it.
+              <Icon name="lucide:check" class="mt-0.5 size-4 shrink-0 text-accent" />
+              Export the package once a human approves it.
             </li>
           </ul>
         </div>
@@ -222,17 +218,15 @@ const matrix = [
           <table class="mt-3 w-full border-collapse text-left">
             <thead>
               <tr class="border-b border-paper-border">
-                <th class="py-2 font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted"
-                  >Account</th
-                >
-                <th
-                  class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted"
-                  >Balance</th
-                >
-                <th
-                  class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted"
-                  >Source</th
-                >
+                <th class="py-2 font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">
+                  Account
+                </th>
+                <th class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">
+                  Balance
+                </th>
+                <th class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">
+                  Source
+                </th>
               </tr>
             </thead>
             <tbody class="font-mono text-[12px] tabular-nums">
@@ -253,9 +247,7 @@ const matrix = [
               </tr>
             </tbody>
           </table>
-          <p
-            class="mt-3 border-t border-paper-border pt-3 font-mono text-[10px] text-paper-ink-muted"
-          >
+          <p class="mt-3 border-t border-paper-border pt-3 font-mono text-[10px] text-paper-ink-muted">
             Every figure traces to a cited source. Confidence 0.97 · awaiting reviewer sign-off.
           </p>
         </div>
@@ -264,16 +256,16 @@ const matrix = [
 
     <!-- CTA -->
     <section class="border-b border-border">
-      <div
-        class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6"
-      >
+      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
         <div>
           <h2 class="ds-h2 max-w-xl">Run the whole operation from one console.</h2>
           <p class="ds-small mt-2">See every surface working on your own documents.</p>
         </div>
         <div class="flex gap-3">
           <Button href={u('contact')}>Book a demo</Button>
-          <Button href={u('app')} variant="ghost">Open the app</Button>
+          <Button href={u('app')} variant="ghost">
+            Open the app
+          </Button>
         </div>
       </div>
     </section>

@@ -14,5 +14,7 @@ const { icon = 'lucide:file-text', class: cls = '' } = Astro.props;
   ]}
 >
   <Icon name={icon} class="size-[13px] shrink-0 text-info" />
-  <span class="truncate"><slot /></span>
+  <span class="truncate">
+    <slot />
+  </span>
 </span>

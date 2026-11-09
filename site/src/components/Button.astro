@@ -22,4 +22,6 @@ const cn = [base, pad, look, cls].filter(Boolean).join(' ');
 const Tag = href ? 'a' : 'button';
 ---
 
-<Tag href={href} type={href ? undefined : type} class={cn}><slot /></Tag>
+<Tag href={href} type={href ? undefined : type} class={cn}>
+  <slot />
+</Tag>

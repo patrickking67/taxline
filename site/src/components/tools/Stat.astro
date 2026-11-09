@@ -31,12 +31,10 @@ const { label, out, sub, subOut, tone = 'default', class: cls = '' } = Astro.pro
   >
     —
   </div>
-  {
-    (sub || subOut) && (
-      <div class="mt-1.5 text-[12px] text-fg-muted">
-        {sub}
-        {subOut && <span data-out={subOut} class="font-mono" />}
-      </div>
-    )
-  }
+  {(sub || subOut) && (
+    <div class="mt-1.5 text-[12px] text-fg-muted">
+      {sub}
+      {subOut && <span data-out={subOut} class="font-mono" />}
+    </div>
+  )}
 </div>

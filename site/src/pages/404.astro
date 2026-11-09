@@ -16,20 +16,28 @@ import { u } from '../lib/url';
       <p class="ds-lead mt-5 max-w-xl">
         Relay checked the queue. Nothing here matched, at any confidence. Pick a known route below.
       </p>
-      <div
-        class="mt-6 max-w-md rounded-md border border-border bg-inset px-4 py-3 font-mono text-xs leading-relaxed text-fg-muted"
-      >
+      <div class="mt-6 max-w-md rounded-md border border-border bg-inset px-4 py-3 font-mono text-xs leading-relaxed text-fg-muted">
         <div>
           <span class="text-fg-faint">route</span>{' '}
-          <span class="text-danger-bright" data-path>unknown</span>
+          <span class="text-danger-bright" data-path>
+            unknown
+          </span>
         </div>
-        <div><span class="text-fg-faint">match</span> null · confidence 0.00</div>
-        <div><span class="text-fg-faint">action</span> routed to human</div>
+        <div>
+          <span class="text-fg-faint">match</span> null · confidence 0.00
+        </div>
+        <div>
+          <span class="text-fg-faint">action</span> routed to human
+        </div>
       </div>
       <div class="mt-8 flex flex-wrap gap-3">
         <Button href={u('')}>Go home</Button>
-        <Button href={u('tools')} variant="ghost">Free tax tools</Button>
-        <Button href={u('app')} variant="ghost">Open the app</Button>
+        <Button href={u('tools')} variant="ghost">
+          Free tax tools
+        </Button>
+        <Button href={u('app')} variant="ghost">
+          Open the app
+        </Button>
       </div>
     </div>
   </main>

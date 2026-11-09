@@ -18,7 +18,9 @@ const { title, subtitle, code, id } = Astro.props;
       <div class="font-mono text-[10px] uppercase tracking-[0.14em] text-paper-ink-muted">
         Workpaper · estimate for review
       </div>
-      <h2 id={`${id}-h`} class="mt-0.5 text-[15px] font-semibold">{title}</h2>
+      <h2 id={`${id}-h`} class="mt-0.5 text-[15px] font-semibold">
+        {title}
+      </h2>
       {subtitle && <p class="mt-0.5 text-[12px] text-paper-ink-muted">{subtitle}</p>}
     </div>
     <div class="flex shrink-0 items-center gap-3">
@@ -27,8 +29,9 @@ const { title, subtitle, code, id } = Astro.props;
         type="button"
         data-copy={id}
         class="rounded-sm border border-paper-border px-2 py-1 font-mono text-[11px] text-paper-ink-muted transition-colors hover:border-paper-ink-muted hover:text-paper-ink"
-        >Copy</button
       >
+        Copy
+      </button>
     </div>
   </div>
   <div class="overflow-x-auto px-5 pb-2">
@@ -39,26 +42,27 @@ const { title, subtitle, code, id } = Astro.props;
           <th
             scope="col"
             class="py-2 pr-3 font-mono text-[10px] font-medium uppercase tracking-wider text-paper-ink-muted"
-            >Line</th
           >
+            Line
+          </th>
           <th
             scope="col"
             class="py-2 pr-3 font-mono text-[10px] font-medium uppercase tracking-wider text-paper-ink-muted"
-            >Item · formula · authority</th
           >
+            Item · formula · authority
+          </th>
           <th
             scope="col"
             class="py-2 text-right font-mono text-[10px] font-medium uppercase tracking-wider text-paper-ink-muted"
-            >Amount</th
           >
+            Amount
+          </th>
         </tr>
       </thead>
       <tbody data-trace={id}></tbody>
     </table>
   </div>
-  <p
-    class="border-t border-paper-border px-5 py-3 font-mono text-[10px] leading-relaxed text-paper-ink-muted"
-  >
+  <p class="border-t border-paper-border px-5 py-3 font-mono text-[10px] leading-relaxed text-paper-ink-muted">
     Deterministic output of @taxline/tax-engine · TY2026 · figures from IRS Rev. Proc. 2025-32. An
     estimate for a preparer to review, not a filed return.
   </p>

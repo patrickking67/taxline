@@ -40,46 +40,42 @@ const confColor = (c: number | null): string =>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
-      {
-        clients.map((c) => (
-          <div class="rounded-lg border border-border bg-panel p-5 shadow-1">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <h2 class="text-[15px] font-semibold text-fg">{c.client}</h2>
-                <div class="mt-1 flex flex-wrap gap-1.5">
-                  {c.forms.map((f) => (
-                    <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[10px] text-fg-muted">
-                      {f}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div class="shrink-0 text-right">
-                <div class={`font-mono text-lg font-semibold tabular-nums ${confColor(c.mean)}`}>
-                  {c.mean == null ? '—' : c.mean.toFixed(2)}
-                </div>
-                <div class="font-mono text-[10px] uppercase tracking-wider text-fg-faint">
-                  mean conf
-                </div>
+      {clients.map((c) => (
+        <div class="rounded-lg border border-border bg-panel p-5 shadow-1">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-[15px] font-semibold text-fg">{c.client}</h2>
+              <div class="mt-1 flex flex-wrap gap-1.5">
+                {c.forms.map((f) => (
+                  <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[10px] text-fg-muted">
+                    {f}
+                  </span>
+                ))}
               </div>
             </div>
-            <div class="mt-4 divide-y divide-border-faint border-t border-border-faint">
-              {c.list.map((d) => (
-                <a
-                  href={u('app/' + d.id)}
-                  class="-mx-2 flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-raised"
-                >
-                  <Icon name="lucide:file-text" class="size-4 shrink-0 text-fg-faint" />
-                  <span class="min-w-0 flex-1 truncate font-mono text-[12px] text-fg">
-                    {d.name}
-                  </span>
-                  <StatusPill status={d.status} />
-                </a>
-              ))}
+            <div class="shrink-0 text-right">
+              <div class={`font-mono text-lg font-semibold tabular-nums ${confColor(c.mean)}`}>
+                {c.mean == null ? '—' : c.mean.toFixed(2)}
+              </div>
+              <div class="font-mono text-[10px] uppercase tracking-wider text-fg-faint">
+                mean conf
+              </div>
             </div>
           </div>
-        ))
-      }
+          <div class="mt-4 divide-y divide-border-faint border-t border-border-faint">
+            {c.list.map((d) => (
+              <a
+                href={u('app/' + d.id)}
+                class="-mx-2 flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-raised"
+              >
+                <Icon name="lucide:file-text" class="size-4 shrink-0 text-fg-faint" />
+                <span class="min-w-0 flex-1 truncate font-mono text-[12px] text-fg">{d.name}</span>
+                <StatusPill status={d.status} />
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 </AppShell>

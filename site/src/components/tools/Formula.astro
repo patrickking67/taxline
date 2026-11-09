@@ -16,11 +16,9 @@ const { title, plain, note } = Astro.props;
   <div class="formula mt-4 overflow-x-auto text-fg" role="math" aria-label={plain} tabindex="0">
     <slot />
   </div>
-  {
-    note && (
-      <p class="mt-4 border-t border-border-faint pt-3 text-[12px] leading-relaxed text-fg-muted">
-        {note}
-      </p>
-    )
-  }
+  {note && (
+    <p class="mt-4 border-t border-border-faint pt-3 text-[12px] leading-relaxed text-fg-muted">
+      {note}
+    </p>
+  )}
 </figure>

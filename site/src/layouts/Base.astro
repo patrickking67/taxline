@@ -46,13 +46,11 @@ const graph = JSON.stringify({
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {
-      noindex ? (
-        <meta name="robots" content="noindex, follow" />
-      ) : (
-        <link rel="canonical" href={canonical} />
-      )
-    }
+    {noindex ? (
+      <meta name="robots" content="noindex, follow" />
+    ) : (
+      <link rel="canonical" href={canonical} />
+    )}
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#0e0f10" />
     <meta property="og:site_name" content="Taxline" />
@@ -81,8 +79,9 @@ const graph = JSON.stringify({
     <a
       href="#main"
       class="sr-only z-[100] rounded-md bg-accent px-3 py-2 text-sm font-medium text-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-3"
-      >Skip to content</a
     >
+      Skip to content
+    </a>
     <slot />
   </body>
 </html>
