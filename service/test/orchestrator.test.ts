@@ -6,7 +6,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import Anthropic from '@anthropic-ai/sdk';
 import type { MessagesClient } from '../src/agent.js';
-import { aggregateToolOutputs, orchestrate, pickEntryAgent, requireHumanApproval, runIssues } from '../src/orchestrator.js';
+import {
+  aggregateToolOutputs,
+  clampMaxHops,
+  DEFAULT_MAX_HOPS,
+  MAX_HOPS_LIMIT,
+  orchestrate,
+  pickEntryAgent,
+  requireHumanApproval,
+  runIssues,
+} from '../src/orchestrator.js';
 import { fail, ok, type ExtractedField, type OrchestratorResult } from '../src/types.js';
 import { citationFile } from '../src/kb/retrieve.js';
 
@@ -147,6 +156,40 @@ test('a failed model call is reported, not thrown, and stops the chain', async (
     r.needsHumanReview.some((x) => x.reason === 'agent "extraction" failed: The model is temporarily unavailable. (transient, retryable)'),
     JSON.stringify(r.needsHumanReview),
   );
+});
+
+test('a chain cut short by the hop limit is flagged for the reviewer', async () => {
+  const r = await orchestrate({ task: 'Extract the W-2', agent: 'extraction', docId: 'acme_w2_2024', maxHops: 1 });
+  assert.deepEqual(r.trace.map((s) => s.agent), ['extraction']);
+  assert.equal(r.approved, false);
+  assert.ok(
+    r.needsHumanReview.some((x) => x.reason === 'chain stopped at the 1-hop limit before agent "workpaper" ran'),
+    JSON.stringify(r.needsHumanReview),
+  );
+});
+
+test('a zero or negative hop limit still runs the entry agent and flags the stop', async () => {
+  for (const maxHops of [0, -3]) {
+    const r = await orchestrate({ task: 'Extract the W-2', agent: 'extraction', docId: 'acme_w2_2024', maxHops });
+    assert.deepEqual(r.trace.map((s) => s.agent), ['extraction']);
+    assert.ok(r.needsHumanReview.some((x) => /hop limit before agent "workpaper" ran/.test(x.reason)));
+  }
+});
+
+test('a chain that finishes inside the hop limit adds no hop item', async () => {
+  const r = await orchestrate({ task: 'Extract the W-2', agent: 'extraction', docId: 'acme_w2_2024', maxHops: 3 });
+  assert.deepEqual(r.trace.map((s) => s.agent), ['extraction', 'workpaper', 'compliance']);
+  assert.ok(!r.needsHumanReview.some((x) => /hop limit/.test(x.reason)));
+});
+
+test('client hop limits are clamped to a safe range', () => {
+  assert.equal(clampMaxHops(undefined), DEFAULT_MAX_HOPS);
+  assert.equal(clampMaxHops(Number.NaN), DEFAULT_MAX_HOPS);
+  assert.equal(clampMaxHops(Number.POSITIVE_INFINITY), DEFAULT_MAX_HOPS);
+  assert.equal(clampMaxHops(0), 1);
+  assert.equal(clampMaxHops(-3), 1);
+  assert.equal(clampMaxHops(2.7), 2);
+  assert.equal(clampMaxHops(1_000_000), MAX_HOPS_LIMIT);
 });
 
 test('remembered records are never cited as knowledge-base files', () => {

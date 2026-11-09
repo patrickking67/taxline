@@ -9,6 +9,10 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Fixed
 
+- A client `maxHops` could end the agent chain early with no review item, and
+  `maxHops: 0` ran no agent at all. The orchestrator now clamps it to 1 through
+  5 and adds a review item naming the agent that did not run, so an early stop
+  always reaches the reviewer and is never written to memory.
 - `compute_deadline` checks fixed-date holidays on their observed date, so the
   2022 and 2023 Form 1040 deadlines come out as April 18 (Emancipation Day was
   observed on the Friday before and the Monday after). Impossible dates such as

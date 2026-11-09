@@ -88,7 +88,9 @@ tool rather than asking a person to run them.
 - **Gates are code, not prompts.** The agent loop stops on `stop_reason`; tools are
   least-privilege per agent; errors are structured (`errorCategory`, `isRetryable`);
   `extract_fields` is the source of truth and `assess_confidence` can only add review
-  items; `requireHumanApproval` runs last in `service/src/orchestrator.ts`. Rules:
+  items; every early stop of the chain (error, unknown agent, hop cap) adds a
+  review item, and `maxHops` is clamped by `clampMaxHops`; `requireHumanApproval`
+  runs last in `service/src/orchestrator.ts`. Rules:
   `.claude/rules/agent-architecture.md`. Service tests use a fake Messages client.
 - **Intake is validated.** `POST /scenario` output goes through `validateScenario`
   (known key, typed value, quote present in the text and stating the amount).
