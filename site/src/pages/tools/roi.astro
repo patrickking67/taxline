@@ -127,8 +127,9 @@ const limits = [
         <button
           type="reset"
           class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg"
-          >Reset</button
         >
+          Reset
+        </button>
         <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
       </div>
     </form>
@@ -143,9 +144,9 @@ const limits = [
       <div class="rounded-lg border border-border bg-panel p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <h2 class="text-[13px] font-semibold text-fg">Cumulative net cash position</h2>
-          <span class="font-mono text-[11px] text-fg-faint"
-            >month 0 = setup · crosses zero at payback</span
-          >
+          <span class="font-mono text-[11px] text-fg-faint">
+            month 0 = setup · crosses zero at payback
+          </span>
         </div>
         <div data-curve class="mt-3"></div>
       </div>
@@ -164,20 +165,17 @@ const limits = [
       plain="N = R h rho c minus 12 s p"
       note="R returns, h hours per return, ρ share removed, c loaded cost, s seats, p price per seat-month."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mi>N</mi><mo>=</mo><mi>R</mi><mo>·</mo><mi>h</mi><mo>·</mo><mi>ρ</mi><mo>·</mo><mi>c</mi
           ><mo>−</mo><mn>12</mn><mo>·</mo><mi>s</mi><mo>·</mo><mi>p</mi></mrow
-        ></math
-      >
+        ></math>
     </Formula>
     <Formula
       title="Net present value"
       plain="NPV = minus C_0 + sum over t of N_t / (1 + i)^t"
       note="N_t is each year's net benefit after the ramp; C₀ is the setup cost; i the discount rate."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mi>NPV</mi><mo>=</mo><mo>−</mo><msub><mi>C</mi><mn>0</mn></msub><mo>+</mo><munderover
             ><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover
           ><mfrac
@@ -185,16 +183,14 @@ const limits = [
               ><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>i</mi><mo>)</mo></mrow><mi>t</mi></msup
             ></mfrac
           ></mrow
-        ></math
-      >
+        ></math>
     </Formula>
     <Formula
       title="Internal rate of return"
       plain="IRR: the r where NPV(r) = 0, found by bisection"
       note="Bisection on [−99%, 1,000%] to a 1e-7 tolerance. Undefined when the flows never change sign."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mn>0</mn><mo>=</mo><mo>−</mo><msub><mi>C</mi><mn>0</mn></msub><mo>+</mo><munderover
             ><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover
           ><mfrac
@@ -202,16 +198,14 @@ const limits = [
               ><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>IRR</mi><mo>)</mo></mrow><mi>t</mi></msup
             ></mfrac
           ></mrow
-        ></math
-      >
+        ></math>
     </Formula>
     <Formula
       title="Capacity"
       plain="K = floor(R h rho / (h (1 minus rho)))"
       note="Hours returned divided by the new hours per return: the extra returns the same team could carry."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mi>K</mi><mo>=</mo><mrow
             ><mo>⌊</mo><mfrac
               ><mrow><mi>R</mi><mi>h</mi><mi>ρ</mi></mrow><mrow
@@ -219,8 +213,7 @@ const limits = [
               ></mfrac
             ><mo>⌋</mo></mrow
           ></mrow
-        ></math
-      >
+        ></math>
     </Formula>
   </Fragment>
 </ToolShell>

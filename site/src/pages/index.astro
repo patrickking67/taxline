@@ -77,13 +77,12 @@ const steps = [
     <!-- Hero -->
     <section class="relative overflow-hidden border-b border-border">
       <div class="pointer-events-none absolute inset-0 console-grid opacity-60"></div>
-      <div
-        class="relative mx-auto grid max-w-[1200px] items-center gap-12 px-5 pb-14 pt-20 sm:px-6 lg:grid-cols-2"
-      >
+      <div class="relative mx-auto grid max-w-[1200px] items-center gap-12 px-5 pb-14 pt-20 sm:px-6 lg:grid-cols-2">
         <div>
           <p class="ds-eyebrow reveal">Agentic tax operations</p>
           <h1 class="ds-display reveal mt-4" style="animation-delay:.05s">
-            Remove manual tax operations.<br class="hidden sm:block" /> Keep the human approval.
+            Remove manual tax operations.
+            <br class="hidden sm:block" /> Keep the human approval.
           </h1>
           <p class="ds-lead reveal mt-5 max-w-xl" style="animation-delay:.1s">
             A coordinated agent fleet — Relay, Lens, Atlas, Ledger, and Sentry — turns a pile of
@@ -92,20 +91,20 @@ const steps = [
           </p>
           <div class="reveal mt-8 flex flex-wrap gap-3" style="animation-delay:.15s">
             <Button href={u('contact')}>Book a demo</Button>
-            <Button href={u('app')} variant="ghost">See it run</Button>
+            <Button href={u('app')} variant="ghost">
+              See it run
+            </Button>
           </div>
           <p class="reveal mt-4 font-mono text-xs text-fg-faint" style="animation-delay:.2s">
             Free Core plan · no credit card
           </p>
           <div class="reveal mt-7 flex flex-wrap gap-x-5 gap-y-2.5" style="animation-delay:.25s">
-            {
-              trust.map(([icon, label]) => (
-                <span class="inline-flex items-center gap-2 text-[13px] text-fg-muted">
-                  <Icon name={icon} class="size-4 text-fg-faint" />
-                  {label}
-                </span>
-              ))
-            }
+            {trust.map(([icon, label]) => (
+              <span class="inline-flex items-center gap-2 text-[13px] text-fg-muted">
+                <Icon name={icon} class="size-4 text-fg-faint" />
+                {label}
+              </span>
+            ))}
           </div>
         </div>
         <div class="reveal" style="animation-delay:.15s">
@@ -113,20 +112,16 @@ const steps = [
         </div>
       </div>
       <div class="relative border-t border-border-faint">
-        <div
-          class="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-8 gap-y-2 px-5 py-4 sm:px-6"
-        >
-          <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-fg-faint"
-            >Built for</span
-          >
-          {
-            audiences.map(([icon, label]) => (
-              <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
-                <Icon name={icon} class="size-4 text-fg-faint" />
-                {label}
-              </span>
-            ))
-          }
+        <div class="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-8 gap-y-2 px-5 py-4 sm:px-6">
+          <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-fg-faint">
+            Built for
+          </span>
+          {audiences.map(([icon, label]) => (
+            <span class="inline-flex items-center gap-2 text-sm text-fg-muted">
+              <Icon name={icon} class="size-4 text-fg-faint" />
+              {label}
+            </span>
+          ))}
         </div>
       </div>
     </section>
@@ -142,8 +137,9 @@ const steps = [
           <a
             href={u('app')}
             class="hidden shrink-0 items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover sm:inline-flex"
-            >Open the app <Icon name="lucide:arrow-right" class="size-4" /></a
           >
+            Open the app <Icon name="lucide:arrow-right" class="size-4" />
+          </a>
         </div>
         <div class="mt-8">
           <ConsoleHero />
@@ -180,21 +176,19 @@ const steps = [
           </p>
         </div>
         <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {
-            fleet.map((a) => (
-              <div>
-                <AgentCard
-                  icon={a.icon}
-                  name={a.role}
-                  title={a.codename}
-                  body={a.blurb}
-                  tools={a.tools}
-                  href={u('agents')}
-                  class="lift h-full"
-                />
-              </div>
-            ))
-          }
+          {fleet.map((a) => (
+            <div>
+              <AgentCard
+                icon={a.icon}
+                name={a.role}
+                title={a.codename}
+                body={a.blurb}
+                tools={a.tools}
+                href={u('agents')}
+                class="lift h-full"
+              />
+            </div>
+          ))}
           <a
             href={u('agents')}
             class="lift flex flex-col justify-between rounded-lg border border-dashed border-border bg-base p-5 hover:border-accent-line"
@@ -204,9 +198,9 @@ const steps = [
               The orchestrator. It picks the first agent, follows each handoff, collects every field
               and citation, and stops at the approval gate until a person signs off.
             </p>
-            <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent"
-              >See how routing works <Icon name="lucide:arrow-right" class="size-4" /></span
-            >
+            <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent">
+              See how routing works <Icon name="lucide:arrow-right" class="size-4" />
+            </span>
           </a>
         </div>
       </div>
@@ -214,38 +208,35 @@ const steps = [
 
     <!-- The math is code -->
     <section class="border-b border-border">
-      <div
-        class="mx-auto grid max-w-[1200px] items-start gap-12 px-5 py-20 sm:px-6 lg:grid-cols-[1fr_1.05fr]"
-      >
+      <div class="mx-auto grid max-w-[1200px] items-start gap-12 px-5 py-20 sm:px-6 lg:grid-cols-[1fr_1.05fr]">
         <div>
           <p class="ds-eyebrow">The math is code</p>
           <h2 class="ds-h2 mt-3 max-w-xl">Models draft. A tested engine computes. You approve.</h2>
           <p class="ds-lead mt-3 max-w-xl">
-            Ledger never does arithmetic in a prompt. It calls <code
-              class="font-mono text-[16px] text-fg">compute_tax</code
-            > — a deterministic engine with 2026 figures from Rev. Proc. 2025-32 — and quotes the trace:
-            operands, form line, authority.
+            Ledger never does arithmetic in a prompt. It calls{' '}
+            <code class="font-mono text-[16px] text-fg">compute_tax</code> — a deterministic engine
+            with 2026 figures from Rev. Proc. 2025-32 — and quotes the trace: operands, form line,
+            authority.
           </p>
           <ul class="mt-7 grid gap-2 sm:grid-cols-2">
-            {
-              tools.map((t) => (
-                <li>
-                  <a
-                    href={u(`tools/${t.slug}`)}
-                    class="group flex items-center gap-2.5 rounded-md border border-border bg-panel px-3 py-2.5 text-[13px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
-                  >
-                    <Icon name={t.icon} class="size-4 text-fg-faint group-hover:text-accent" />
-                    {t.name}
-                  </a>
-                </li>
-              ))
-            }
+            {tools.map((t) => (
+              <li>
+                <a
+                  href={u(`tools/${t.slug}`)}
+                  class="group flex items-center gap-2.5 rounded-md border border-border bg-panel px-3 py-2.5 text-[13px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
+                >
+                  <Icon name={t.icon} class="size-4 text-fg-faint group-hover:text-accent" />
+                  {t.name}
+                </a>
+              </li>
+            ))}
           </ul>
           <a
             href={u('methodology')}
             class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover"
-            >How the engine is tested <Icon name="lucide:arrow-right" class="size-4" /></a
           >
+            How the engine is tested <Icon name="lucide:arrow-right" class="size-4" />
+          </a>
         </div>
         <div class="rounded-md border border-paper-border bg-paper text-paper-ink shadow-2">
           <div class="flex items-center justify-between border-b border-paper-border px-5 py-3">
@@ -261,43 +252,37 @@ const steps = [
           </div>
           <table class="w-full border-collapse text-left">
             <tbody>
-              {
-                sampleLines.map((l) => (
-                  <tr
+              {sampleLines.map((l) => (
+                <tr
+                  class:list={[
+                    'border-t',
+                    l.emphasis ? 'border-paper-border' : 'border-paper-border/50',
+                  ]}
+                >
+                  <td class="w-[88px] whitespace-nowrap py-2 pl-5 pr-2 align-top font-mono text-[10px] text-paper-ink-muted">
+                    {l.ref}
+                  </td>
+                  <td class="py-2 pr-2 align-top">
+                    <div class:list={['text-[13px]', l.emphasis && 'font-semibold']}>{l.label}</div>
+                    {l.formula && (
+                      <div class="mt-0.5 font-mono text-[10px] text-paper-ink-muted">
+                        {l.formula}
+                      </div>
+                    )}
+                  </td>
+                  <td
                     class:list={[
-                      'border-t',
-                      l.emphasis ? 'border-paper-border' : 'border-paper-border/50',
+                      'whitespace-nowrap py-2 pr-5 text-right align-top font-mono text-[13px] tabular-nums',
+                      l.emphasis && 'font-semibold',
                     ]}
                   >
-                    <td class="w-[88px] whitespace-nowrap py-2 pl-5 pr-2 align-top font-mono text-[10px] text-paper-ink-muted">
-                      {l.ref}
-                    </td>
-                    <td class="py-2 pr-2 align-top">
-                      <div class:list={['text-[13px]', l.emphasis && 'font-semibold']}>
-                        {l.label}
-                      </div>
-                      {l.formula && (
-                        <div class="mt-0.5 font-mono text-[10px] text-paper-ink-muted">
-                          {l.formula}
-                        </div>
-                      )}
-                    </td>
-                    <td
-                      class:list={[
-                        'whitespace-nowrap py-2 pr-5 text-right align-top font-mono text-[13px] tabular-nums',
-                        l.emphasis && 'font-semibold',
-                      ]}
-                    >
-                      {l.value < 0 ? `(${fmtUsd(-l.value)})` : fmtUsd(l.value)}
-                    </td>
-                  </tr>
-                ))
-              }
+                    {l.value < 0 ? `(${fmtUsd(-l.value)})` : fmtUsd(l.value)}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
-          <p
-            class="border-t border-paper-border px-5 py-2.5 font-mono text-[10px] text-paper-ink-muted"
-          >
+          <p class="border-t border-paper-border px-5 py-2.5 font-mono text-[10px] text-paper-ink-muted">
             Computed at build time by @taxline/tax-engine · draft for reviewer sign-off
           </p>
         </div>
@@ -313,23 +298,19 @@ const steps = [
             From a dropped document to a workpaper you sign off on.
           </h2>
         </div>
-        <div
-          class="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-5"
-        >
-          {
-            steps.map((s) => (
-              <div class="flex flex-col gap-3 bg-base p-5">
-                <div class="flex items-center justify-between">
-                  <Icon name={s.icon} class="size-5 text-accent" />
-                  <span class="font-mono text-[11px] tabular-nums text-fg-faint">{s.n}</span>
-                </div>
-                <div>
-                  <div class="text-[15px] font-semibold text-fg">{s.t}</div>
-                  <p class="mt-1 text-[13px] leading-relaxed text-fg-muted">{s.d}</p>
-                </div>
+        <div class="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
+          {steps.map((s) => (
+            <div class="flex flex-col gap-3 bg-base p-5">
+              <div class="flex items-center justify-between">
+                <Icon name={s.icon} class="size-5 text-accent" />
+                <span class="font-mono text-[11px] tabular-nums text-fg-faint">{s.n}</span>
               </div>
-            ))
-          }
+              <div>
+                <div class="text-[15px] font-semibold text-fg">{s.t}</div>
+                <p class="mt-1 text-[13px] leading-relaxed text-fg-muted">{s.d}</p>
+              </div>
+            </div>
+          ))}
         </div>
         <p class="mt-6 inline-flex items-center gap-2 font-mono text-xs text-fg-faint">
           <Icon name="lucide:user-check" class="size-4 text-accent" />A human approves before output
@@ -340,16 +321,16 @@ const steps = [
 
     <!-- CTA -->
     <section class="border-b border-border">
-      <div
-        class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6"
-      >
+      <div class="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-5 py-16 sm:flex-row sm:items-center sm:px-6">
         <div>
           <h2 class="ds-h2 max-w-xl">Reduce review drag. Ship reviewer-ready output.</h2>
           <p class="ds-small mt-2">See the fleet run on your own documents.</p>
         </div>
         <div class="flex gap-3">
           <Button href={u('contact')}>Book a demo</Button>
-          <Button href={u('pricing')} variant="ghost">See pricing</Button>
+          <Button href={u('pricing')} variant="ghost">
+            See pricing
+          </Button>
         </div>
       </div>
     </section>

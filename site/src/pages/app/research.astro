@@ -23,9 +23,7 @@ const examples = [
 
     <div class="rounded-lg border border-border bg-panel p-4 shadow-1">
       <div class="flex flex-wrap items-center gap-2">
-        <div
-          class="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-raised px-3 py-2"
-        >
+        <div class="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-raised px-3 py-2">
           <Icon name="lucide:search" class="size-4 shrink-0 text-fg-faint" />
           <input
             id="rs-q"
@@ -43,17 +41,15 @@ const examples = [
         </button>
       </div>
       <div class="mt-2 flex flex-wrap gap-1.5">
-        {
-          examples.map((ex) => (
-            <button
-              type="button"
-              class="rs-ex rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
-              data-ex={ex}
-            >
-              {ex}
-            </button>
-          ))
-        }
+        {examples.map((ex) => (
+          <button
+            type="button"
+            class="rs-ex rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
+            data-ex={ex}
+          >
+            {ex}
+          </button>
+        ))}
       </div>
       <div id="rs-out" class="mt-4 hidden"></div>
     </div>

@@ -31,24 +31,22 @@ const confColor = (c: number | null): string =>
       <div class="rounded-lg border border-border bg-panel p-4 shadow-1">
         <span class="ds-eyebrow text-fg-faint">Recent workpapers</span>
         <div class="mt-2 divide-y divide-border-faint">
-          {
-            wps.map((d) => (
-              <a
-                href={u('app/' + d.id)}
-                class="-mx-2 flex items-center gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-raised"
+          {wps.map((d) => (
+            <a
+              href={u('app/' + d.id)}
+              class="-mx-2 flex items-center gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-raised"
+            >
+              <Icon name="lucide:file-stack" class="size-4 shrink-0 text-fg-faint" />
+              <span class="min-w-0 flex-1 truncate font-mono text-[13px] text-fg">{d.name}</span>
+              <span class="hidden font-mono text-[11px] text-fg-muted sm:inline">{d.client}</span>
+              <StatusPill status={d.status} />
+              <span
+                class={`w-10 shrink-0 text-right font-mono text-[12px] tabular-nums ${confColor(d.confidence)}`}
               >
-                <Icon name="lucide:file-stack" class="size-4 shrink-0 text-fg-faint" />
-                <span class="min-w-0 flex-1 truncate font-mono text-[13px] text-fg">{d.name}</span>
-                <span class="hidden font-mono text-[11px] text-fg-muted sm:inline">{d.client}</span>
-                <StatusPill status={d.status} />
-                <span
-                  class={`w-10 shrink-0 text-right font-mono text-[12px] tabular-nums ${confColor(d.confidence)}`}
-                >
-                  {d.confidence == null ? '—' : d.confidence.toFixed(2)}
-                </span>
-              </a>
-            ))
-          }
+                {d.confidence == null ? '—' : d.confidence.toFixed(2)}
+              </span>
+            </a>
+          ))}
         </div>
       </div>
 
@@ -65,17 +63,15 @@ const confColor = (c: number | null): string =>
         <table class="mt-3 w-full border-collapse text-left">
           <thead>
             <tr class="border-b border-paper-border">
-              <th class="py-2 font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted"
-                >Account</th
-              >
-              <th
-                class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted"
-                >Balance</th
-              >
-              <th
-                class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted"
-                >Source</th
-              >
+              <th class="py-2 font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">
+                Account
+              </th>
+              <th class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">
+                Balance
+              </th>
+              <th class="py-2 text-right font-mono text-[10px] uppercase tracking-wider text-paper-ink-muted">
+                Source
+              </th>
             </tr>
           </thead>
           <tbody class="font-mono text-[12px] tabular-nums">
@@ -96,9 +92,7 @@ const confColor = (c: number | null): string =>
             </tr>
           </tbody>
         </table>
-        <p
-          class="mt-3 border-t border-paper-border pt-3 font-mono text-[10px] text-paper-ink-muted"
-        >
+        <p class="mt-3 border-t border-paper-border pt-3 font-mono text-[10px] text-paper-ink-muted">
           Every figure traces to a cited source. Confidence 0.97 · awaiting reviewer sign-off.
         </p>
       </div>

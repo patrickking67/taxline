@@ -165,8 +165,9 @@ const limits = [
         <button
           type="reset"
           class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg"
-          >Reset</button
         >
+          Reset
+        </button>
         <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
       </div>
     </form>
@@ -182,9 +183,9 @@ const limits = [
       <div class="rounded-lg border border-border bg-panel p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <h2 class="text-[13px] font-semibold text-fg">Bracket fill</h2>
-          <span class="font-mono text-[11px] text-fg-faint"
-            >ordinary taxable income by rate · <span data-out="ordinary"></span></span
-          >
+          <span class="font-mono text-[11px] text-fg-faint">
+            ordinary taxable income by rate · <span data-out="ordinary"></span>
+          </span>
         </div>
         <div data-fill class="mt-3 flex h-7 w-full gap-[2px] overflow-hidden rounded-sm"></div>
         <div data-fill-legend class="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4"></div>
@@ -195,9 +196,9 @@ const limits = [
           <h2 class="text-[13px] font-semibold text-fg">
             Effective income-tax rate by taxable income
           </h2>
-          <span class="font-mono text-[11px] text-fg-faint"
-            >shaded bands = brackets · hover for values</span
-          >
+          <span class="font-mono text-[11px] text-fg-faint">
+            shaded bands = brackets · hover for values
+          </span>
         </div>
         <div data-curve class="mt-3"></div>
       </div>
@@ -217,62 +218,53 @@ const limits = [
       plain="tax(T) = sum over brackets of r_i times max(0, min(T, f_(i+1)) minus f_i)"
       note="f are the bracket floors and r the rates from Rev. Proc. 2025-32 §4.01. Below $100,000 the Tax Table evaluates this at the midpoint of a $50 row."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mi>tax</mi><mo>(</mo><mi>T</mi><mo>)</mo><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder
           ><msub><mi>r</mi><mi>i</mi></msub><mo>·</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi
             >min</mi
           ><mo>(</mo><mi>T</mi><mo>,</mo><msub
             ><mi>f</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub
           ><mo>)</mo><mo>−</mo><msub><mi>f</mi><mi>i</mi></msub><mo>)</mo></mrow
-        ></math
-      >
+        ></math>
     </Formula>
     <Formula
       title="Taxable income (1040 L15)"
       plain="T = max(0, AGI minus max(standard, itemized) minus QBI)"
       note="AGI = total income − ½ SE tax − other adjustments. QBI is the §199A deduction, limited to 20% of taxable income before it, less net capital gain."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mi>T</mi><mo>=</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>AGI</mi><mo>−</mo><mi
             >max</mi
           ><mo>(</mo><msub><mi>D</mi><mi>std</mi></msub><mo>,</mo><msub
             ><mi>D</mi><mi>item</mi></msub
           ><mo>)</mo><mo>−</mo><mi>QBI</mi><mo>)</mo></mrow
-        ></math
-      >
+        ></math>
     </Formula>
     <Formula
       title="Preferential income stacking"
       plain="z = max(0, min(T, cap0) minus O); f = max(0, min(T, cap15) minus O minus z); tax = tax(O) + 0.15 f + 0.20 (P minus z minus f)"
       note="P = qualified dividends + net long-term gain, O = T − P. The result is capped at the regular tax on T."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mi>tax</mi><mo>=</mo><mi>tax</mi><mo>(</mo><mi>O</mi><mo>)</mo><mo>+</mo><mn>0.15</mn
           ><mo>·</mo><msub><mi>P</mi><mn>15</mn></msub><mo>+</mo><mn>0.20</mn><mo>·</mo><msub
             ><mi>P</mi><mn>20</mn></msub
           ></mrow
-        ></math
-      >
-      <math display="block" class="mt-2"
-        ><mrow
+        ></math>
+      <math display="block" class="mt-2"><mrow
           ><msub><mi>P</mi><mn>15</mn></msub><mo>=</mo><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi
             >min</mi
           ><mo>(</mo><mi>T</mi><mo>,</mo><msub><mi>c</mi><mn>15</mn></msub><mo>)</mo><mo>−</mo><mi
             >O</mi
           ><mo>−</mo><msub><mi>P</mi><mn>0</mn></msub><mo>)</mo></mrow
-        ></math
-      >
+        ></math>
     </Formula>
     <Formula
       title="True marginal rate"
       plain="m = (L(I + 100) minus L(I)) / 100"
       note="L is net liability (total tax less refundable credits) from a full recomputation. It captures phase-outs and limits a bracket table cannot."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mi>m</mi><mo>=</mo><mfrac
             ><mrow
               ><mi>L</mi><mo>(</mo><mi>I</mi><mo>+</mo><mn>100</mn><mo>)</mo><mo>−</mo><mi>L</mi><mo
@@ -280,8 +272,7 @@ const limits = [
               ><mi>I</mi><mo>)</mo></mrow
             ><mn>100</mn></mfrac
           ></mrow
-        ></math
-      >
+        ></math>
     </Formula>
   </Fragment>
 </ToolShell>

@@ -30,20 +30,23 @@ const examples = [
 >
   <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
     <div class="flex items-center gap-2.5">
-      <span class="grid size-7 place-items-center rounded-md border border-border bg-raised"
-        ><Icon name="lucide:sparkles" class="size-4 text-accent" /></span
-      >
-      <h2 id="intake-h" class="text-[14px] font-semibold text-fg">Describe your situation</h2>
-      <span
-        class="rounded-sm border border-border px-1.5 py-0.5 font-mono text-[10px] text-fg-faint"
-        >Relay · intake</span
-      >
+      <span class="grid size-7 place-items-center rounded-md border border-border bg-raised">
+        <Icon name="lucide:sparkles" class="size-4 text-accent" />
+      </span>
+      <h2 id="intake-h" class="text-[14px] font-semibold text-fg">
+        Describe your situation
+      </h2>
+      <span class="rounded-sm border border-border px-1.5 py-0.5 font-mono text-[10px] text-fg-faint">
+        Relay · intake
+      </span>
     </div>
     <span data-intake-mode class="font-mono text-[11px] text-fg-faint"></span>
   </div>
   <div class="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
     <div>
-      <label for="intake-text" class="sr-only">Describe your tax situation in plain English</label>
+      <label for="intake-text" class="sr-only">
+        Describe your tax situation in plain English
+      </label>
       <textarea
         id="intake-text"
         rows="5"
@@ -57,26 +60,24 @@ const examples = [
           data-intake-run
           class="inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-[7px] text-[13px] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60"
         >
-          <Icon name="lucide:scan-line" class="size-4" />Extract fields
+          <Icon name="lucide:scan-line" class="size-4" />
+          Extract fields
         </button>
         <span class="font-mono text-[11px] text-fg-faint">or try:</span>
-        {
-          examples.map((ex, i) => (
-            <button
-              type="button"
-              data-intake-example={ex}
-              class="rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
-            >
-              example {i + 1}
-            </button>
-          ))
-        }
+        {examples.map((ex, i) => (
+          <button
+            type="button"
+            data-intake-example={ex}
+            class="rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
+          >
+            example {i + 1}
+          </button>
+        ))}
       </div>
       <p
         data-intake-privacy
         class="mt-3 rounded-sm border border-border-faint bg-base px-2.5 py-2 text-[11px] leading-relaxed text-fg-muted"
-      >
-      </p>
+      ></p>
       <p class="mt-2 text-[11px] leading-relaxed text-fg-faint">
         Each figure comes back with the exact words it came from. Code checks the quote is in your
         text and states the amount; anything uncertain stays unchecked until you confirm it.
@@ -93,8 +94,7 @@ const examples = [
         <ul
           data-intake-fields
           class="divide-y divide-border-faint rounded-md border border-border bg-base"
-        >
-        </ul>
+        ></ul>
         <p data-intake-unplaced class="mt-2 hidden text-[11px] text-warn-bright"></p>
         <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
           <p class="text-[11px] text-fg-faint">
@@ -105,17 +105,15 @@ const examples = [
             data-intake-apply
             class="inline-flex items-center gap-2 rounded-md border border-accent-line bg-accent-soft px-3 py-1.5 text-[13px] font-medium text-fg hover:bg-accent hover:text-on-accent"
           >
-            <Icon name="lucide:user-check" class="size-4" /><span data-intake-apply-label
-              >Apply</span
-            >
+            <Icon name="lucide:user-check" class="size-4" />
+            <span data-intake-apply-label>Apply</span>
           </button>
         </div>
       </div>
       <p
         data-intake-error
         class="mt-2 hidden rounded-sm bg-danger-soft px-3 py-2 text-[12px] text-danger-bright"
-      >
-      </p>
+      ></p>
     </div>
   </div>
 </section>

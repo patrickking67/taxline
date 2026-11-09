@@ -29,15 +29,13 @@ const Tag = href ? 'a' : 'div';
   </div>
   <h3 class="mt-3.5 text-[17px] font-semibold text-fg">{title}</h3>
   <p class="mt-1.5 text-[13px] leading-relaxed text-fg-muted">{body}</p>
-  {
-    tools.length > 0 && (
-      <div class="mt-4 flex flex-wrap gap-1.5 border-t border-border-faint pt-3">
-        {tools.map((t) => (
-          <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[10px] text-fg-muted">
-            {t}
-          </span>
-        ))}
-      </div>
-    )
-  }
+  {tools.length > 0 && (
+    <div class="mt-4 flex flex-wrap gap-1.5 border-t border-border-faint pt-3">
+      {tools.map((t) => (
+        <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[10px] text-fg-muted">
+          {t}
+        </span>
+      ))}
+    </div>
+  )}
 </Tag>

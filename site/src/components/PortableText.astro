@@ -36,35 +36,17 @@ const cls = (s: PtSpan) =>
 ---
 
 <div class="insight-body">
-  {
-    groups.map((g) =>
-      'list' in g ? (
-        g.list === 'bullet' ? (
-          <ul class="my-5 space-y-2 pl-0">
-            {g.items.map((it) => (
-              <li class="flex gap-3 text-[16px] leading-relaxed text-fg-muted">
-                <span
-                  class="mt-[0.7em] size-1.5 shrink-0 rounded-full bg-accent"
-                  aria-hidden="true"
-                />
-                <span>
-                  {(it.children ?? []).map((s) =>
-                    href(it, s) ? (
-                      <a href={href(it, s)} class="text-accent underline underline-offset-2">
-                        {s.text}
-                      </a>
-                    ) : (
-                      <span class={cls(s)}>{s.text}</span>
-                    ),
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <ol class="my-5 list-decimal space-y-2 pl-5 text-[16px] leading-relaxed text-fg-muted marker:font-mono marker:text-fg-faint">
-            {g.items.map((it) => (
-              <li>
+  {groups.map((g) =>
+    'list' in g ? (
+      g.list === 'bullet' ? (
+        <ul class="my-5 space-y-2 pl-0">
+          {g.items.map((it) => (
+            <li class="flex gap-3 text-[16px] leading-relaxed text-fg-muted">
+              <span
+                class="mt-[0.7em] size-1.5 shrink-0 rounded-full bg-accent"
+                aria-hidden="true"
+              />
+              <span>
                 {(it.children ?? []).map((s) =>
                   href(it, s) ? (
                     <a href={href(it, s)} class="text-accent underline underline-offset-2">
@@ -74,33 +56,49 @@ const cls = (s: PtSpan) =>
                     <span class={cls(s)}>{s.text}</span>
                   ),
                 )}
-              </li>
-            ))}
-          </ol>
-        )
-      ) : g.block._type !== 'block' ? null : g.block.style === 'h2' ? (
-        <h2 class="ds-h3 mb-3 mt-10">{(g.block.children ?? []).map((s) => s.text).join('')}</h2>
-      ) : g.block.style === 'h3' ? (
-        <h3 class="mb-2 mt-8 text-[17px] font-semibold text-fg">
-          {(g.block.children ?? []).map((s) => s.text).join('')}
-        </h3>
-      ) : g.block.style === 'blockquote' ? (
-        <blockquote class="my-6 border-l-2 border-accent pl-4 text-[16px] italic text-fg-muted">
-          {(g.block.children ?? []).map((s) => s.text).join('')}
-        </blockquote>
+              </span>
+            </li>
+          ))}
+        </ul>
       ) : (
-        <p class="my-4 text-[16px] leading-[1.75] text-fg-muted">
-          {(g.block.children ?? []).map((s) =>
-            href(g.block, s) ? (
-              <a href={href(g.block, s)} class="text-accent underline underline-offset-2">
-                {s.text}
-              </a>
-            ) : (
-              <span class={cls(s)}>{s.text}</span>
-            ),
-          )}
-        </p>
-      ),
-    )
-  }
+        <ol class="my-5 list-decimal space-y-2 pl-5 text-[16px] leading-relaxed text-fg-muted marker:font-mono marker:text-fg-faint">
+          {g.items.map((it) => (
+            <li>
+              {(it.children ?? []).map((s) =>
+                href(it, s) ? (
+                  <a href={href(it, s)} class="text-accent underline underline-offset-2">
+                    {s.text}
+                  </a>
+                ) : (
+                  <span class={cls(s)}>{s.text}</span>
+                ),
+              )}
+            </li>
+          ))}
+        </ol>
+      )
+    ) : g.block._type !== 'block' ? null : g.block.style === 'h2' ? (
+      <h2 class="ds-h3 mb-3 mt-10">{(g.block.children ?? []).map((s) => s.text).join('')}</h2>
+    ) : g.block.style === 'h3' ? (
+      <h3 class="mb-2 mt-8 text-[17px] font-semibold text-fg">
+        {(g.block.children ?? []).map((s) => s.text).join('')}
+      </h3>
+    ) : g.block.style === 'blockquote' ? (
+      <blockquote class="my-6 border-l-2 border-accent pl-4 text-[16px] italic text-fg-muted">
+        {(g.block.children ?? []).map((s) => s.text).join('')}
+      </blockquote>
+    ) : (
+      <p class="my-4 text-[16px] leading-[1.75] text-fg-muted">
+        {(g.block.children ?? []).map((s) =>
+          href(g.block, s) ? (
+            <a href={href(g.block, s)} class="text-accent underline underline-offset-2">
+              {s.text}
+            </a>
+          ) : (
+            <span class={cls(s)}>{s.text}</span>
+          ),
+        )}
+      </p>
+    ),
+  )}
 </div>

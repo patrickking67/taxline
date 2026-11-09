@@ -25,45 +25,48 @@ const confColor = (c: number | null) =>
           type="button"
           data-tab="all"
           class="tab rounded-sm px-3 py-1.5 text-[13px] font-medium"
-          >All <span class="font-mono text-fg-faint">{docs.length}</span></button
         >
+          All <span class="font-mono text-fg-faint">{docs.length}</span>
+        </button>
         <button
           type="button"
           data-tab="review"
           class="tab rounded-sm px-3 py-1.5 text-[13px] font-medium"
-          >Needs review <span class="font-mono text-fg-faint">{needsReview}</span></button
         >
+          Needs review <span class="font-mono text-fg-faint">{needsReview}</span>
+        </button>
         <button
           type="button"
           data-tab="approved"
           class="tab rounded-sm px-3 py-1.5 text-[13px] font-medium"
-          >Approved <span class="font-mono text-fg-faint">{approved}</span></button
         >
+          Approved <span class="font-mono text-fg-faint">{approved}</span>
+        </button>
       </div>
       <div class="ml-auto flex items-center gap-2">
         <button
           id="q-filter"
           type="button"
           class="inline-flex items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 text-[13px] text-fg-muted transition-colors hover:bg-raised"
-          ><Icon name="lucide:sliders-horizontal" class="size-4" />Needs attention</button
         >
+          <Icon name="lucide:sliders-horizontal" class="size-4" />
+          Needs attention
+        </button>
         <button
           id="q-sort"
           type="button"
           class="inline-flex items-center gap-2 rounded-md border border-border bg-panel px-3 py-1.5 text-[13px] text-fg-muted transition-colors hover:bg-raised"
-          ><Icon name="lucide:arrow-up-down" class="size-4" />Confidence <span
-            data-caret
-            class="font-mono text-fg-faint"></span></button
         >
+          <Icon name="lucide:arrow-up-down" class="size-4" />
+          Confidence <span data-caret class="font-mono text-fg-faint"></span>
+        </button>
       </div>
     </div>
 
     <div class="mt-5 overflow-x-auto rounded-lg border border-border">
       <table class="w-full min-w-[720px] border-collapse text-left">
         <thead>
-          <tr
-            class="border-b border-border bg-panel font-mono text-[11px] uppercase tracking-wider text-fg-faint"
-          >
+          <tr class="border-b border-border bg-panel font-mono text-[11px] uppercase tracking-wider text-fg-faint">
             <th class="px-4 py-2.5 font-medium">Document</th>
             <th class="px-4 py-2.5 font-medium">Client</th>
             <th class="px-4 py-2.5 font-medium">Type</th>
@@ -73,37 +76,35 @@ const confColor = (c: number | null) =>
           </tr>
         </thead>
         <tbody>
-          {
-            docs.map((d) => (
-              <tr
-                data-status={d.status}
-                data-conf={d.confidence == null ? '' : d.confidence}
-                class="row border-b border-border-faint bg-base transition-colors last:border-0 hover:bg-raised"
+          {docs.map((d) => (
+            <tr
+              data-status={d.status}
+              data-conf={d.confidence == null ? '' : d.confidence}
+              class="row border-b border-border-faint bg-base transition-colors last:border-0 hover:bg-raised"
+            >
+              <td class="px-4 py-3">
+                <a href={u('app/' + d.id)} class="flex items-center gap-2.5">
+                  <Icon name="lucide:file-text" class="size-4 shrink-0 text-fg-faint" />
+                  <span class="font-mono text-[13px] text-fg">{d.name}</span>
+                </a>
+              </td>
+              <td class="px-4 py-3 text-[13px] text-fg-muted">{d.client}</td>
+              <td class="px-4 py-3">
+                <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[11px] text-fg-muted">
+                  {d.type}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-[13px] text-fg-muted">{d.lastAgent}</td>
+              <td class="px-4 py-3">
+                <StatusPill status={d.status} />
+              </td>
+              <td
+                class={`px-4 py-3 text-right font-mono text-[13px] tabular-nums ${confColor(d.confidence)}`}
               >
-                <td class="px-4 py-3">
-                  <a href={u('app/' + d.id)} class="flex items-center gap-2.5">
-                    <Icon name="lucide:file-text" class="size-4 shrink-0 text-fg-faint" />
-                    <span class="font-mono text-[13px] text-fg">{d.name}</span>
-                  </a>
-                </td>
-                <td class="px-4 py-3 text-[13px] text-fg-muted">{d.client}</td>
-                <td class="px-4 py-3">
-                  <span class="rounded-sm bg-raised px-2 py-0.5 font-mono text-[11px] text-fg-muted">
-                    {d.type}
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-[13px] text-fg-muted">{d.lastAgent}</td>
-                <td class="px-4 py-3">
-                  <StatusPill status={d.status} />
-                </td>
-                <td
-                  class={`px-4 py-3 text-right font-mono text-[13px] tabular-nums ${confColor(d.confidence)}`}
-                >
-                  {d.confidence == null ? '—' : d.confidence.toFixed(2)}
-                </td>
-              </tr>
-            ))
-          }
+                {d.confidence == null ? '—' : d.confidence.toFixed(2)}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

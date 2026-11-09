@@ -24,12 +24,15 @@ const examples = [
   </div>
 
   <div class="p-4">
-    <label for="fr-task" class="ds-eyebrow text-fg-faint">Task</label>
+    <label for="fr-task" class="ds-eyebrow text-fg-faint">
+      Task
+    </label>
     <textarea
       id="fr-task"
       rows="2"
       class="mt-2 w-full resize-y rounded-md border border-border bg-raised px-3 py-2 text-sm text-fg placeholder:text-fg-faint focus:border-accent focus:outline-none focus:ring-[3px] focus:ring-accent-line"
-      placeholder="Ask the fleet a tax question, or run extraction on a document…"></textarea>
+      placeholder="Ask the fleet a tax question, or run extraction on a document…"
+    ></textarea>
 
     <div class="mt-3 flex flex-wrap items-center gap-2">
       <select
@@ -37,27 +40,28 @@ const examples = [
         class="rounded-md border border-border bg-raised px-2.5 py-[7px] font-mono text-[12px] text-fg-muted focus:border-accent focus:outline-none"
       >
         <option value="">no document</option>
-        {docs.map((d) => <option value={d.id}>{d.name}</option>)}
+        {docs.map((d) => (
+          <option value={d.id}>{d.name}</option>
+        ))}
       </select>
       <button
         id="fr-run"
         type="button"
         class="inline-flex items-center gap-2 rounded-md bg-accent px-3.5 py-[7px] text-[13px] font-medium text-on-accent transition-colors hover:bg-accent-hover active:bg-accent-press"
       >
-        <Icon name="lucide:play" class="size-4" />Run
+        <Icon name="lucide:play" class="size-4" />
+        Run
       </button>
       <span class="ml-auto flex flex-wrap gap-1.5">
-        {
-          examples.map((ex) => (
-            <button
-              type="button"
-              class="fr-ex rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
-              data-ex={ex}
-            >
-              {ex}
-            </button>
-          ))
-        }
+        {examples.map((ex) => (
+          <button
+            type="button"
+            class="fr-ex rounded-sm border border-border bg-base px-2 py-1 font-mono text-[11px] text-fg-muted transition-colors hover:border-accent-line hover:text-fg"
+            data-ex={ex}
+          >
+            {ex}
+          </button>
+        ))}
       </span>
     </div>
 

@@ -102,8 +102,9 @@ const limits = [
         <button
           type="reset"
           class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg"
-          >Reset</button
         >
+          Reset
+        </button>
         <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
       </div>
     </form>
@@ -118,9 +119,9 @@ const limits = [
       <div class="rounded-lg border border-border bg-panel p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
           <h2 class="text-[13px] font-semibold text-fg">Savings by owner salary</h2>
-          <span class="font-mono text-[11px] text-fg-faint"
-            >above zero, the election saves · hover for values</span
-          >
+          <span class="font-mono text-[11px] text-fg-faint">
+            above zero, the election saves · hover for values
+          </span>
         </div>
         <div data-curve class="mt-3"></div>
         <p class="mt-2 text-[11px] leading-relaxed text-fg-faint">
@@ -143,21 +144,18 @@ const limits = [
       plain="C_SP = tax(profit as Schedule C) + SE(0.9235 profit)"
       note="SE = 12.4% Social Security up to the $184,500 base + 2.9% Medicare; half of SE is deductible above the line."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><msub><mi>C</mi><mi>SP</mi></msub><mo>=</mo><mi>tax</mi><mo>(</mo><mi>π</mi><mo>)</mo><mo
             >+</mo
           ><mi>SE</mi><mo>(</mo><mn>0.9235</mn><mo>·</mo><mi>π</mi><mo>)</mo></mrow
-        ></math
-      >
+        ></math>
     </Formula>
     <Formula
       title="S corporation"
       plain="K1 = profit minus S minus F_er minus O; C_SC = tax(S + K1) + F_ee + F_er + O"
       note="S = salary, F = FICA (7.65% each side, Social Security capped), O = overhead. K-1 income is QBI; salary is not."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><msub><mi>C</mi><mi>SC</mi></msub><mo>=</mo><mi>tax</mi><mo>(</mo><mi>S</mi><mo>+</mo><mi
             >K</mi
           ><mo>)</mo><mo>+</mo><msub><mi>F</mi><mi>ee</mi></msub><mo>+</mo><msub
@@ -166,8 +164,7 @@ const limits = [
             >π</mi
           ><mo>−</mo><mi>S</mi><mo>−</mo><msub><mi>F</mi><mi>er</mi></msub><mo>−</mo><mi>O</mi
           ></mrow
-        ></math
-      >
+        ></math>
     </Formula>
   </Fragment>
 </ToolShell>

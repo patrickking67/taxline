@@ -83,17 +83,22 @@ const limits = [
         />
       </Fieldset>
       <p class="text-[12px] leading-relaxed text-fg-faint">
-        Not sure of this year’s tax? Run the <a
+        Not sure of this year’s tax? Run the{' '}
+        <a
           class="text-accent underline decoration-accent-line underline-offset-2 hover:text-accent-hover"
-          href={u('tools/income-tax')}>income tax calculator</a
-        > and use its total tax.
+          href={u('tools/income-tax')}
+        >
+          income tax calculator
+        </a>{' '}
+        and use its total tax.
       </p>
       <div class="flex items-center justify-between gap-3">
         <button
           type="reset"
           class="rounded-md border border-border px-3 py-1.5 text-[13px] text-fg-muted hover:border-border-strong hover:text-fg"
-          >Reset</button
         >
+          Reset
+        </button>
         <p class="font-mono text-[11px] text-fg-faint">Recomputes as you type · URL is shareable</p>
       </div>
     </form>
@@ -124,8 +129,7 @@ const limits = [
       plain="R = min(0.90 T_2026, k T_2025), k = 1.10 if AGI_2025 > 150,000 else 1.00"
       note="The prior-year test applies only when last year was a full 12-month return. MFS uses a $75,000 AGI threshold."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mi>R</mi><mo>=</mo><mi>min</mi><mo>(</mo><mn>0.90</mn><mo>·</mo><msub
             ><mi>T</mi><mn>2026</mn></msub
           ><mo>,</mo><mi>k</mi><mo>·</mo><msub><mi>T</mi><mn>2025</mn></msub><mo>)</mo><mo>,</mo
@@ -138,22 +142,19 @@ const limits = [
               ><mtr><mtd><mn>1.00</mn></mtd><mtd><mtext>otherwise</mtext></mtd></mtr></mtable
             ></mrow
           ></mrow
-        ></math
-      >
+        ></math>
     </Formula>
     <Formula
       title="Installments"
       plain="E = max(0, R minus W); q_i = E / 4"
       note="W = expected withholding. The fourth installment absorbs rounding so the four sum to E exactly. No estimates are required when T − W < $1,000."
     >
-      <math display="block"
-        ><mrow
+      <math display="block"><mrow
           ><mi>E</mi><mo>=</mo><msup
             ><mrow><mo>(</mo><mi>R</mi><mo>−</mo><mi>W</mi><mo>)</mo></mrow><mo>+</mo></msup
           ><mo>,</mo><mspace width="0.6em"></mspace><msub><mi>q</mi><mi>i</mi></msub><mo>=</mo
           ><mfrac><mi>E</mi><mn>4</mn></mfrac></mrow
-        ></math
-      >
+        ></math>
     </Formula>
   </Fragment>
 </ToolShell>
