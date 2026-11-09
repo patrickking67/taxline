@@ -53,10 +53,11 @@ says so in the output. Templates: `service/.env.example`, `site/.env.example`.
 | Lint | `npm run lint` | ESLint flat config |
 | Unit tests | `npm test` | engine, service, Worker (node:test) |
 | E2E + axe | `npm run test:e2e` | builds under `/taxline`, serves on :4173; `CHROMIUM_PATH` reuses a local Chromium |
-| Everything CI runs | `npm run verify` | lint, typecheck, tests, build, e2e, CMS typecheck + build |
-| Quick gate | `npm run verify:fast` | lint, typecheck, tests |
+| Everything CI runs | `npm run verify` | lint, format check, typecheck, tests, build, e2e, CMS typecheck + build |
+| Quick gate | `npm run verify:fast` | lint, format check, typecheck, tests |
 | Refresh root llms.txt | `npm run llms` | copies the built `/llms.txt` to the repo root |
-| Format | `npm run format` | Prettier; Markdown is hand-formatted and ignored |
+| Format | `npm run format` | Prettier; Markdown and generated files are ignored (`.prettierignore`) |
+| Format check | `npm run format:check` | part of `verify` and CI |
 
 ## Preview
 
@@ -69,7 +70,7 @@ tool rather than asking a person to run them.
 
 - `.github/workflows/ci.yml` runs on every push and PR: site check + build, e2e +
   axe, engine tests + typecheck, service tests + typecheck, Worker tests +
-  typecheck, lint, CMS typecheck + build. `npm run verify` is the local mirror.
+  typecheck, lint, format check, CMS typecheck + build. `npm run verify` is the local mirror.
 - `.github/workflows/deploy.yml` builds with `BASE_PATH=/taxline` and publishes
   `site/dist` to GitHub Pages on push to `main`. Do not change Pages settings.
 - Service: root `Dockerfile` and `fly.toml`. Worker: `wrangler deploy`. Runbook:

@@ -28,6 +28,9 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Changed
 
+- The repo is formatted with Prettier, and `npm run format:check` runs in
+  `npm run verify`, `npm run verify:fast`, and the CI lint job. Generated files
+  are listed in `.prettierignore`.
 - The site keeps one entrance animation (the hero) and no longer hides
   sections until they scroll into view. Linked cards answer hover with the
   border only.
