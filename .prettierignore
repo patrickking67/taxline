@@ -5,6 +5,7 @@ service/.data
 .wrangler
 .worktrees
 .claude/worktrees
+.venv
 **/package-lock.json
 site/public
 # Prose is hand-formatted (hard line breaks, tables) — leave markdown alone.

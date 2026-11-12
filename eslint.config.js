@@ -19,6 +19,8 @@ export default [
       '**/node_modules/**',
       '**/.data/**',
       '**/.wrangler/**',
+      // Python virtualenv (matplotlib ships browser JS).
+      '**/.venv/**',
       // Git worktrees live inside the repo; each one is linted from its own root.
       '.worktrees/**',
       '.claude/worktrees/**',
@@ -50,7 +52,7 @@ export default [
   },
   {
     // Playwright specs, config, and the dist server run in Node.
-    files: ['site/e2e/**', 'site/playwright.config.ts'],
+    files: ['site/e2e/**', 'site/playwright.config.ts', 'scripts/capture-screenshots.mjs'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
     rules: { 'no-console': 'off' },
   },

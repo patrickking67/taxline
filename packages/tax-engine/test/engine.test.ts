@@ -400,3 +400,28 @@ test('1040: Additional Medicare uses box 5 wages; NIIT nets the capital loss', (
     266,
   );
 });
+
+test('half-cent ties round up even after binary float drift', () => {
+  // Each product is an exact half-cent tie that a double holds a few ulps
+  // short, so rounding the raw float went down. Found by the Python parity test.
+  assert.equal(43_230.95 * 0.9, 38_907.854999999996);
+  assert.equal(round2(43_230.95 * 0.9), 38_907.86);
+  // 134,850 × 92.35% = 124,533.975
+  assert.equal(selfEmploymentTax({ netProfit: 134_850 }).netEarnings, 124_533.98);
+  // MFS: (140,395 − 125,000) × 0.9% = 138.555
+  assert.equal(additionalMedicare('mfs', 140_395, 0), 138.56);
+  // 43,230.95 × 90% = 38,907.855
+  const e = estimatedTax({ status: 'single', currentYearTax: 43_230.95, withholding: 0 });
+  assert.equal(e.currentYearTarget, 38_907.86);
+  // Values that are not ties are untouched, and large amounts keep their cents.
+  assert.equal(round2(38_907.854), 38_907.85);
+  assert.equal(round2(-10.075), -10.08);
+  assert.equal(round2(123_456_789_012.345), 123_456_789_012.35);
+});
+
+test('wage base room carries no float noise when W-2 wages have cents', () => {
+  // 184,500 − 149,729.23 = 34,770.77 (the raw float is 34,770.76999999999).
+  const se = selfEmploymentTax({ netProfit: 538_706.87, w2SsWages: 149_729.23 });
+  assert.equal(se.ssTaxable, 34_770.77);
+  assert.equal(se.trace.find((l) => l.id === 'se.room')?.value, 34_770.77);
+});

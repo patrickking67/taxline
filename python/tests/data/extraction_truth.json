@@ -1,0 +1,24 @@
+[
+  {
+    "docId": "fixture-w2",
+    "docType": "W-2",
+    "fields": [
+      { "label": "Employer", "value": "Juniper Works LLC", "kind": "text" },
+      { "label": "EIN", "value": "00-0000001", "kind": "id" },
+      { "label": "Wages · box 1", "value": "$128,400.00", "kind": "money" },
+      { "label": "Federal w/h · box 2", "value": "$24,310.00", "kind": "money" },
+      { "label": "State w/h · box 17", "value": "$6,180.00", "kind": "money" },
+      { "label": "Local code · box 20", "value": "PHL-RES", "kind": "text" }
+    ]
+  },
+  {
+    "docId": "fixture-1099nec",
+    "docType": "1099-NEC",
+    "fields": [
+      { "label": "Payer", "value": "Meadow Supply LP", "kind": "text" },
+      { "label": "Payer TIN", "value": "00-0000002", "kind": "id" },
+      { "label": "Nonemployee comp · box 1", "value": "$42,000.00", "kind": "money" },
+      { "label": "Federal w/h · box 4", "value": "$0.00", "kind": "money" }
+    ]
+  }
+]

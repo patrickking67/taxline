@@ -35,7 +35,8 @@ export function selfEmploymentTax(input: SeInput, y: TaxYear = TY2026): SeResult
   const w2 = Math.max(0, input.w2SsWages ?? 0);
   const ne = round2(profit * seNetFactor);
   const floorMet = ne >= 400;
-  const room = Math.max(0, wageBase - w2);
+  // Rounded so a wage figure with cents cannot leave float noise on Sch SE L9.
+  const room = round2(Math.max(0, wageBase - w2));
   const ssTaxable = floorMet ? Math.min(ne, room) : 0;
   const socialSecurity = round2(ssTaxable * ssRate);
   const medicare = floorMet ? round2(ne * medicareRate) : 0;

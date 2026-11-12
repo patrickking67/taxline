@@ -1,210 +1,187 @@
 # Taxline
 
-**Agentic tax operations with a tested engine and a human in the loop.**
+**Five AI agents take tax work from a pile of documents to a reviewer-ready workpaper, and a tax engine written twice, in TypeScript and Python, checks its own math to the cent.**
 
-Five AI agents move tax work from a pile of documents to a reviewer-ready workpaper. Every extracted field carries a confidence score and a citation. Every number comes from a deterministic, unit-tested 2026 tax engine, not from a model. Anything uncertain routes to a person, and nothing ships until someone approves it.
-
-The interesting part is where the controls live. The model drafts; code decides. The confidence threshold, the approval gate, tool permissions, and input validation are all enforced in TypeScript and covered by tests, so a prompt (or a document that tries to act like one) cannot switch them off.
-
-> Taxline is a portfolio project, not tax software. It is not tax, legal, or accounting advice, and nothing it produces should be filed without review by a qualified professional. See [Limitations](#limitations-and-disclaimer).
+The model drafts, code computes, and a person approves. Every extracted field carries a confidence score and a citation, anything under 0.85 goes to a reviewer, and nothing ships without approval. Those controls are code with tests, not prompt text.
 
 [![CI](https://github.com/patrickking67/taxline/actions/workflows/ci.yml/badge.svg)](https://github.com/patrickking67/taxline/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Live demo](https://img.shields.io/badge/demo-live-3da57b.svg)](https://patrickking67.github.io/taxline/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-3776ab.svg)](python/pyproject.toml)
 
-**Live site:** [patrickking67.github.io/taxline](https://patrickking67.github.io/taxline/) · [Calculators](https://patrickking67.github.io/taxline/tools/) · [Product console](https://patrickking67.github.io/taxline/app/) · [Methodology](https://patrickking67.github.io/taxline/methodology/)
+> Not tax advice. Taxline is an educational portfolio project on synthetic data (placeholder IDs such as EIN `00-0000001`). Nothing it produces should be filed or relied on. See [Limitations](#limitations).
 
----
+[![The Taxline console reviewing a synthetic W-2: extracted fields with confidence meters, two low-confidence fields routed to review, and a compute_tax preview](docs/assets/console.png)](https://patrickking67.github.io/taxline/app/)
 
-## What is in the box
+## Try it
 
-| Piece | What it does | Where |
-| --- | --- | --- |
-| **Agent fleet** | Relay (intake), Lens (extraction), Atlas (research), Ledger (workpapers), and Sentry (compliance) behind a hub-and-spoke orchestrator on the Anthropic API. The agentic loop stops on `stop_reason`, errors are structured, and `requireHumanApproval` is a code gate. | `service/` |
-| **Tax engine** | Pure TypeScript for tax year 2026. Covers the Form 1040 path (Tax Table midpoint rule, capital-gains worksheet, QBI with phase-in and SSTB, CTC/ACTC), Schedule SE, NIIT, Additional Medicare, the §6654 safe harbor, §179/bonus/MACRS, S-corp vs. sole prop, and practice ROI (NPV, IRR, payback). Every result is a trace: value, operands, form line, and IRS authority. | `packages/tax-engine/` |
-| **AI intake** | Describe your situation in plain English and get calculator inputs back. Claude extracts each figure with an exact evidence quote; code then checks that the quote is in your text and states the amount. Fields under 0.85 confidence stay unchecked until you approve them. | `service/src/scenario.ts`, `packages/tax-engine/src/scenario.ts` |
-| **Free calculators** | Six tools: income tax, self-employment tax, estimated tax, S-corp election, depreciation, and firm ROI. Each one recomputes live, keeps its state in the URL, has SVG charts, typesets its formulas in MathML, and produces a copyable cited workpaper. | `site/src/pages/tools/` |
-| **Product console** | Intake queue, extraction review with confidence meters, a gated `compute_tax` preview, research, workpapers, and compliance. Fully functional on static hosting through an offline adapter. | `site/src/pages/app/` |
-| **CMS** | [EmDash](https://github.com/emdash-cms/emdash) (Astro, SQLite locally, D1/R2 on Cloudflare) for Insights articles. The static site pulls published entries at build time and falls back to a committed snapshot. | `cms/`, `scripts/pull-insights.mjs` |
-| **Quality gates** | 35 hand-worked engine tests, 32 service tests for the agent loop, the confidence gate, orchestration, the HTTP boundary, and filing deadlines, 7 contact Worker tests, plus Playwright end-to-end tests against the production build under the real `/taxline` base path. Every page in the sitemap must pass axe WCAG 2.1 AA (serious and critical), load with no console errors, and link only to pages that exist. | `packages/tax-engine/test/`, `service/test/`, `workers/contact/test/`, `site/e2e/` |
-| **Contact Worker** | Cloudflare Worker for demo requests, with honeypot and email validation. | `workers/contact/` |
-
-## Architecture
-
-```mermaid
-flowchart LR
-  subgraph Static["GitHub Pages (static)"]
-    Site["Astro site<br/>marketing · /tools · /app · /insights"]
-  end
-  subgraph Engine["@taxline/tax-engine"]
-    TE["pure functions<br/>TY2026 tables · cited traces"]
-  end
-  subgraph Service["Node service (Fly.io)"]
-    O["Conductor<br/>orchestrator"] --> A["5 agents"]
-    A -->|compute_tax| TE
-    S["/scenario<br/>Claude tool use"] -->|validateScenario| TE
-  end
-  CMS["EmDash CMS<br/>SQLite or D1 + R2"] -->|"/api/insights.json<br/>at build time"| Site
-  Site -->|imports| TE
-  Site -->|"adapter: mock or service"| Service
-  Site -->|contact| W["Cloudflare Worker"]
-```
-
-### How the five agents hand off
-
-The orchestrator (`service/src/orchestrator.ts`) is the hub. It picks the entry agent from the task text (or takes one explicitly), runs it, follows that agent's static `handoff`, and aggregates fields, citations, and review items along the way. Agents never call each other, and each one gets only the tools it needs.
-
-```mermaid
-flowchart LR
-  T["task + docId"] --> R{"pickEntryAgent<br/>keyword routing"}
-  R --> I["Relay · intake<br/>classify_document, kb_search<br/>claude-haiku-5-5"]
-  R --> E
-  R --> RS["Atlas · research<br/>kb_search, format_citations"]
-  R --> W
-  R --> C
-  I --> E["Lens · extraction<br/>extract_fields, assess_confidence"]
-  E --> W["Ledger · workpaper<br/>kb_search, format_citations, compute_tax"]
-  RS --> W
-  W --> C["Sentry · compliance<br/>compute_deadline, kb_search"]
-  C --> G["requireHumanApproval<br/>code gate"]
-  G -->|approved| OUT["result ships<br/>approved finding remembered"]
-  G -->|not approved| HOLD["draft withheld<br/>review queue"]
-```
-
-Every agent except intake runs on `claude-opus-5-5`. The chain ends at compliance, and a hop cap of 5 is a backstop, not the stop rule. A client `maxHops` is clamped to 1 through 5, and if the cap ends the chain early the result carries a review item naming the agent that did not run. After each agent the hub does three things in code:
-
-1. **Confidence.** Fields come from `extract_fields`, and any field under 0.85, with no score, or with a score outside 0 to 1 goes to review. `assess_confidence` can raise the bar but never lower it, and a field it calls "passed" only counts if it matches an extracted field, so the model cannot restate a score or invent a value.
-2. **Errors.** Every tool failure becomes a review item. A failed model call (rate limit, outage, bad key) returns a structured error instead of throwing, is labeled retryable or not, and stops the chain. A truncated answer, a refusal, or the 12-turn loop backstop is also flagged.
-3. **Approval.** `requireHumanApproval` runs last. Without approval the output is wrapped as a withheld draft. Only an approved result with no open review items and at least one citation is written to memory.
-
-**The site never assumes a server exists.** `site/src/lib/api/` has two seams (`fleet` and `api`). Both default to offline implementations, so every page works on static Pages, and any backend that honors the contract drops in through environment variables.
-
-## Design principles
-
-- **Models draft, code computes, people approve.** No tax figure is produced by a prompt. The Workpaper agent calls `compute_tax` and quotes its trace.
-- **Verify model output in code.** Extraction results are validated before they reach the calculator: known key, typed value, and an evidence quote that must appear in the input and state the value. Failures are capped below the review threshold with the reason attached, never dropped silently.
-- **Cite everything.** Every 2026 figure lives in `packages/tax-engine/src/years/2026.ts` with its source, transcribed from [Rev. Proc. 2025-32](https://www.irs.gov/pub/irs-drop/rp-25-32.pdf), the SSA wage base, and Pub 946.
-- **Test against the source, not the implementation.** Expected values are worked by hand from the IRS tables. The MACRS table is re-derived from first principles, and the S-corp comparison is checked line by line.
-- **Confidence below 0.85 routes to a person.** The same threshold applies in the service, the offline demo, the intake panel, and the app.
-- **Documents are data, not instructions.** Task context is fenced and every agent's system prompt says to ignore instructions found in documents or tool results. That is defense in depth only: the controls that matter (least-privilege tools, the confidence gate, the approval gate) are code the model cannot change.
-
-## Quick start
-
-Requires Node `^22.22.3`, `^24.16.0`, or `>=26.3.0` (Astro 7 and the ESLint 10 toolchain; `.nvmrc` pins 22).
+- **Live:** [site](https://patrickking67.github.io/taxline/) · [product console](https://patrickking67.github.io/taxline/app/) · [six calculators](https://patrickking67.github.io/taxline/tools/) · [methodology](https://patrickking67.github.io/taxline/methodology/)
+- **Read:** [the generated quantitative report](docs/quant/report.md) · [architecture](docs/architecture.md)
 
 ```bash
-npm install                    # site + tax-engine workspaces + lint toolchain
-(cd service && npm install)    # agent fleet
-npm run dev                    # site            http://localhost:4321
-npm run dev:service            # agent fleet     http://localhost:8787
-npm run dev:cms                # EmDash CMS      http://localhost:4322/_emdash/admin  (cd cms && npm install && npm run seed first)
+npm ci && npm --prefix service ci      # Node 22.22+ (.nvmrc pins 22)
+npm run dev                            # site at http://localhost:4321
+npm run dev:service                    # agent fleet at http://localhost:8787, no API key needed
+cd python && uv sync && uv run python -m taxline_quant tax --status single --se-profit 100000
 ```
 
-### Demo: run the fleet without an API key
-
-With no `ANTHROPIC_API_KEY`, the service runs each agent's tools deterministically and labels the output as offline. That is enough to see routing, the confidence gate, and the approval gate end to end:
+Without `ANTHROPIC_API_KEY` the fleet runs its tools deterministically and says so, which is enough to watch routing and both gates:
 
 ```bash
-npm run dev:service
 curl -s localhost:8787/agents/run -H 'content-type: application/json' \
   -d '{"task":"Extract the W-2","agent":"extraction","docId":"acme_w2_2024"}'
 ```
 
-The response traces `extraction`, `workpaper`, then `compliance`, returns all six fields with citations, and lists three review items: the approval gate, plus the two fields under 0.85 (state withholding at 0.74 and the local code at 0.41). `approved` is `false` and the output starts with `HUMAN APPROVAL REQUIRED`.
+The response traces `extraction`, `workpaper`, `compliance`, lists three review items (the approval gate plus fields at 0.74 and 0.41), and returns `approved: false` with the output withheld.
 
-`POST /scenario` turns a plain-English description into calculator inputs:
+## What is technically interesting here
 
-```bash
-curl -s localhost:8787/scenario -H 'content-type: application/json' \
-  -d '{"text":"I am single and earn $85,000 in W-2 wages."}'
+- **Two implementations that verify each other.** [`python/taxline_quant`](python/taxline_quant/model.py) models the same 2026 rules on `Decimal`. [`test_parity.py`](python/tests/test_parity.py) runs 47 named edge cases and 5,000 seeded random cases through both engines on every CI run and fails on a one-cent difference.
+- **The parity test found a real bug.** The TypeScript engine rounded some exact half-cent ties down, because `43230.95 * 0.9` is `38907.854999999996` as a double. The fix is in [`money.ts`](packages/tax-engine/src/money.ts) with a [regression test](packages/tax-engine/test/engine.test.ts); 60,000 further random cases found nothing else.
+- **Gates are code the model cannot change.** The agent loop stops on `stop_reason`, tools are least-privilege per agent, and `requireHumanApproval` runs last in [`orchestrator.ts`](service/src/orchestrator.ts). A model may ask for a stricter confidence threshold but never a looser one ([`confidence.ts`](service/src/tools/confidence.ts), [tests](service/test/confidence.test.ts)). Every early stop, including a clamped hop limit, creates a review item.
+- **Every constant has a citation and a test.** Figures come from Rev. Proc. 2025-32, the Code, and SSA. The Python [citation table](docs/quant/constants.md) is generated from [`constants.py`](python/taxline_quant/constants.py), and a test fails if a figure lacks a source or the docs drift.
+- **Confidence is measured, not assumed.** The [evaluation harness](python/taxline_quant/evals/metrics.py) scores field-level precision, recall, and expected calibration error on synthetic documents with known truth, then shows what the 0.85 gate lets through. With equal accuracy, an overconfident extractor passes about twice as many wrong fields ([report, section 5](docs/quant/report.md#5-extraction-evaluation)).
+- **Uncertainty with the assumptions attached.** A seeded [Monte Carlo](python/taxline_quant/montecarlo.py) projects required estimated payments when profit is uncertain and returns its assumptions with the result. Expected values in the tests are worked by hand; [hypothesis](python/tests/test_brackets.py) covers the invariants.
+
+## Architecture
+
+The repo has two halves: the agent system and the quantitative engine.
+
+```mermaid
+flowchart LR
+  subgraph Agents["Agent system"]
+    Site["site/<br/>Astro: marketing, calculators, console"]
+    Service["service/<br/>orchestrator + 5 agents"]
+    Worker["workers/contact<br/>Cloudflare Worker"]
+    CMS["cms/<br/>EmDash"]
+    KB[("knowledge-base/")]
+  end
+  subgraph Quant["Quantitative engine"]
+    TE["packages/tax-engine<br/>TypeScript, cited traces"]
+    PY["python/taxline_quant<br/>Decimal model, scenarios, evals"]
+    Report["docs/quant<br/>report + SVG charts"]
+  end
+  Site -->|imports| TE
+  Service -->|compute_tax| TE
+  Service -->|kb_search| KB
+  Site -->|"adapter: mock or HTTP"| Service
+  Site -->|contact form| Worker
+  CMS -->|insights at build| Site
+  PY <-->|"parity test: same cases, to the cent"| TE
+  PY -->|"report command"| Report
+  Report -->|"chart at build"| Site
 ```
 
-The product console at `/app` shows the same flow in the browser, fully offline, through the mock adapter.
+Agents never call each other. The orchestrator runs one, follows its static handoff, aggregates fields, citations, and review items, and applies the approval gate last.
 
-## Environment variables
+```mermaid
+sequenceDiagram
+  autonumber
+  actor Reviewer
+  participant Hub as Orchestrator
+  participant Relay as Relay (intake)
+  participant Lens as Lens (extraction)
+  participant Atlas as Atlas (research)
+  participant Ledger as Ledger (workpaper)
+  participant Sentry as Sentry (compliance)
+  participant Engine as Tax engine
+  Reviewer->>Hub: task and document
+  Hub->>Relay: classify the document
+  Relay-->>Hub: document type
+  Hub->>Lens: extract fields
+  Lens-->>Hub: fields with confidence and citation
+  Note over Hub: under 0.85, unscored, or out of range becomes a review item
+  opt task is a research question
+    Hub->>Atlas: search the knowledge base
+    Atlas-->>Hub: cited findings
+  end
+  Hub->>Ledger: assemble the workpaper
+  Ledger->>Engine: compute_tax
+  Engine-->>Ledger: cited trace
+  Ledger-->>Hub: workpaper draft
+  Hub->>Sentry: deadlines and filing rules
+  Sentry-->>Hub: compliance notes
+  Note over Hub: an error, unknown agent, or the hop cap stops the chain and adds a review item
+  Hub->>Hub: requireHumanApproval
+  alt a person approved
+    Hub-->>Reviewer: result ships
+  else not approved
+    Hub-->>Reviewer: withheld draft and review items
+  end
+```
 
-Nothing is required to build the site or run the tests. Keys come from the environment only; `.env` files are gitignored.
+[docs/architecture.md](docs/architecture.md) has the confidence and review-routing logic, the Python model's calculation flow, and the cross-check pipeline. [docs/system-design.md](docs/system-design.md) covers deployment and trust boundaries.
 
-| Variable | Where | Purpose |
+## The quantitative engine
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/quant/rates-dark.svg">
+  <img src="docs/quant/rates-light.svg" alt="Line chart of effective and marginal tax rate against self-employment profit from 0 to 400,000 dollars for a single filer in tax year 2026. The marginal rate spikes above 60 percent while the business income deduction phases out." width="760">
+</picture>
+
+Drawn by `python -m taxline_quant report`, which rebuilds [docs/quant/report.md](docs/quant/report.md) from fixed parameters and seeds. The spike is real: between about $238,000 and $308,000 of profit the section 199A deduction phases out for a business with no W-2 wages.
+
+```bash
+cd python
+uv run python -m taxline_quant sweep --status single --vary self-employment-profit --start 0 --stop 300000 --step 50000
+uv run python -m taxline_quant montecarlo --status single --se-profit 120000 --cv 0.35 --seed 7
+uv run python -m taxline_quant eval --profile overconfident
+uv run python -m taxline_quant parity
+```
+
+Package guide: [python/README.md](python/README.md).
+
+## Quality signals
+
+| Signal | Current state | Where |
 | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | `service/.env` | Turns on live agents and live `/scenario`. Without it the service runs offline. |
-| `MODEL_DEFAULT`, `MODEL_FAST` | `service/.env` | Model IDs. Defaults: `claude-opus-5-5` and `claude-haiku-5-5`. |
-| `PORT`, `SITE_ORIGIN` | `service/.env` | Service port (8787) and the CORS allow-list (comma-separated). |
-| `EMBEDDINGS_PROVIDER` | `service/.env` | `local` (default, offline), `voyage`, or `openai`, with `VOYAGE_API_KEY` or `OPENAI_API_KEY`. |
-| `PUBLIC_API_ADAPTER`, `PUBLIC_SERVICE_ENDPOINT`, `PUBLIC_CONTACT_ENDPOINT` | `site/.env` | Point the site at the live service and contact Worker. Default is the offline mock. |
-| `SITE_URL`, `BASE_PATH` | shell, at build | Canonical origin and base path. Deploys use `/taxline`. |
-| `EMDASH_URL` | shell or repo variable | Pull published Insights from the CMS before a build. |
+| Tax engine (TypeScript) | 37 tests, expected values worked by hand from IRS tables | `packages/tax-engine/test/` |
+| Quant package (Python) | 119 tests: hand-worked cases, hypothesis properties, CLI, report | `python/tests/` |
+| Cross-implementation parity | 47 named + 5,000 seeded cases, money equal to the cent, constants compared | `python/tests/test_parity.py` |
+| Agent service | 37 tests on a fake Messages client: loop, gates, routing, HTTP boundary | `service/test/` |
+| Contact Worker | 7 tests | `workers/contact/test/` |
+| End to end | 36 Playwright tests against the production build under `/taxline` | `site/e2e/` |
+| Accessibility | axe WCAG 2.1 AA (serious and critical) on every sitemap page | `site/e2e/pages.spec.ts` |
+| Static checks | ESLint, Prettier, `tsc`, `astro check`, ruff, `mypy --strict` | `npm run verify` |
+| CI matrix | Node 22; Python 3.12 and 3.13 | `.github/workflows/ci.yml` |
+| Secrets and data | No key needed for any test; no live model call in tests; synthetic fixtures only | `AGENTS.md` |
 
-Templates: [`service/.env.example`](service/.env.example) and [`site/.env.example`](site/.env.example).
+## Project layout
 
-## Tests
+```
+site/                 Astro 7 static site: marketing, /tools, /insights, the /app console
+service/              Node + TypeScript agent fleet on the Anthropic SDK
+packages/tax-engine/  TY2026 federal tax math in TypeScript, plus parity/ for the cross-check
+python/               taxline_quant: Decimal model, scenarios, Monte Carlo, evals, CLI
+workers/contact/      Cloudflare Worker for the demo form
+cms/                  EmDash CMS for Insights
+knowledge-base/       Markdown corpus the research agent retrieves over
+docs/                 architecture, system design, generated quant report and charts
+```
+
+## Checks
 
 ```bash
-npm test               # engine (35 hand-worked tests), service (32), contact Worker (7); node:test
-npm run lint && npm run typecheck
-npm run test:e2e       # builds the site under /taxline, then runs Playwright + axe (CHROMIUM_PATH reuses a local Chromium)
-npm run verify         # everything CI runs, in one command (needs the cms/ install for its last step)
+npm run verify:fast     # lint, format, typechecks, engine + service + Worker tests
+npm run verify:python   # ruff, mypy --strict, pytest, with the parity test required (needs uv)
+npm run verify          # everything CI runs, including the site build and Playwright + axe
 ```
 
-The service tests drive the agent loop with a fake Messages client, so they never call the API and need no key. They cover stopping on `stop_reason`, tool results paired to `tool_use` ids, structured errors for each failure class, the iteration backstop, the context fence, the confidence gate (including attempts to lower the threshold or restate a score), and the full offline chain.
+Setup details, every command, and conventions are in [AGENTS.md](AGENTS.md). Environment variables are optional and documented in [`service/.env.example`](service/.env.example) and [`site/.env.example`](site/.env.example).
 
-CI (`.github/workflows/ci.yml`) runs the site check and build, the e2e suite, the engine, service, and Worker tests, every typecheck, lint, and the CMS build on every push and pull request. `npm run verify` runs the same set locally.
+## Deploy
 
-## Using the engine
+The site publishes to GitHub Pages from `main` through `.github/workflows/deploy.yml`. The service has a root `Dockerfile` and `fly.toml`; the Worker deploys with `wrangler deploy`. Runbook: [docs/system-design.md](docs/system-design.md).
 
-```ts
-import { computeReturn, compareEntity } from '@taxline/tax-engine';
+## Limitations
 
-const r = computeReturn({ status: 'mfj', wages: 142_000, selfEmploymentProfit: 38_000, children: 2, federalWithholding: 16_500 });
-r.totalTax;        // 20764.74
-r.marginalRate;    // true marginal rate from a full recompute, not just the bracket
-r.lines;           // [{ ref: '1040 L15', label: 'Taxable income', formula: '…', authority: {…} }, …]
+- **Not tax advice, federal only, tax year 2026.** A qualified person must check every figure, citation, and deadline. Taxline never files anything.
+- **Extraction is a stub.** `extract_fields` reads seeded documents; there is no OCR or upload path. The evaluation harness therefore measures a simulated extractor and says so.
+- **The Python model is narrower than the TypeScript engine.** No capital gains, credits, NIIT, or AMT; parity covers the inputs both accept.
+- **Monte Carlo output is a projection under stated assumptions** (lognormal profit, fixed everything else), not a forecast.
+- **The service is a local demo with no authentication.** `approved` is a request field. Put it behind auth before any real use.
+- **Seed content.** The knowledge base and deadline rules are seeds that point to the IRS for verification. Pricing on the site is illustrative and the SOC 2 note says "in progress".
 
-compareEntity({ status: 'single', profit: 150_000, salary: 60_000, overhead: 2_000 }).savings; // 7275.61
-```
+## Contributing, security, license
 
-## Repository map
-
-```
-site/                 Astro 7 static site: marketing, /tools, /insights, /methodology, the /app console
-packages/tax-engine/  2026 federal tax math + scenario validation (35 tests, node:test via tsx)
-service/              Node + TypeScript agent fleet on the Anthropic SDK; /agents/run, /scenario, memory (32 tests)
-cms/                  EmDash CMS (Astro 7) for Insights; export endpoint at /api/insights.json
-scripts/              pull-insights.mjs: CMS to static snapshot, atomic and validated
-knowledge-base/       Markdown corpus the Research agent retrieves over, with a content-hash manifest
-workers/contact/      Cloudflare Worker for the demo form (7 tests)
-docs/                 design spec, design contract, system design and deploy runbook
-```
-
-## Deployment
-
-| Target | How |
-| --- | --- |
-| Site | GitHub Actions to Pages on push to `main`. Set the repository variable `EMDASH_URL` to pull fresh Insights before each build. |
-| Agent service | Root `Dockerfile` + `fly.toml` (`fly deploy`). |
-| CMS | Node standalone (`cms/`, SQLite) or Cloudflare Workers with D1 + R2. See `cms/README.md`. |
-| Contact Worker | `wrangler deploy` in `workers/contact/`. |
-
-Full runbook: `docs/system-design.md`.
-
-## Limitations and disclaimer
-
-**Not tax advice.** Taxline is a demonstration of an agent architecture. Its output is not tax, legal, or accounting advice. A qualified human reviewer must check every figure, citation, and deadline before anything is filed or sent to a client. Taxline never files autonomously.
-
-What it does not do, or does only partly:
-
-- **Federal only, tax year 2026.** Each calculator lists what it does not model (AMT, EITC, state tax, the mid-quarter convention, and so on).
-- **Extraction is a stub.** `extract_fields` reads seeded queue documents, not uploaded files. There is no OCR or upload path yet, so the prompt-injection defenses are designed for documents but tested against fixtures.
-- **Deadlines are seeds.** `compute_deadline` applies the statutory rule and a small list of fixed-date holidays (checked on their observed dates, including DC Emancipation Day), and every result carries a pointer to verify against the IRS. Floating holidays are not modeled.
-- **The knowledge base is seed content** flagged for source verification, not a maintained tax library.
-- **No authentication.** The service is a local demo. `approved` is a request field, and `/memory/remember` accepts writes from anyone who can reach the port (remembered records are cited as `memory:…`, never as knowledge-base files). Put the service behind auth before any real use.
-- **Fixtures are fictional.** Client names are invented and every TIN is a `00-0000000` style placeholder. Do not load real taxpayer data.
-
-Pricing on the site is representative, and the SOC 2 audit is marked in progress. Taxline does not train on client data.
-
-## Contributing and security
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, branch names, and the PR checklist, [`AGENTS.md`](AGENTS.md) for the full command reference, and [`CHANGELOG.md`](CHANGELOG.md) for history. Report vulnerabilities privately as described in [`SECURITY.md`](SECURITY.md).
-
-## License
-
-MIT. See [`LICENSE`](LICENSE).
+[CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [CHANGELOG.md](CHANGELOG.md) · MIT, see [LICENSE](LICENSE).

@@ -2,14 +2,20 @@
 // to the cent at each published line, the way a preparer carries them.
 
 /**
- * Round half away from zero to the cent. Shifting by the decimal exponent in
- * the number's own string form ("10.075e2" → 1007.5) avoids the binary drift
- * that makes 10.075 * 100 come out as 1007.4999….
+ * Round half away from zero to the cent.
+ *
+ * Two kinds of binary drift are removed first. A chain of float operations can
+ * leave a true half-cent tie a few ulps short (43,230.95 × 0.9 arrives as
+ * 38,907.85499999999, not 38,907.855), so the value is snapped to 15
+ * significant digits, which is exact for any amount under a billion dollars
+ * with up to six decimals. Then the shift by two places is done on the decimal
+ * string ("10.075e2" → 1007.5), because 10.075 * 100 comes out as 1007.4999….
  */
 export function round2(n: number): number {
   if (!Number.isFinite(n)) return n;
   const s = Math.sign(n) || 1;
-  const a = Math.abs(n);
+  const abs = Math.abs(n);
+  const a = abs < 1e9 ? Number(abs.toPrecision(15)) : abs;
   const shifted = String(a).includes('e') ? a * 100 : Number(`${a}e2`);
   return (s * Math.round(shifted)) / 100;
 }

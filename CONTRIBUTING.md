@@ -12,6 +12,7 @@ npm ci                              # site, tax engine, lint toolchain
 npm --prefix service ci             # agent fleet
 npm --prefix workers/contact ci     # contact Worker
 npm --prefix cms ci                 # EmDash CMS (only for npm run verify)
+(cd python && uv sync)              # Python package (needs uv and Python 3.12+)
 (cd site && npx playwright install chromium)   # browsers for the e2e suite
 ```
 
@@ -31,7 +32,8 @@ Run the site with `npm run dev` (http://localhost:4321/) and the fleet with
 
 ```bash
 npm run verify:fast    # lint, every typecheck, engine + service + Worker tests
-npm run verify         # the full CI set: adds the site build, Playwright + axe, and the CMS build
+npm run verify         # the full CI set: adds the site build, Playwright + axe, the CMS build, and the Python gate
+npm run verify:python  # ruff, mypy --strict, pytest; runs the Python and TypeScript engines against each other
 ```
 
 ## Pull request checklist

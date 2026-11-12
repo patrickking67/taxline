@@ -2,7 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 // End-to-end tests run against the production build, served under the same
 // base path GitHub Pages uses, so base-path and asset bugs surface here.
-const PORT = 4173;
+// E2E_PORT moves the server when 4173 is taken by something else.
+const PORT = Number(process.env.E2E_PORT ?? 4173);
 const BASE = '/taxline';
 
 export default defineConfig({

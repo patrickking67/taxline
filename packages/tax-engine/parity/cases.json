@@ -1,0 +1,408 @@
+[
+  {
+    "id": "single-wages-85k",
+    "input": {
+      "status": "single",
+      "wages": 85000,
+      "federalWithholding": 9000
+    },
+    "prior": {
+      "tax": 9100,
+      "agi": 82000
+    }
+  },
+  {
+    "id": "single-zero",
+    "input": {
+      "status": "single"
+    }
+  },
+  {
+    "id": "single-under-standard-deduction",
+    "input": {
+      "status": "single",
+      "wages": 12000
+    }
+  },
+  {
+    "id": "single-tax-table-row-edge-low",
+    "input": {
+      "status": "single",
+      "wages": 66100
+    }
+  },
+  {
+    "id": "single-tax-table-row-edge-high",
+    "input": {
+      "status": "single",
+      "wages": 66149.99
+    }
+  },
+  {
+    "id": "single-tax-table-small-rows",
+    "input": {
+      "status": "single",
+      "wages": 16112
+    }
+  },
+  {
+    "id": "single-tax-table-25-dollar-rows",
+    "input": {
+      "status": "single",
+      "wages": 19090
+    }
+  },
+  {
+    "id": "single-tax-table-ceiling-minus-1",
+    "input": {
+      "status": "single",
+      "wages": 116099
+    }
+  },
+  {
+    "id": "single-tax-table-ceiling",
+    "input": {
+      "status": "single",
+      "wages": 116100
+    }
+  },
+  {
+    "id": "single-rate-schedule-forced",
+    "input": {
+      "status": "single",
+      "wages": 85000,
+      "useTaxTable": false
+    }
+  },
+  {
+    "id": "single-bracket-floor-22",
+    "input": {
+      "status": "single",
+      "wages": 66500,
+      "useTaxTable": false
+    }
+  },
+  {
+    "id": "single-top-bracket",
+    "input": {
+      "status": "single",
+      "wages": 1000000,
+      "federalWithholding": 300000
+    },
+    "prior": {
+      "tax": 310000,
+      "agi": 950000
+    }
+  },
+  {
+    "id": "single-addl-medicare-wages",
+    "input": {
+      "status": "single",
+      "wages": 300000
+    }
+  },
+  {
+    "id": "single-medicare-wages-override",
+    "input": {
+      "status": "single",
+      "wages": 180000,
+      "medicareWages": 215000
+    }
+  },
+  {
+    "id": "single-itemized",
+    "input": {
+      "status": "single",
+      "wages": 120000,
+      "itemized": 30000
+    }
+  },
+  {
+    "id": "single-itemized-below-standard",
+    "input": {
+      "status": "single",
+      "wages": 120000,
+      "itemized": 9000
+    }
+  },
+  {
+    "id": "single-adjustments",
+    "input": {
+      "status": "single",
+      "wages": 95000,
+      "adjustments": 7000,
+      "otherIncome": 2500
+    }
+  },
+  {
+    "id": "single-se-100k",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 100000
+    },
+    "prior": {
+      "tax": 20000,
+      "agi": 90000
+    }
+  },
+  {
+    "id": "single-se-half-cent-net-earnings",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 134850
+    }
+  },
+  {
+    "id": "single-se-floor-under",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 433,
+      "wages": 30000
+    }
+  },
+  {
+    "id": "single-se-floor-over",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 434,
+      "wages": 30000
+    }
+  },
+  {
+    "id": "single-se-loss",
+    "input": {
+      "status": "single",
+      "wages": 60000,
+      "selfEmploymentProfit": -10000
+    }
+  },
+  {
+    "id": "single-se-wage-base-shared",
+    "input": {
+      "status": "single",
+      "wages": 180000,
+      "selfEmploymentProfit": 50000
+    }
+  },
+  {
+    "id": "single-se-wage-base-exhausted",
+    "input": {
+      "status": "single",
+      "wages": 200000,
+      "selfEmploymentProfit": 80000
+    }
+  },
+  {
+    "id": "single-se-above-wage-base",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 300000,
+      "estimatedPayments": 60000
+    },
+    "prior": {
+      "tax": 70000,
+      "agi": 250000
+    }
+  },
+  {
+    "id": "single-qbi-minimum",
+    "input": {
+      "status": "single",
+      "wages": 50000,
+      "selfEmploymentProfit": 1500
+    }
+  },
+  {
+    "id": "single-qbi-just-under-minimum",
+    "input": {
+      "status": "single",
+      "wages": 50000,
+      "selfEmploymentProfit": 1050
+    }
+  },
+  {
+    "id": "single-qbi-phase-in-no-wages",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 290000
+    }
+  },
+  {
+    "id": "single-qbi-phase-in-wages",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 290000,
+      "qbiW2Wages": 60000,
+      "qbiUbia": 150000
+    }
+  },
+  {
+    "id": "single-qbi-above-range-wage-limit",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 450000,
+      "qbiW2Wages": 40000,
+      "qbiUbia": 1000000
+    }
+  },
+  {
+    "id": "single-qbi-above-range-no-wages",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 450000
+    }
+  },
+  {
+    "id": "single-sstb-phase-in",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 290000,
+      "qbiW2Wages": 60000,
+      "sstb": true
+    }
+  },
+  {
+    "id": "single-sstb-above-range",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 450000,
+      "sstb": true
+    }
+  },
+  {
+    "id": "mfj-wages-and-se",
+    "input": {
+      "status": "mfj",
+      "wages": 142000,
+      "selfEmploymentProfit": 38000,
+      "federalWithholding": 16500
+    },
+    "prior": {
+      "tax": 24000,
+      "agi": 170000
+    }
+  },
+  {
+    "id": "mfj-owner-wages",
+    "input": {
+      "status": "mfj",
+      "wages": 260000,
+      "selfEmploymentProfit": 90000,
+      "seOwnerSsWages": 150000
+    }
+  },
+  {
+    "id": "mfj-addl-medicare-se",
+    "input": {
+      "status": "mfj",
+      "wages": 200000,
+      "selfEmploymentProfit": 100000
+    }
+  },
+  {
+    "id": "mfj-qbi-threshold-edge",
+    "input": {
+      "status": "mfj",
+      "selfEmploymentProfit": 480000,
+      "qbiW2Wages": 50000
+    }
+  },
+  {
+    "id": "mfj-sstb-mid-phase",
+    "input": {
+      "status": "mfj",
+      "wages": 120000,
+      "selfEmploymentProfit": 400000,
+      "sstb": true,
+      "qbiW2Wages": 80000
+    }
+  },
+  {
+    "id": "mfj-cents",
+    "input": {
+      "status": "mfj",
+      "wages": 416550.53,
+      "selfEmploymentProfit": 378945.54,
+      "federalWithholding": 51095,
+      "seOwnerSsWages": 198335.14
+    }
+  },
+  {
+    "id": "mfs-addl-medicare-half-cent",
+    "input": {
+      "status": "mfs",
+      "wages": 140395,
+      "selfEmploymentProfit": -18065,
+      "federalWithholding": 19274
+    }
+  },
+  {
+    "id": "mfs-top-bracket",
+    "input": {
+      "status": "mfs",
+      "wages": 420000,
+      "useTaxTable": false
+    }
+  },
+  {
+    "id": "mfs-qbi-phase",
+    "input": {
+      "status": "mfs",
+      "selfEmploymentProfit": 260000,
+      "qbiW2Wages": 30000
+    },
+    "prior": {
+      "tax": 40000,
+      "agi": 76000
+    }
+  },
+  {
+    "id": "hoh-wages",
+    "input": {
+      "status": "hoh",
+      "wages": 72000,
+      "federalWithholding": 6000
+    }
+  },
+  {
+    "id": "hoh-se-and-wages-cents",
+    "input": {
+      "status": "hoh",
+      "wages": 47111.25,
+      "selfEmploymentProfit": 202300.56,
+      "otherIncome": 3900.96,
+      "federalWithholding": 18591.89,
+      "useTaxTable": false
+    }
+  },
+  {
+    "id": "hoh-estimates-small-balance",
+    "input": {
+      "status": "hoh",
+      "wages": 64000,
+      "federalWithholding": 4900
+    },
+    "prior": {
+      "tax": 5200
+    }
+  },
+  {
+    "id": "single-estimates-prior-zero",
+    "input": {
+      "status": "single",
+      "selfEmploymentProfit": 70000
+    },
+    "prior": {
+      "tax": 0,
+      "agi": 10000
+    }
+  },
+  {
+    "id": "single-estimates-half-cent-target",
+    "input": {
+      "status": "single",
+      "wages": 205000.4,
+      "useTaxTable": false
+    }
+  }
+]

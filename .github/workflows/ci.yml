@@ -128,3 +128,37 @@ jobs:
         working-directory: workers/contact
       - run: npm run typecheck
         working-directory: workers/contact
+
+  python:
+    name: 'Python: lint, types, tests, parity (${{ matrix.python }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.12', '3.13']
+    env:
+      UV_PYTHON: ${{ matrix.python }}
+      # The parity tests run the TypeScript engine through Node; never skip them here.
+      TAXLINE_PARITY_REQUIRED: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: python/uv.lock
+      - run: uv sync --locked
+        working-directory: python
+      - run: uv run ruff check .
+        working-directory: python
+      - run: uv run ruff format --check .
+        working-directory: python
+      - run: uv run mypy
+        working-directory: python
+      - run: uv run pytest
+        working-directory: python

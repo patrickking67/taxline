@@ -13,6 +13,24 @@ import { u } from '../lib/url';
 import { tools } from '../lib/data/tools';
 import { softwareApp } from '../lib/seo';
 import { computeReturn, fmtUsd } from '@taxline/tax-engine';
+// Drawn by `python -m taxline_quant report` (npm run report); never edited by hand.
+import ratesChart from '../../../docs/quant/rates-dark.svg';
+
+const REPO = 'https://github.com/patrickking67/taxline';
+// Each figure is enforced by a test: python/tests/test_parity.py and its fixtures.
+const quantProof = [
+  {
+    n: '47',
+    t: 'named edge cases',
+    d: 'Bracket floors, the $400 floors, the wage base, QBI phase-in.',
+  },
+  {
+    n: '5,000',
+    t: 'seeded random cases',
+    d: 'Half carry cents, where a float engine and an exact one part ways.',
+  },
+  { n: '1¢', t: 'tolerance', d: 'Any difference in a money line fails the build.' },
+];
 
 // A real engine run, computed at build time — the home page shows output, not a mock.
 const sample = computeReturn({
@@ -289,8 +307,72 @@ const steps = [
       </div>
     </section>
 
+    <!-- The quantitative engine -->
+    <section id="quant" class="border-b border-border bg-panel/30">
+      <div class="mx-auto grid max-w-[1200px] items-start gap-12 px-5 py-20 sm:px-6 lg:grid-cols-[1fr_1.15fr]">
+        <div>
+          <p class="ds-eyebrow">Quantitative engine</p>
+          <h2 class="ds-h2 mt-3 max-w-xl">A second engine checks the first.</h2>
+          <p class="ds-lead mt-3 max-w-xl">
+            The 2026 rules are written twice: in TypeScript for the product, and in Python on exact
+            decimals for analysis. Every build runs both on the same cases and compares them line by
+            line. The first run caught a half-cent rounding drift in the product engine, now fixed
+            and tested.
+          </p>
+          <dl class="mt-7 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3">
+            {quantProof.map((q) => (
+              <div class="bg-base p-4">
+                <dt class="text-[13px] font-semibold text-fg">
+                  <span class="block font-mono text-[22px] font-medium tabular-nums text-accent">
+                    {q.n}
+                  </span>
+                  {q.t}
+                </dt>
+                <dd class="mt-1 text-[12px] leading-relaxed text-fg-muted">{q.d}</dd>
+              </div>
+            ))}
+          </dl>
+          <p class="mt-5 max-w-xl text-[13px] leading-relaxed text-fg-muted">
+            The Python side also sweeps scenarios, projects estimated payments under income
+            uncertainty with seeded Monte Carlo runs, and scores extraction confidence for
+            calibration. Educational, on synthetic data; not tax advice.
+          </p>
+          <div class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium">
+            <a
+              href={`${REPO}/blob/main/docs/quant/report.md`}
+              class="inline-flex items-center gap-1.5 text-accent hover:text-accent-hover"
+            >
+              Read the generated report <Icon name="lucide:arrow-up-right" class="size-4" />
+            </a>
+            <a
+              href={`${REPO}/tree/main/python`}
+              class="inline-flex items-center gap-1.5 text-accent hover:text-accent-hover"
+            >
+              Python source <Icon name="lucide:arrow-up-right" class="size-4" />
+            </a>
+          </div>
+        </div>
+        <figure class="overflow-hidden rounded-md border border-border bg-panel">
+          <img
+            src={ratesChart.src}
+            width={ratesChart.width}
+            height={ratesChart.height}
+            loading="lazy"
+            decoding="async"
+            class="block h-auto w-full"
+            alt="Line chart for a single filer in tax year 2026. The effective rate on self-employment profit rises from about 14 percent to 33 percent at 400,000 dollars. The marginal rate steps between 14 and 32 percent, spikes above 60 percent between about 240,000 and 308,000 dollars while the business income deduction phases out, then settles at 38 percent."
+          />
+          <figcaption class="border-t border-border px-4 py-3 font-mono text-[11px] leading-relaxed text-fg-faint">
+            Marginal and effective rate on self-employment profit. Drawn by{' '}
+            <span class="text-fg-muted">python -m taxline_quant report</span> from the model, not by
+            hand.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
     <!-- How it works -->
-    <section class="border-b border-border bg-panel/30">
+    <section class="border-b border-border">
       <div class="mx-auto max-w-[1200px] px-5 py-20 sm:px-6">
         <div>
           <p class="ds-eyebrow">Intake to reviewer-ready</p>
