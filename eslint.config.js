@@ -52,7 +52,7 @@ export default [
   },
   {
     // Playwright specs, config, and the dist server run in Node.
-    files: ['site/e2e/**', 'site/playwright.config.ts'],
+    files: ['site/e2e/**', 'site/playwright.config.ts', 'scripts/capture-screenshots.mjs'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
     rules: { 'no-console': 'off' },
   },

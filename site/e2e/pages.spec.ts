@@ -100,3 +100,36 @@ test('every internal link on every page resolves', async ({ page }) => {
   expect(links.size).toBeGreaterThan(20);
   expect(broken, broken.join('\n')).toEqual([]);
 });
+
+test('the home page shows the generated rate chart and links to the report', async ({ page }) => {
+  await page.goto('./');
+  const section = page.locator('#quant');
+  await expect(section.getByRole('heading', { level: 2 })).toHaveText(
+    'A second engine checks the first.',
+  );
+  const chart = section.locator('figure img');
+  await chart.scrollIntoViewIfNeeded();
+  await expect(chart).toHaveAttribute('alt', /marginal rate/i);
+  await expect
+    .poll(() => chart.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth))
+    .toBeGreaterThan(0);
+  await expect(section.getByRole('link', { name: /generated report/i })).toHaveAttribute(
+    'href',
+    'https://github.com/patrickking67/taxline/blob/main/docs/quant/report.md',
+  );
+  await expect(section).toContainText('not tax advice');
+});
+
+test('the social card is 1200 by 630 and referenced absolutely', async ({ page }) => {
+  await page.goto('./');
+  const og = await page.locator('meta[property="og:image"]').getAttribute('content');
+  expect(og).toMatch(/^https:\/\/.+\/social-preview\.png$/);
+  expect(await page.locator('meta[name="twitter:image"]').getAttribute('content')).toBe(og);
+  const size = await page.evaluate(async () => {
+    const img = new Image();
+    img.src = new URL('social-preview.png', document.baseURI).href;
+    await img.decode();
+    return [img.naturalWidth, img.naturalHeight];
+  });
+  expect(size).toEqual([1200, 630]);
+});
