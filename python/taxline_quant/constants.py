@@ -52,25 +52,40 @@ SRC_STANDARD = Source("Rev. Proc. 2025-32 sec. 4.14(1); IRC sec. 63(c)(2)", _REV
 SRC_QBI_INDEXED = Source(
     "Rev. Proc. 2025-32 sec. 4.26; IRC sec. 199A(e)(2), (b)(3)(B)", _REV_PROC_URL
 )
-SRC_QBI_RATE = Source("IRC sec. 199A(a), (b)(2)", _USC + "199A")
-SRC_QBI_MINIMUM = Source(
-    "IRC sec. 199A(i), added by Pub. L. 119-21 sec. 70105; Rev. Proc. 2025-32 sec. 2.12",
+# The phase-in range is set by statute, not indexed: Pub. L. 119-21 widened it to
+# $75,000 ($150,000 joint) for tax years after 2025.
+SRC_QBI_RANGE = Source(
+    "IRC sec. 199A(b)(3)(B), (d)(3)(A), as amended by Pub. L. 119-21 sec. 70105(a); "
+    "Rev. Proc. 2025-32 sec. 4.26",
     _REV_PROC_URL,
 )
-SRC_SE_RATES = Source("IRC sec. 1401(a), (b)(1); Schedule SE (Form 1040)", _USC + "1401")
-SRC_SE_FACTOR = Source("IRC sec. 1402(a)(12); Schedule SE line 4a", _USC + "1402")
-SRC_SE_FLOOR = Source("IRC sec. 1402(b)(2); Schedule SE line 4c", _USC + "1402")
-SRC_SE_DEDUCTION = Source("IRC sec. 164(f); Schedule 1 (Form 1040) line 15", _USC + "164")
-SRC_WAGE_BASE = Source(
-    "SSA 2026 contribution and benefit base; IRS Tax Topic 751",
-    "https://www.irs.gov/taxtopics/tc751",
+SRC_QBI_RATE = Source("IRC sec. 199A(a), (b)(2)", _USC + "199A")
+SRC_QBI_MINIMUM = Source(
+    "IRC sec. 199A(i), as amended by Pub. L. 119-21 sec. 70105(b); Rev. Proc. 2025-32 sec. 2.12",
+    _REV_PROC_URL,
 )
-SRC_ADDL_MEDICARE = Source("IRC sec. 1401(b)(2), sec. 3101(b)(2); Form 8959", _USC + "1401")
-SRC_ESTIMATED = Source("IRC sec. 6654(d)(1)(B), (C); Form 1040-ES", _USC + "6654")
+SRC_SE_RATES = Source("IRC sec. 1401(a), (b)(1); Schedule SE (Form 1040) (2026)", _USC + "1401")
+SRC_SE_FACTOR = Source("IRC sec. 1402(a)(12); Schedule SE (2026) line 4a", _USC + "1402")
+SRC_SE_FLOOR = Source("IRC sec. 1402(b)(2); Schedule SE (2026) line 4c", _USC + "1402")
+SRC_SE_DEDUCTION = Source(
+    "IRC sec. 164(f); Schedule SE (2026) line 13, carried to Schedule 1 (Form 1040) line 15",
+    _USC + "164",
+)
+SRC_WAGE_BASE = Source(
+    "SSA, Cost-of-Living Increase and Other Determinations for 2026, 90 FR 49047 "
+    "(2025-11-03); IRC sec. 1402(b)(1); Schedule SE (2026) line 7",
+    "https://www.federalregister.gov/documents/2025/11/03/2025-19763/"
+    "cost-of-living-increase-and-other-determinations-for-2026",
+)
+SRC_ADDL_MEDICARE = Source("IRC sec. 1401(b)(2), sec. 3101(b)(2); Form 8959 (2025)", _USC + "1401")
+SRC_ESTIMATED = Source("IRC sec. 6654(d)(1)(B), (C); Form 1040-ES (2026)", _USC + "6654")
 SRC_ESTIMATED_MINIMUM = Source("IRC sec. 6654(e)(1)", _USC + "6654")
-SRC_ESTIMATED_DATES = Source("IRC sec. 6654(c)(2); Form 1040-ES", _USC + "6654")
+SRC_ESTIMATED_DATES = Source("IRC sec. 6654(c)(2); Form 1040-ES (2026)", _USC + "6654")
+# The TY2026 Form 1040 instructions were not published when this was last checked
+# (2026-11-12). The row layout is the TY2025 one, including the three irregular rows
+# at the bottom ($0-5, $5-15, $15-25) that brackets.tax_table_tax handles in place.
 SRC_TAX_TABLE = Source(
-    "IRC sec. 3; Form 1040 instructions, Tax Table (row layout as published for TY2025)",
+    "IRC sec. 3; Form 1040 instructions (2025), Tax Table (row layout; TY2026 not yet published)",
     "https://www.irs.gov/instructions/i1040gi",
 )
 
@@ -306,7 +321,7 @@ def constant_table(year: TaxYear = TY2026) -> tuple[ConstantRow, ...]:
             "qbi.phase_in_range",
             "QBI phase-in range width above the threshold",
             _status_values(q.phase_in_range),
-            SRC_QBI_INDEXED,
+            SRC_QBI_RANGE,
         ),
         ConstantRow(
             "qbi.wage_limit_wages_pct",

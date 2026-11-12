@@ -1,10 +1,10 @@
 """A simulated field extractor with a known error and confidence model.
 
-The service's ``extract_fields`` tool is a stub that reads seeded documents, so
-there is no real extractor to measure yet. This stand-in lets the scoring code
-be exercised end to end, offline and deterministically: it knows the truth,
-gets a field wrong with a known probability, and reports a confidence that is
-either honest or inflated depending on the profile. No model API is called.
+The real extractor is the rules extractor in ``service/src/extract``, scored
+through ``rules.py``. This stand-in is kept for two jobs the real one cannot do:
+it exercises the scoring code with errors whose rate is known in advance, and it
+shows what a miscalibrated reader costs, because its two profiles make the same
+mistakes and differ only in the confidence they state. No model API is called.
 
 Each field falls in a legibility tier. The tier fixes the chance the value is
 read correctly; the profile decides how the reported confidence relates to it.

@@ -199,6 +199,8 @@ def _cmd_eval(args: argparse.Namespace) -> int:
     from .evals.extractor import simulate_extraction  # noqa: PLC0415
     from .evals.metrics import REVIEW_THRESHOLD  # noqa: PLC0415
     from .evals.recorded import load_predictions, load_truth  # noqa: PLC0415
+    from .evals.render import render_documents  # noqa: PLC0415
+    from .evals.rules import ExtractorUnavailableError, run_rules_extractor  # noqa: PLC0415
 
     if (args.truth is None) != (args.recorded is None):
         print("--truth and --recorded go together", file=sys.stderr)
@@ -207,10 +209,18 @@ def _cmd_eval(args: argparse.Namespace) -> int:
         documents = load_truth(args.truth)
         predictions = load_predictions(args.recorded)
         source = f"recorded run {args.recorded}"
-    else:
+    elif args.profile is not None:
         documents = generate_documents(args.seed, args.documents)
         predictions = simulate_extraction(documents, PROFILES[args.profile], args.seed)
         source = f"simulated extractor ({args.profile}), seed {args.seed}"
+    else:
+        documents = generate_documents(args.seed, args.documents)
+        try:
+            predictions = run_rules_extractor(render_documents(documents, args.seed))
+        except ExtractorUnavailableError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        source = f"rules extractor (service/src/extract), seed {args.seed}"
     ev = evaluate(documents, predictions)
     c, g = ev.calibration, ev.gate_at(REVIEW_THRESHOLD)
     if args.json:
@@ -275,7 +285,17 @@ def _cmd_constants(args: argparse.Namespace) -> int:
 
 def _cmd_report(args: argparse.Namespace) -> int:
     from . import report  # noqa: PLC0415
+    from .evals.rules import ExtractorUnavailableError  # noqa: PLC0415
 
+    try:
+        return _report(args, report)
+    except ExtractorUnavailableError as exc:
+        # Section 5 runs the service's extractor, which needs Node.
+        print(str(exc), file=sys.stderr)
+        return 1
+
+
+def _report(args: argparse.Namespace, report: Any) -> int:
     if args.check:
         stale = report.check(args.out)
         if stale:
@@ -343,7 +363,11 @@ def build_parser() -> argparse.ArgumentParser:
     mc.set_defaults(run=_cmd_montecarlo)
 
     ev = sub.add_parser("eval", help="score field extraction against ground truth")
-    ev.add_argument("--profile", choices=["calibrated", "overconfident"], default="overconfident")
+    ev.add_argument(
+        "--profile",
+        choices=["calibrated", "overconfident"],
+        help="score the simulated extractor instead of the service's rules extractor",
+    )
     ev.add_argument("--documents", type=int, default=600)
     ev.add_argument("--seed", type=int, default=7)
     ev.add_argument("--truth", type=Path, help="ground truth JSON for a recorded run")

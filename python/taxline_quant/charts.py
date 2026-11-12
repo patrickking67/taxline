@@ -172,9 +172,9 @@ def montecarlo_chart(projection: Projection, theme: Theme) -> str:
 
 
 def reliability_chart(evaluations: Sequence[tuple[str, Evaluation]], theme: Theme) -> str:
-    """Accuracy against stated confidence, one line per extractor profile."""
+    """Accuracy against stated confidence, one line per group of documents."""
     fig, ax = _figure(theme)
-    ax.plot([0.5, 1], [0.5, 1], color=theme.ink_muted, linewidth=1, label="Perfect calibration")
+    ax.plot([0, 1], [0, 1], color=theme.ink_muted, linewidth=1, label="Perfect calibration")
     for i, (name, evaluation) in enumerate(evaluations):
         bins = [b for b in evaluation.calibration.bins if b.count]
         ax.plot(
@@ -188,13 +188,13 @@ def reliability_chart(evaluations: Sequence[tuple[str, Evaluation]], theme: Them
             markeredgewidth=2,
             label=f"{name} (ECE {evaluation.calibration.expected_calibration_error:.3f})",
         )
-    ax.set_title("Reliability of extraction confidence, simulated extractor", color=theme.ink)
+    ax.set_title("Reliability of extraction confidence, rules extractor", color=theme.ink)
     ax.set_xlabel("Mean stated confidence in bin")
     ax.set_ylabel("Share of fields correct")
     ax.xaxis.set_major_formatter(FuncFormatter(_percent))
     ax.yaxis.set_major_formatter(FuncFormatter(_percent))
-    ax.set_xlim(0.5, 1.02)
-    ax.set_ylim(0.5, 1.02)
+    ax.set_xlim(0, 1.02)
+    ax.set_ylim(0, 1.02)
     _legend(ax, theme)
     return _svg(fig)
 

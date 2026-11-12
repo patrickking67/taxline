@@ -168,7 +168,8 @@ flowchart LR
   TSM --> CMP
   CMP -->|yes| OK["CI passes"]
   CMP -->|no| FAIL["CI fails with the<br/>case and the field"]
-  SYN["Synthetic documents<br/>with known truth"] --> EX["Extractor output<br/>simulated or recorded"]
+  SYN["Synthetic documents<br/>with known truth"] --> REN["Rendered as text<br/>with seeded damage"]
+  REN --> EX["Rules extractor<br/>service/src/extract via Node"]
   EX --> SC["Precision, recall,<br/>calibration error"]
   SC --> GATE["What the 0.85 gate<br/>catches and lets through"]
 ```
@@ -179,6 +180,7 @@ TypeScript engine rounded some exact half-cent ties down, because a product such
 43,230.95 x 0.9 reaches a double as 38,907.85499999999; the fix and its regression
 test are in [`money.ts`](../packages/tax-engine/src/money.ts) and
 [`engine.test.ts`](../packages/tax-engine/test/engine.test.ts). The evaluation harness
-runs offline against a simulated or recorded extractor and never calls a model API;
-with the service's extractor still a stub, its published numbers describe the
-simulator, not a model.
+renders synthetic documents as damaged text, runs the service's rules extractor over
+them through Node, and scores the result. It never calls a model API. Its published
+numbers describe that extractor on a synthetic noise model, not a model and not real
+scans; the confidence weights were set on seeds other than the one reported.

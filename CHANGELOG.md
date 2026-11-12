@@ -9,6 +9,28 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Added
 
+- A light theme for the site. Every color token is `light-dark()`, the page
+  follows `prefers-color-scheme`, and a toggle in the nav and the console
+  overrides and remembers the choice. The rate chart swaps between its light
+  and dark renderings.
+- An inline SVG "how a document gets to your desk" diagram on the home page:
+  the five agents, the orchestrator, what reaches the reviewer, and the approval
+  gate, with a tall layout for narrow screens.
+- The e2e suite runs axe on every page in both themes and on the demo console,
+  and covers the toggle and the diagram.
+
+- A deterministic, offline rules extractor behind `extract_fields`
+  (`service/src/extract`): caption anchoring, format validation with counted
+  repairs, and cross-field arithmetic for W-2, 1099-NEC, and 1099-INT text.
+  Each field's confidence is derived from those signals and its citation points
+  at the source line.
+- A model cross-check for extraction when an API key is set. The model reads
+  the same text; any disagreement caps the field under the review threshold and
+  adds a review item with both readings. It cannot raise a confidence.
+- Rendered synthetic scans with a seeded damage model
+  (`python/taxline_quant/evals/render.py`) and a runner that scores the
+  service's extractor through Node (`evals/rules.py`).
+
 - `python/taxline_quant`, a typed Python package for tax year 2026: a federal
   income tax model on `Decimal` (rate schedule and Tax Table, standard or
   itemized deduction, Schedule SE, the section 199A deduction, Additional
@@ -36,6 +58,13 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Fixed
 
+- Citations in the Python constants: the Social Security wage base now cites the
+  SSA notice (90 FR 49047, 2025-11-03) where it cited an IRS topic page, the
+  section 199A phase-in range and minimum cite Pub. L. 119-21 sec. 70105 as
+  amendments, forms carry their revision year, and the Tax Table rows say they
+  follow the 2025 instructions because the 2026 ones are not published. No value
+  changed. The TypeScript labels for section 199A and the wage base match.
+
 - The tax engine rounded some exact half-cent ties down. A product such as
   43,230.95 x 0.9 reaches `round2` as 38,907.85499999999, so the result was a
   cent low. `round2` now snaps to 15 significant digits before rounding. Found
@@ -61,6 +90,14 @@ not cut a tagged release yet, so history below is grouped by date.
   clips at desktop width.
 
 ### Changed
+
+- Section 5 of `docs/quant/report.md` now scores the service's rules extractor
+  on held-out synthetic scans. The simulated extractor remains as a labelled
+  illustration of what miscalibration costs.
+- `extract_fields` returns a `business` failure for document types it has no
+  parser for, where it used to return seeded values.
+- The seeded W-2 and 1099-NEC carry a text layer and their queue fields are read
+  from it; the site's demo data mirrors the result.
 
 - The README leads with a screenshot, the engineering decisions, and Mermaid
   diagrams of both halves of the project.

@@ -8,6 +8,7 @@ TypeScript engine.
 from __future__ import annotations
 
 import dataclasses
+import re
 from collections.abc import Mapping
 from decimal import Decimal
 from pathlib import Path
@@ -92,3 +93,15 @@ def test_every_constant_has_a_citation() -> None:
 
 def test_docs_table_is_current() -> None:
     assert DOCS_TABLE.read_text(encoding="utf-8") == constants_markdown()
+
+
+def test_every_source_names_its_authority_and_year() -> None:
+    """A citation is the Rev. Proc. (numbered by year) or a Code section, and any
+    form or instruction it names carries the revision year."""
+    for row in constant_table():
+        label = row.source.label
+        assert re.search(r"Rev\. Proc\. 2025-32 sec\. \d|IRC sec\. \d", label), row.path
+        if re.search(r"\b(Form|Schedule)\b", label):
+            assert re.search(r"\(20\d\d\)", label), f"{row.path}: no form year in {label!r}"
+        if "FR" in label:
+            assert re.search(r"\d+ FR \d+ \(\d{4}-\d{2}-\d{2}\)", label), row.path

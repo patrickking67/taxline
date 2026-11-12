@@ -3,6 +3,13 @@
 // Mirrors the product app's AppDoc shape (site/src/lib/api/types.ts) so the
 // service's /queue and /doc/:id endpoints are drop-in for the static site's
 // adapter. In production this comes from a datastore; here it is in-memory seed.
+//
+// A document with a `text` layer is read by the rules extractor when this module
+// loads, so its fields and confidences are what the extractor produces, not typed
+// in. The other documents keep seeded values for the queue views only;
+// extract_fields has no parser for them and says so.
+
+import { extractFields } from '../extract/rules.js';
 
 export type DocStatus = 'new' | 'review' | 'approved' | 'archived';
 
@@ -29,8 +36,47 @@ export interface SeedDoc {
   confidence: number | null;
   pages: number;
   docTitle?: string;
+  /** The scan's text layer, when the document has one the extractor can read. */
+  text?: string;
   fields: SeedField[];
   evidence: SeedEvidence[];
+}
+
+// Synthetic text layers. The W-2 has two damaged lines on purpose: box 17 has a
+// letter where a digit belongs and box 20 ends in an unreadable mark.
+const ACME_W2_TEXT = [
+  'Form W-2 Wage and Tax Statement 2024',
+  'b Employer identification number (EIN)  00-0000001',
+  "c Employer's name, address, and ZIP code  Acme Studios LLC",
+  '1 Wages, tips, other compensation  128,400.00',
+  '2 Federal income tax withheld  24,310.00',
+  '3 Social security wages  128,400.00',
+  '4 Social security tax withheld  7,960.80',
+  '5 Medicare wages and tips  128,400.00',
+  '6 Medicare tax withheld  1,861.80',
+  '16 State wages, tips, etc.  128,400.00',
+  '17 State income tax  6,1B0.00',
+  '20 Locality name  PHL-RE~',
+].join('\n');
+
+const MEADOW_NEC_TEXT = [
+  '1099-NEC Nonemployee Compensation summary 2024',
+  'Payer: Meadow LP',
+  'Payer TlN: 00-0000002',
+  'Box 1 Nonemployee compensation: $42,000.00',
+  'Box 4 Federal tax withheld: $0.00',
+].join('\n');
+
+/** Read a seeded text layer: the fields the queue shows and their mean confidence. */
+function read(text: string, type: string): Pick<SeedDoc, 'text' | 'fields' | 'confidence'> {
+  const fields = extractFields(text, type).fields.map((f) => ({
+    label: f.label,
+    value: f.value ?? '',
+    confidence: f.confidence,
+  }));
+  const scores = fields.map((f) => f.confidence).filter((c): c is number => c != null);
+  const mean = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+  return { text, fields, confidence: mean == null ? null : Math.round(mean * 100) / 100 };
 }
 
 export const queue: SeedDoc[] = [
@@ -41,17 +87,9 @@ export const queue: SeedDoc[] = [
     type: 'W-2',
     lastAgent: 'Extraction',
     status: 'review',
-    confidence: 0.83,
     pages: 1,
     docTitle: 'Form W-2 · Wage and Tax Statement · 2024',
-    fields: [
-      { label: 'Employer', value: 'Acme Studios LLC', confidence: 0.99 },
-      { label: 'EIN', value: '00-0000001', confidence: 0.97 },
-      { label: 'Wages · box 1', value: '$128,400.00', confidence: 0.97 },
-      { label: 'Federal w/h · box 2', value: '$24,310.00', confidence: 0.91 },
-      { label: 'State w/h · box 17', value: '$6,180.00', confidence: 0.74 },
-      { label: 'Local code · box 20', value: 'PHL-RES', confidence: 0.41 },
-    ],
+    ...read(ACME_W2_TEXT, 'W-2'),
     evidence: [
       { icon: 'lucide:file-text', label: 'W-2 scan', strong: 'p.1' },
       { icon: 'lucide:book-open', label: 'IRS Pub 15-T', strong: '' },
@@ -64,15 +102,9 @@ export const queue: SeedDoc[] = [
     type: '1099-NEC',
     lastAgent: 'Intake',
     status: 'new',
-    confidence: 0.78,
     pages: 4,
     docTitle: 'Form 1099-NEC · Nonemployee Compensation · 2024',
-    fields: [
-      { label: 'Payer', value: 'Meadow LP', confidence: 0.95 },
-      { label: 'Payer TIN', value: '00-0000002', confidence: 0.88 },
-      { label: 'Nonemployee comp · box 1', value: '$42,000.00', confidence: 0.78 },
-      { label: 'Federal w/h · box 4', value: '$0.00', confidence: 0.62 },
-    ],
+    ...read(MEADOW_NEC_TEXT, '1099-NEC'),
     evidence: [{ icon: 'lucide:file-text', label: '1099-NEC', strong: 'p.1' }],
   },
   {

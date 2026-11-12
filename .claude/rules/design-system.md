@@ -2,8 +2,9 @@
 
 Full contract: `docs/design-contract.md`. Essentials:
 
+- **Two themes, one token set.** Colors are `light-dark(light, dark)` in `global.css`; the page follows `prefers-color-scheme` and `ThemeToggle` overrides it. Anything you add must read in both: tokens only, inline SVG colored from tokens, `only-light`/`only-dark` for per-theme assets. The e2e suite runs axe in both themes.
 - **Tokens only.** Use the Tailwind v4 `@theme` utilities from `site/src/styles/global.css`: surfaces `bg-base/panel/raised/inset`; text `text-fg/fg-muted/fg-faint`; borders `border-border/-strong/-faint`; accent `text-accent bg-accent bg-accent-soft`; semantic `ok/warn/danger/info` (+`-bright`,`-soft`); paper `bg-paper text-paper-ink`. Never hardcode hex.
-- **One accent.** Signal green `#3da57b`, used sparingly (live/active/confident/CTA). No purple, no glass/blur panels, no mascot, no oversized rounded cards. 8px max radius. Borders define surfaces, not shadows.
+- **One accent.** Signal green (`#3da57b` on graphite, `#186a4b` on paper), used sparingly (live/active/confident/CTA). No purple, no glass/blur panels, no mascot, no oversized rounded cards. 8px max radius. Borders define surfaces, not shadows.
 - **Type.** IBM Plex Sans (human) + IBM Plex Mono (machine: values, timestamps, eyebrows, code). Use `.ds-display/.ds-h1/.ds-h2/.ds-h3/.ds-lead/.ds-body/.ds-small/.ds-eyebrow`.
 - **Reuse components**: `StatusPill`, `ConfidenceMeter`, `EvidenceChip`, `AgentCard`, `Button`, `Logo`, `AppShell`. Icons via `astro-icon` Lucide (`<Icon name="lucide:…"/>`), ~1.75 stroke, currentColor.
 - **Voice.** Short, certain, technical. Sentence case. Address the reader as "you"; product is "Taxline" / "the fleet". No emoji. Quantify with confidence %/dates. Never: "replace accountants", "fully autonomous", "set it and forget it", "revolutionary/AI-powered/next-gen".

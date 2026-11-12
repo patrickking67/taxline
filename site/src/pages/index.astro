@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import Button from '../components/Button.astro';
 import ConsoleHero from '../components/ConsoleHero.astro';
 import FleetOrbit from '../components/FleetOrbit.astro';
+import HowItWorks from '../components/HowItWorks.astro';
 import FeatureShowcase from '../components/FeatureShowcase.astro';
 import AgentCard from '../components/AgentCard.astro';
 import { Icon } from 'astro-icon/components';
@@ -15,6 +16,7 @@ import { softwareApp } from '../lib/seo';
 import { computeReturn, fmtUsd } from '@taxline/tax-engine';
 // Drawn by `python -m taxline_quant report` (npm run report); never edited by hand.
 import ratesChart from '../../../docs/quant/rates-dark.svg';
+import ratesChartLight from '../../../docs/quant/rates-light.svg';
 
 const REPO = 'https://github.com/patrickking67/taxline';
 // Each figure is enforced by a test: python/tests/test_parity.py and its fixtures.
@@ -221,6 +223,12 @@ const steps = [
             </span>
           </a>
         </div>
+        <div id="how-it-works" class="mt-14 border-t border-border pt-10">
+          <h3 class="ds-h3">How a document gets to your desk</h3>
+          <div class="mt-6">
+            <HowItWorks />
+          </div>
+        </div>
       </div>
     </section>
 
@@ -353,15 +361,19 @@ const steps = [
           </div>
         </div>
         <figure class="overflow-hidden rounded-md border border-border bg-panel">
-          <img
-            src={ratesChart.src}
-            width={ratesChart.width}
-            height={ratesChart.height}
-            loading="lazy"
-            decoding="async"
-            class="block h-auto w-full"
-            alt="Line chart for a single filer in tax year 2026. The effective rate on self-employment profit rises from about 14 percent to 33 percent at 400,000 dollars. The marginal rate steps between 14 and 32 percent, spikes above 60 percent between about 240,000 and 308,000 dollars while the business income deduction phases out, then settles at 38 percent."
-          />
+          {[
+            { chart: ratesChart, only: 'only-dark' },
+            { chart: ratesChartLight, only: 'only-light' },
+          ].map(({ chart, only }) => (
+            <img
+              src={chart.src}
+              width={chart.width}
+              height={chart.height}
+              decoding="async"
+              class:list={[only, 'h-auto w-full align-bottom']}
+              alt="Line chart for a single filer in tax year 2026. The effective rate on self-employment profit rises from about 14 percent to 33 percent at 400,000 dollars. The marginal rate steps between 14 and 32 percent, spikes above 60 percent between about 240,000 and 308,000 dollars while the business income deduction phases out, then settles at 38 percent."
+            />
+          ))}
           <figcaption class="border-t border-border px-4 py-3 font-mono text-[11px] leading-relaxed text-fg-faint">
             Marginal and effective rate on self-employment profit. Drawn by{' '}
             <span class="text-fg-muted">python -m taxline_quant report</span> from the model, not by
