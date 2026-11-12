@@ -40,7 +40,8 @@ The response traces `extraction`, `workpaper`, `compliance`, lists three review 
 - **The parity test found a real bug.** The TypeScript engine rounded some exact half-cent ties down, because `43230.95 * 0.9` is `38907.854999999996` as a double. The fix is in [`money.ts`](packages/tax-engine/src/money.ts) with a [regression test](packages/tax-engine/test/engine.test.ts); 60,000 further random cases found nothing else.
 - **Gates are code the model cannot change.** The agent loop stops on `stop_reason`, tools are least-privilege per agent, and `requireHumanApproval` runs last in [`orchestrator.ts`](service/src/orchestrator.ts). A model may ask for a stricter confidence threshold but never a looser one ([`confidence.ts`](service/src/tools/confidence.ts), [tests](service/test/confidence.test.ts)). Every early stop, including a clamped hop limit, creates a review item.
 - **Every constant has a citation and a test.** Figures come from Rev. Proc. 2025-32, the Code, and SSA. The Python [citation table](docs/quant/constants.md) is generated from [`constants.py`](python/taxline_quant/constants.py), and a test fails if a figure lacks a source or the docs drift.
-- **Confidence is measured, not assumed.** The [evaluation harness](python/taxline_quant/evals/metrics.py) scores field-level precision, recall, and expected calibration error on synthetic documents with known truth, then shows what the 0.85 gate lets through. With equal accuracy, an overconfident extractor passes about twice as many wrong fields ([report, section 5](docs/quant/report.md#5-extraction-evaluation)).
+- **Extraction is real code with measured confidence.** `extract_fields` runs a deterministic [rules extractor](service/src/extract/rules.ts): it finds each box by its caption, validates the value's format, and checks boxes against each other (6.2% and 1.45% on a W-2, 24% backup withholding on a 1099-NEC). Confidence comes from those signals, and the [evaluation harness](python/taxline_quant/evals/metrics.py) scores the same code on 600 held-out synthetic scans: 95.8% precision, 92.7% recall, calibration error 0.015, and 1.7% of auto-accepted fields wrong at the 0.85 gate ([report, section 5](docs/quant/report.md#5-extraction-evaluation)).
+- **A model can only add doubt.** With an API key, the model reads the same text and [`reconcile.ts`](service/src/extract/reconcile.ts) compares the two. Agreement changes nothing; any disagreement caps the field under the review threshold and shows both readings to the reviewer.
 - **Uncertainty with the assumptions attached.** A seeded [Monte Carlo](python/taxline_quant/montecarlo.py) projects required estimated payments when profit is uncertain and returns its assumptions with the result. Expected values in the tests are worked by hand; [hypothesis](python/tests/test_brackets.py) covers the invariants.
 
 ## Architecture
@@ -125,7 +126,7 @@ Drawn by `python -m taxline_quant report`, which rebuilds [docs/quant/report.md]
 cd python
 uv run python -m taxline_quant sweep --status single --vary self-employment-profit --start 0 --stop 300000 --step 50000
 uv run python -m taxline_quant montecarlo --status single --se-profit 120000 --cv 0.35 --seed 7
-uv run python -m taxline_quant eval --profile overconfident
+uv run python -m taxline_quant eval            # the service's rules extractor; needs Node
 uv run python -m taxline_quant parity
 ```
 
@@ -136,9 +137,9 @@ Package guide: [python/README.md](python/README.md).
 | Signal | Current state | Where |
 | --- | --- | --- |
 | Tax engine (TypeScript) | 37 tests, expected values worked by hand from IRS tables | `packages/tax-engine/test/` |
-| Quant package (Python) | 119 tests: hand-worked cases, hypothesis properties, CLI, report | `python/tests/` |
+| Quant package (Python) | 126 tests: hand-worked cases, hypothesis properties, CLI, report, the rules extractor on rendered scans | `python/tests/` |
 | Cross-implementation parity | 47 named + 5,000 seeded cases, money equal to the cent, constants compared | `python/tests/test_parity.py` |
-| Agent service | 37 tests on a fake Messages client: loop, gates, routing, HTTP boundary | `service/test/` |
+| Agent service | 54 tests on a fake Messages client: loop, gates, routing, HTTP boundary, extraction and the model cross-check | `service/test/` |
 | Contact Worker | 7 tests | `workers/contact/test/` |
 | End to end | 36 Playwright tests against the production build under `/taxline` | `site/e2e/` |
 | Accessibility | axe WCAG 2.1 AA (serious and critical) on every sitemap page | `site/e2e/pages.spec.ts` |
@@ -176,7 +177,7 @@ The site publishes to GitHub Pages from `main` through `.github/workflows/deploy
 ## Limitations
 
 - **Not tax advice, federal only, tax year 2026.** A qualified person must check every figure, citation, and deadline. Taxline never files anything.
-- **Extraction is a stub.** `extract_fields` reads seeded documents; there is no OCR or upload path. The evaluation harness therefore measures a simulated extractor and says so.
+- **Extraction reads text, not images.** The rules extractor parses the text layer of three forms (W-2, 1099-NEC, 1099-INT) in two layouts; there is no OCR, no upload path, and no parser for K-1s, schedules, or invoices. Its evaluation uses synthetic documents and a synthetic noise model, so the scores say nothing about real scans. The model cross-check is covered by tests on a fake client and has not been run against the live API here.
 - **The Python model is narrower than the TypeScript engine.** No capital gains, credits, NIIT, or AMT; parity covers the inputs both accept.
 - **Monte Carlo output is a projection under stated assumptions** (lognormal profit, fixed everything else), not a forecast.
 - **The service is a local demo with no authentication.** `approved` is a request field. Put it behind auth before any real use.

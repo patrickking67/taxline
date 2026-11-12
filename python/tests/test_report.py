@@ -7,10 +7,16 @@ from pathlib import Path
 import pytest
 
 from taxline_quant import DISCLAIMER, report
+from taxline_quant.evals.rules import rules_available
+
+from .node import require_node
 
 
 @pytest.fixture(scope="module")
 def built() -> Mapping[str, str]:
+    # Section 5 runs the service's TypeScript extractor, so the report needs Node.
+    if not rules_available():
+        require_node("the report runs service/eval/extract-corpus.ts")
     return report.build()
 
 
@@ -24,7 +30,8 @@ def test_report_carries_the_disclaimer_and_assumptions(built: Mapping[str, str])
     text = built[report.REPORT_NAME]
     assert DISCLAIMER in text
     assert "lognormal" in text
-    assert "not a measurement of a model" in text
+    assert "not a measurement of a model, of OCR, or of real scans" in text
+    assert "seed 7 was held out" in text
     assert f"seed {report.MC_SEED}" in text
 
 
@@ -58,7 +65,7 @@ def test_charts_are_deterministic(built: Mapping[str, str]) -> None:
     assert charts.rates_chart(points, charts.DARK) == built["rates-dark.svg"]
 
 
-def test_check_reports_stale_and_missing_files(tmp_path: Path) -> None:
+def test_check_reports_stale_and_missing_files(tmp_path: Path, built: Mapping[str, str]) -> None:
     assert report.check(tmp_path) == [report.REPORT_NAME]
     written = report.write(tmp_path)
     assert len(written) == 9

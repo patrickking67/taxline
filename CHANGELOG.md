@@ -9,6 +9,18 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Added
 
+- A deterministic, offline rules extractor behind `extract_fields`
+  (`service/src/extract`): caption anchoring, format validation with counted
+  repairs, and cross-field arithmetic for W-2, 1099-NEC, and 1099-INT text.
+  Each field's confidence is derived from those signals and its citation points
+  at the source line.
+- A model cross-check for extraction when an API key is set. The model reads
+  the same text; any disagreement caps the field under the review threshold and
+  adds a review item with both readings. It cannot raise a confidence.
+- Rendered synthetic scans with a seeded damage model
+  (`python/taxline_quant/evals/render.py`) and a runner that scores the
+  service's extractor through Node (`evals/rules.py`).
+
 - `python/taxline_quant`, a typed Python package for tax year 2026: a federal
   income tax model on `Decimal` (rate schedule and Tax Table, standard or
   itemized deduction, Schedule SE, the section 199A deduction, Additional
@@ -61,6 +73,14 @@ not cut a tagged release yet, so history below is grouped by date.
   clips at desktop width.
 
 ### Changed
+
+- Section 5 of `docs/quant/report.md` now scores the service's rules extractor
+  on held-out synthetic scans. The simulated extractor remains as a labelled
+  illustration of what miscalibration costs.
+- `extract_fields` returns a `business` failure for document types it has no
+  parser for, where it used to return seeded values.
+- The seeded W-2 and 1099-NEC carry a text layer and their queue fields are read
+  from it; the site's demo data mirrors the result.
 
 - The README leads with a screenshot, the engineering decisions, and Mermaid
   diagrams of both halves of the project.
