@@ -17,3 +17,5 @@
 
 # Generated — collapse in diffs and exclude from language stats.
 package-lock.json linguist-generated -diff
+uv.lock linguist-generated -diff
+docs/quant/*.svg linguist-generated
