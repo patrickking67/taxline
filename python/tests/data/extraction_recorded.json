@@ -1,0 +1,36 @@
+[
+  {
+    "docId": "fixture-w2",
+    "docType": "W-2",
+    "fields": [
+      { "label": "Employer", "value": "juniper works llc", "confidence": 0.99, "citations": [] },
+      { "label": "EIN", "value": "00 0000001", "confidence": 0.97, "citations": [] },
+      { "label": "Wages · box 1", "value": "128400", "confidence": 0.97, "citations": [] },
+      {
+        "label": "Federal w/h · box 2",
+        "value": "$24,310.00",
+        "confidence": 0.91,
+        "citations": []
+      },
+      { "label": "State w/h · box 17", "value": "$6,810.00", "confidence": 0.74, "citations": [] },
+      { "label": "Local code · box 20", "value": null, "confidence": null, "citations": [] }
+    ],
+    "empty": false
+  },
+  {
+    "docId": "fixture-1099nec",
+    "docType": "1099-NEC",
+    "fields": [
+      { "label": "Payer", "value": "Meadow Supply LP", "confidence": 0.95, "citations": [] },
+      { "label": "Payer TIN", "value": "00-0000003", "confidence": 0.88, "citations": [] },
+      {
+        "label": "Nonemployee comp · box 1",
+        "value": "$42,000.00",
+        "confidence": 0.78,
+        "citations": []
+      },
+      { "label": "Other income · box 3", "value": "$500.00", "confidence": 0.62, "citations": [] }
+    ],
+    "empty": false
+  }
+]
