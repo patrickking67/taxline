@@ -72,7 +72,8 @@ def div(a: Decimal, b: Decimal) -> Decimal:
 
 def ratio(a: Decimal, b: Decimal) -> Decimal:
     """A rate ``a / b`` carried to ten decimal places."""
-    return div(a, b).quantize(RATE_QUANTUM, rounding=ROUND_HALF_UP)
+    q = div(a, b).quantize(RATE_QUANTUM, rounding=ROUND_HALF_UP)
+    return q if q != 0 else ZERO
 
 
 def clamp(value: Decimal, low: Decimal, high: Decimal) -> Decimal:
