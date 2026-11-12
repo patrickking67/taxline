@@ -19,6 +19,8 @@ export default [
       '**/node_modules/**',
       '**/.data/**',
       '**/.wrangler/**',
+      // Python virtualenv (matplotlib ships browser JS).
+      '**/.venv/**',
       // Git worktrees live inside the repo; each one is linted from its own root.
       '.worktrees/**',
       '.claude/worktrees/**',

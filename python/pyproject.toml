@@ -1,0 +1,57 @@
+[project]
+name = "taxline-quant"
+version = "0.1.0"
+description = "Typed TY2026 federal income tax model, scenario analysis, Monte Carlo estimated-payment projections, and an offline evaluation harness for field extraction. Educational; not tax advice."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "Patrick King" }]
+dependencies = [
+  "numpy>=2.1",
+  "matplotlib>=3.9",
+]
+
+[project.scripts]
+taxline-quant = "taxline_quant.cli:main"
+
+[dependency-groups]
+dev = [
+  "hypothesis>=6.112",
+  "mypy>=1.13",
+  "pytest>=8.3",
+  "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["taxline_quant"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+  "parity: runs the TypeScript tax engine through Node and compares it to the Python model",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+files = ["taxline_quant", "tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "PT", "RUF", "N", "PL", "TID"]
+ignore = [
+  "PLR2004", # magic values: tax thresholds are named in constants.py, tests use literals
+  "PLR0913", # the model takes many keyword-only inputs by design
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR0915", "PLR0917"]
