@@ -6,7 +6,7 @@ import EvidenceChip from './EvidenceChip.astro';
 
 const queue = [
   { name: 'acme_w2_2024.pdf', status: 'review', conf: 0.94 },
-  { name: '1099-nec_batch.pdf', status: 'new', conf: 0.78 },
+  { name: '1099-nec_batch.pdf', status: 'new', conf: 0.96 },
   { name: 'k1_meadow_lp.pdf', status: 'new', conf: null },
   { name: 'depr_schedule.xlsx', status: 'approved', conf: 0.99 },
 ];
@@ -30,8 +30,8 @@ const agents = [
 const log = [
   { t: '12:04:22', who: 'intake', c: 'text-info-bright', msg: 'acme_w2_2024.pdf · classified W-2' },
   { t: '12:04:24', who: 'extraction', c: 'text-ok-bright', msg: 'pulling 24 fields…' },
-  { t: '12:04:27', who: 'extraction', c: 'text-ok-bright', msg: '24/24 fields · mean 0.83' },
-  { t: '12:04:29', who: 'extraction', c: 'text-ok-bright', msg: 'state w/h conf 0.74 → review' },
+  { t: '12:04:27', who: 'extraction', c: 'text-ok-bright', msg: '6/6 fields · mean 0.82' },
+  { t: '12:04:29', who: 'extraction', c: 'text-ok-bright', msg: 'state w/h conf 0.65 → review' },
   {
     t: '12:04:31',
     who: 'research',
@@ -43,10 +43,10 @@ const log = [
 ];
 
 const fields = [
-  { label: 'Wages · box 1', value: 0.97 },
-  { label: 'Federal w/h', value: 0.91 },
-  { label: 'State w/h', value: 0.74 },
-  { label: 'Local code', value: 0.41 },
+  { label: 'Wages · box 1', value: 0.99 },
+  { label: 'Federal w/h', value: 0.98 },
+  { label: 'State w/h', value: 0.65 },
+  { label: 'Local code', value: 0.39 },
 ];
 
 const deadlines = [

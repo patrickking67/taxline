@@ -32,7 +32,7 @@ curl -s localhost:8787/agents/run -H 'content-type: application/json' \
   -d '{"task":"Extract the W-2","agent":"extraction","docId":"acme_w2_2024"}'
 ```
 
-The response traces `extraction`, `workpaper`, `compliance`, lists three review items (the approval gate plus fields at 0.74 and 0.41), and returns `approved: false` with the output withheld.
+The response traces `extraction`, `workpaper`, `compliance`, lists three review items (the approval gate plus fields at 0.65 and 0.39), and returns `approved: false` with the output withheld.
 
 ## What is technically interesting here
 

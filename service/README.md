@@ -37,6 +37,23 @@ done), with a high iteration cap only as a backstop.
 - **Least privilege** — each agent gets only the tools its role needs; tool **descriptions**
   are the primary tool-selection mechanism.
 
+### Extraction
+
+`extract_fields` runs the rules extractor in `src/extract/`: `forms.ts` (captions per
+form), `values.ts` (money, ID, code, and name parsers that count their repairs), and
+`rules.ts` (anchoring, cross-field checks, confidence). It reads the text layer of a W-2,
+1099-NEC, or 1099-INT; any other document type is a structured `business` failure that
+reaches the reviewer. It is deterministic and needs no key.
+
+With `ANTHROPIC_API_KEY` set, `model.ts` asks the model to read the same text and
+`reconcile.ts` compares the readings. Agreement leaves the rules confidence alone. A
+different value, a value only one reader found, or a failed model call each add a review
+item, and a disagreement caps the field's confidence under 0.85. The model cannot raise
+a score or add a field the form does not have.
+
+`eval/extract-corpus.ts` runs the same extractor over a JSON corpus for the Python
+evaluation (`python -m taxline_quant eval`).
+
 ## Run it
 
 ```bash
