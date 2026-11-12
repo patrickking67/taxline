@@ -186,3 +186,19 @@ test('the demo app passes axe in both themes', async ({ page }) => {
     }
   }
 });
+
+test('the how-it-works diagram names all five agents, the reviewer, and the gate', async ({
+  page,
+}) => {
+  await page.goto('./');
+  const diagram = page.locator('#how-it-works svg:visible');
+  await expect(diagram).toHaveCount(1);
+  await expect(diagram).toHaveAttribute('role', 'img');
+  for (const label of ['Relay', 'Lens', 'Atlas', 'Ledger', 'Sentry', 'Approval gate', 'Reviewer']) {
+    await expect(diagram.getByText(label, { exact: true })).toBeVisible();
+  }
+  await expect(diagram.locator('title')).toHaveText(/five agents to a human approval gate/);
+  // The drawing fits its column at any width the suite runs at.
+  const box = await diagram.boundingBox();
+  expect(box!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+});

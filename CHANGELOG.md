@@ -13,8 +13,9 @@ not cut a tagged release yet, so history below is grouped by date.
   follows `prefers-color-scheme`, and a toggle in the nav and the console
   overrides and remembers the choice. The rate chart swaps between its light
   and dark renderings.
-- The e2e suite runs axe on every page in both themes and on the demo console,
-  and covers the toggle.
+- An inline SVG "how a document gets to your desk" diagram on the home page:
+  the five agents, the orchestrator, what reaches the reviewer, and the approval
+  gate, with a tall layout for narrow screens.
 - The e2e suite runs axe on every page in both themes and on the demo console,
   and covers the toggle and the diagram.
 

@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import Button from '../components/Button.astro';
 import ConsoleHero from '../components/ConsoleHero.astro';
 import FleetOrbit from '../components/FleetOrbit.astro';
+import HowItWorks from '../components/HowItWorks.astro';
 import FeatureShowcase from '../components/FeatureShowcase.astro';
 import AgentCard from '../components/AgentCard.astro';
 import { Icon } from 'astro-icon/components';
@@ -221,6 +222,12 @@ const steps = [
               See how routing works <Icon name="lucide:arrow-right" class="size-4" />
             </span>
           </a>
+        </div>
+        <div id="how-it-works" class="mt-14 border-t border-border pt-10">
+          <h3 class="ds-h3">How a document gets to your desk</h3>
+          <div class="mt-6">
+            <HowItWorks />
+          </div>
         </div>
       </div>
     </section>

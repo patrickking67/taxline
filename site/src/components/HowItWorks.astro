@@ -1,0 +1,496 @@
+---
+// How a document moves through the fleet, as an inline SVG that takes its colors
+// from the theme tokens. Two drawings of the same flow: a wide one for desktop and
+// a tall one for narrow screens, so the labels stay readable at 375px.
+//
+// What it shows is what service/src/orchestrator.ts does: the orchestrator runs
+// one agent at a time and follows a fixed handoff, anything uncertain goes to a
+// person, and requireHumanApproval runs last.
+
+interface Step {
+  name: string;
+  role: string;
+  lines: [string, string];
+  tool: string;
+  optional?: boolean;
+}
+
+const steps: Step[] = [
+  {
+    name: 'Relay',
+    role: 'Intake',
+    lines: ['Classifies the document', 'and routes it'],
+    tool: 'classify_document',
+  },
+  {
+    name: 'Lens',
+    role: 'Extraction',
+    lines: ['Reads each field with a', 'confidence and a citation'],
+    tool: 'extract_fields',
+  },
+  {
+    name: 'Atlas',
+    role: 'Research',
+    lines: ['Answers from the', 'knowledge base, cited'],
+    tool: 'kb_search',
+    optional: true,
+  },
+  {
+    name: 'Ledger',
+    role: 'Workpaper',
+    lines: ['Builds the workpaper;', 'the engine does the math'],
+    tool: 'compute_tax',
+  },
+  {
+    name: 'Sentry',
+    role: 'Compliance',
+    lines: ['Checks deadlines', 'and filing rules'],
+    tool: 'compute_deadline',
+  },
+];
+
+// Wide drawing
+const W = 164;
+const GAP = 18;
+const X0 = 20;
+const TOP = 104;
+const H = 118;
+const x = (i: number) => X0 + i * (W + GAP);
+const GATE_X = x(5);
+const LANE_Y = 300;
+
+// Tall drawing
+const MW = 340;
+const BX = 44;
+const BW = MW - BX;
+const BH = 84;
+const BGAP = 22;
+const by = (i: number) => 8 + i * (BH + BGAP);
+const M_GATE_Y = by(5);
+const M_REVIEW_Y = by(6);
+const MH = M_REVIEW_Y + BH + 8;
+
+const summary =
+  'A document enters at Relay, which classifies it. Lens extracts each field with a confidence ' +
+  'score and a citation. Atlas runs only for research questions. Ledger assembles the workpaper ' +
+  'and the tax engine computes the figures. Sentry checks deadlines and filing rules. The ' +
+  'orchestrator, Conductor, runs every step and collects the results. Fields under 0.85 ' +
+  'confidence, unreadable values, reader disagreements, errors, and early stops all go to a ' +
+  'reviewer. The approval gate runs last: a person approves, or the draft stays withheld.';
+---
+
+<figure class="how-it-works">
+  <!-- Wide -->
+  <svg
+    viewBox="0 0 1120 392"
+    role="img"
+    aria-labelledby="hiw-wide-title hiw-wide-desc"
+    class="hidden h-auto w-full lg:block"
+  >
+    <title id="hiw-wide-title">How a document moves through the five agents to a human approval gate</title>
+    <desc id="hiw-wide-desc">{summary}</desc>
+    <defs>
+      <marker
+        id="hiw-arrow"
+        viewBox="0 0 8 8"
+        refX="7"
+        refY="4"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto-start-reverse"
+      >
+        <path d="M0 0.5 L7 4 L0 7.5 Z" class="hiw-arrowhead"></path>
+      </marker>
+      <marker
+        id="hiw-arrow-accent"
+        viewBox="0 0 8 8"
+        refX="7"
+        refY="4"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto-start-reverse"
+      >
+        <path d="M0 0.5 L7 4 L0 7.5 Z" class="hiw-arrowhead-accent"></path>
+      </marker>
+    </defs>
+
+    <!-- The orchestrator is the rail every agent hangs from -->
+    <rect x="20" y="14" width="1080" height="46" rx="6" class="hiw-rail"></rect>
+    <text x="38" y="42" class="hiw-name">
+      Conductor
+    </text>
+    <text x="124" y="42" class="hiw-mono">
+      orchestrator
+    </text>
+    <text x="1082" y="42" text-anchor="end" class="hiw-note">
+      Runs one agent at a time, follows each handoff, collects fields, citations, and review items
+    </text>
+
+    {steps.map((s, i) => (
+      <g>
+        <line
+          x1={x(i) + W / 2}
+          y1="60"
+          x2={x(i) + W / 2}
+          y2={TOP - 3}
+          class="hiw-line"
+          marker-end="url(#hiw-arrow)"
+        />
+        <rect
+          x={x(i)}
+          y={TOP}
+          width={W}
+          height={H}
+          rx="6"
+          class:list={['hiw-box', s.optional && 'hiw-optional']}
+        />
+        <text x={x(i) + 14} y={TOP + 26} class="hiw-name">
+          {s.name}
+        </text>
+        <text x={x(i) + W - 14} y={TOP + 26} text-anchor="end" class="hiw-role">
+          {s.role}
+        </text>
+        <text x={x(i) + 14} y={TOP + 52} class="hiw-body">
+          {s.lines[0]}
+        </text>
+        <text x={x(i) + 14} y={TOP + 69} class="hiw-body">
+          {s.lines[1]}
+        </text>
+        <text x={x(i) + 14} y={TOP + 100} class="hiw-mono">
+          {s.tool}
+        </text>
+      </g>
+    ))}
+
+    <!-- Handoffs. Lens hands to Ledger; Atlas joins only for research questions. -->
+    <line
+      x1={x(0) + W + 2}
+      y1={TOP + H / 2}
+      x2={x(1) - 3}
+      y2={TOP + H / 2}
+      class="hiw-line"
+      marker-end="url(#hiw-arrow)"
+    />
+    <path
+      d={`M${x(1) + W - 24} ${TOP + H} v14 q0 8 8 8 H${x(3) + 16} q8 0 8 -8 V${TOP + H + 4}`}
+      class="hiw-line"
+      fill="none"
+      marker-end="url(#hiw-arrow)"
+    />
+    <line
+      x1={x(2) + W + 2}
+      y1={TOP + H / 2}
+      x2={x(3) - 3}
+      y2={TOP + H / 2}
+      class="hiw-line hiw-dashed"
+      marker-end="url(#hiw-arrow)"
+    />
+    <line
+      x1={x(3) + W + 2}
+      y1={TOP + H / 2}
+      x2={x(4) - 3}
+      y2={TOP + H / 2}
+      class="hiw-line"
+      marker-end="url(#hiw-arrow)"
+    />
+    <line
+      x1={x(4) + W + 2}
+      y1={TOP + H / 2}
+      x2={GATE_X - 3}
+      y2={TOP + H / 2}
+      class="hiw-line"
+      marker-end="url(#hiw-arrow)"
+    />
+    <text x={x(2) + W / 2 + 8} y={TOP - 14} class="hiw-tag">
+      research questions only
+    </text>
+
+    <!-- The approval gate -->
+    <rect x={GATE_X} y={TOP} width={W} height={H} rx="6" class="hiw-gate"></rect>
+    <text x={GATE_X + 14} y={TOP + 26} class="hiw-name">
+      Approval gate
+    </text>
+    <text x={GATE_X + 14} y={TOP + 52} class="hiw-body">
+      Runs last, in code.
+    </text>
+    <text x={GATE_X + 14} y={TOP + 69} class="hiw-body">
+      No prompt can skip it.
+    </text>
+    <text x={GATE_X + 14} y={TOP + 100} class="hiw-mono">
+      requireHumanApproval
+    </text>
+
+    <!-- What reaches a person -->
+    <line
+      x1={x(1) + 40}
+      y1={TOP + H + 2}
+      x2={x(1) + 40}
+      y2={LANE_Y - 3}
+      class="hiw-line-accent"
+      marker-end="url(#hiw-arrow-accent)"
+    />
+    <text x={x(1) + 52} y={LANE_Y - 22} class="hiw-note">
+      under 0.85, unreadable,
+    </text>
+    <text x={x(1) + 52} y={LANE_Y - 7} class="hiw-note">
+      or the readers disagree
+    </text>
+    <line
+      x1={x(3) + W / 2 + 30}
+      y1={TOP + H + 2}
+      x2={x(3) + W / 2 + 30}
+      y2={LANE_Y - 3}
+      class="hiw-line-accent"
+      marker-end="url(#hiw-arrow-accent)"
+    />
+    <text x={x(3) + W / 2 + 42} y={LANE_Y - 22} class="hiw-note">
+      tool errors, early stops,
+    </text>
+    <text x={x(3) + W / 2 + 42} y={LANE_Y - 7} class="hiw-note">
+      the hop limit
+    </text>
+    <line
+      x1={GATE_X + W / 2}
+      y1={TOP + H + 2}
+      x2={GATE_X + W / 2}
+      y2={LANE_Y - 3}
+      class="hiw-line-accent"
+      marker-start="url(#hiw-arrow-accent)"
+      marker-end="url(#hiw-arrow-accent)"
+    />
+    <text x={GATE_X + W / 2 - 12} y={LANE_Y - 22} text-anchor="end" class="hiw-note">
+      draft out,
+    </text>
+    <text x={GATE_X + W / 2 - 12} y={LANE_Y - 7} text-anchor="end" class="hiw-note">
+      decision back
+    </text>
+
+    <rect x="20" y={LANE_Y} width="1080" height="72" rx="6" class="hiw-review"></rect>
+    <circle cx="50" cy={LANE_Y + 28} r="7" class="hiw-person"></circle>
+    <path d={`M36 ${LANE_Y + 56} a14 13 0 0 1 28 0`} class="hiw-person"></path>
+    <text x="80" y={LANE_Y + 31} class="hiw-name">
+      Reviewer
+    </text>
+    <text x="80" y={LANE_Y + 52} class="hiw-body">
+      A person sees every flagged field with its source line.
+    </text>
+    <text x="1082" y={LANE_Y + 31} text-anchor="end" class="hiw-body-strong">
+      Approved: the result ships.
+    </text>
+    <text x="1082" y={LANE_Y + 52} text-anchor="end" class="hiw-body">
+      Not approved: the draft stays withheld.
+    </text>
+  </svg>
+
+  <!-- Tall -->
+  <svg
+    viewBox={`0 0 ${MW} ${MH}`}
+    role="img"
+    aria-labelledby="hiw-tall-title hiw-tall-desc"
+    class="mx-auto h-auto w-full max-w-[460px] lg:hidden"
+  >
+    <title id="hiw-tall-title">How a document moves through the five agents to a human approval gate</title>
+    <desc id="hiw-tall-desc">{summary}</desc>
+    <defs>
+      <marker
+        id="hiw-arrow-m"
+        viewBox="0 0 8 8"
+        refX="7"
+        refY="4"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto-start-reverse"
+      >
+        <path d="M0 0.5 L7 4 L0 7.5 Z" class="hiw-arrowhead"></path>
+      </marker>
+      <marker
+        id="hiw-arrow-accent-m"
+        viewBox="0 0 8 8"
+        refX="7"
+        refY="4"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto-start-reverse"
+      >
+        <path d="M0 0.5 L7 4 L0 7.5 Z" class="hiw-arrowhead-accent"></path>
+      </marker>
+    </defs>
+
+    <rect x="0" y="8" width="28" height={M_GATE_Y + BH - 8} rx="6" class="hiw-rail"></rect>
+    <text
+      transform={`translate(18 ${(M_GATE_Y + BH) / 2 + 8}) rotate(-90)`}
+      text-anchor="middle"
+      class="hiw-name"
+    >
+      Conductor runs every step
+    </text>
+
+    {steps.map((s, i) => (
+      <g>
+        <line
+          x1="28"
+          y1={by(i) + BH / 2}
+          x2={BX - 3}
+          y2={by(i) + BH / 2}
+          class="hiw-line"
+          marker-end="url(#hiw-arrow-m)"
+        />
+        <rect
+          x={BX}
+          y={by(i)}
+          width={BW}
+          height={BH}
+          rx="6"
+          class:list={['hiw-box', s.optional && 'hiw-optional']}
+        />
+        <text x={BX + 14} y={by(i) + 25} class="hiw-name">
+          {s.name}
+        </text>
+        <text x={MW - 14} y={by(i) + 25} text-anchor="end" class="hiw-role">
+          {s.optional ? 'Research questions only' : s.role}
+        </text>
+        <text x={BX + 14} y={by(i) + 47} class="hiw-body">
+          {s.lines.join(' ')}
+        </text>
+        <text x={BX + 14} y={by(i) + 69} class="hiw-mono">
+          {s.tool}
+        </text>
+        <line
+          x1={BX + BW / 2}
+          y1={by(i) + BH + 2}
+          x2={BX + BW / 2}
+          y2={by(i + 1) - 3}
+          class:list={['hiw-line', s.optional && 'hiw-dashed']}
+          marker-end="url(#hiw-arrow-m)"
+        />
+      </g>
+    ))}
+    <text x={MW - 14} y={by(1) + 69} text-anchor="end" class="hiw-flag">
+      under 0.85: to review
+    </text>
+
+    <line
+      x1="28"
+      y1={M_GATE_Y + BH / 2}
+      x2={BX - 3}
+      y2={M_GATE_Y + BH / 2}
+      class="hiw-line"
+      marker-end="url(#hiw-arrow-m)"
+    />
+    <rect x={BX} y={M_GATE_Y} width={BW} height={BH} rx="6" class="hiw-gate"></rect>
+    <text x={BX + 14} y={M_GATE_Y + 25} class="hiw-name">
+      Approval gate
+    </text>
+    <text x={BX + 14} y={M_GATE_Y + 47} class="hiw-body">
+      Runs last, in code. No prompt can skip it.
+    </text>
+    <text x={BX + 14} y={M_GATE_Y + 69} class="hiw-mono">
+      requireHumanApproval
+    </text>
+    <line
+      x1={BX + BW / 2}
+      y1={M_GATE_Y + BH + 2}
+      x2={BX + BW / 2}
+      y2={M_REVIEW_Y - 3}
+      class="hiw-line-accent"
+      marker-start="url(#hiw-arrow-accent-m)"
+      marker-end="url(#hiw-arrow-accent-m)"
+    />
+
+    <rect x="0" y={M_REVIEW_Y} width={MW} height={BH} rx="6" class="hiw-review"></rect>
+    <text x="14" y={M_REVIEW_Y + 25} class="hiw-name">
+      Reviewer
+    </text>
+    <text x="14" y={M_REVIEW_Y + 47} class="hiw-body">
+      Sees flagged fields, errors, and early stops.
+    </text>
+    <text x="14" y={M_REVIEW_Y + 67} class="hiw-body-strong">
+      Approves, or the draft stays withheld.
+    </text>
+  </svg>
+
+  <figcaption class="mt-4 max-w-[70ch] text-[13px] leading-relaxed text-fg-muted">
+    Agents never call each other. The orchestrator runs one, follows its fixed handoff, and keeps
+    what it returned. Anything uncertain goes to a person, and the approval gate is the last line of
+    code before a result leaves.
+  </figcaption>
+</figure>
+
+<style>
+  .how-it-works text {
+    font-family: var(--font-sans);
+  }
+  .hiw-rail {
+    fill: var(--color-panel);
+    stroke: var(--color-border-strong);
+  }
+  .hiw-box {
+    fill: var(--color-raised);
+    stroke: var(--color-border-strong);
+  }
+  .hiw-optional {
+    stroke-dasharray: 5 4;
+  }
+  .hiw-gate {
+    fill: var(--color-raised);
+    stroke: var(--color-accent);
+    stroke-width: 2;
+  }
+  .hiw-review {
+    fill: var(--color-accent-soft);
+    stroke: var(--color-accent-line);
+  }
+  .hiw-person {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.75;
+    stroke-linecap: round;
+  }
+  .hiw-line {
+    stroke: var(--color-fg-faint);
+    stroke-width: 1.25;
+  }
+  .hiw-dashed {
+    stroke-dasharray: 4 4;
+  }
+  .hiw-line-accent {
+    stroke: var(--color-accent);
+    stroke-width: 1.5;
+  }
+  .hiw-arrowhead {
+    fill: var(--color-fg-faint);
+  }
+  .hiw-arrowhead-accent {
+    fill: var(--color-accent);
+  }
+  .hiw-name {
+    fill: var(--color-fg);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .hiw-role,
+  .hiw-flag {
+    fill: var(--color-accent);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .hiw-body {
+    fill: var(--color-fg-muted);
+    font-size: 12.5px;
+  }
+  .hiw-body-strong {
+    fill: var(--color-fg);
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .hiw-note,
+  .hiw-tag {
+    fill: var(--color-fg-muted);
+    font-size: 12px;
+  }
+  .how-it-works .hiw-mono {
+    fill: var(--color-fg-faint);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+</style>
