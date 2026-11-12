@@ -18,10 +18,15 @@ export const cite = {
   ctc: { label: 'Rev. Proc. 2025-32 §4.05, IRC §24', url: REV_PROC },
   standard: { label: 'Rev. Proc. 2025-32 §4.14, IRC §63(c)', url: REV_PROC },
   sec179: { label: 'Rev. Proc. 2025-32 §4.24, IRC §179(b)', url: REV_PROC },
-  qbi: { label: 'Rev. Proc. 2025-32 §4.26, IRC §199A', url: REV_PROC },
+  qbi: {
+    label:
+      'Rev. Proc. 2025-32 §4.26 and §2.12; IRC §199A(b)(3)(B), (i), as amended by Pub. L. 119-21 §70105',
+    url: REV_PROC,
+  },
   wageBase: {
-    label: 'SSA 2026 contribution and benefit base',
-    url: 'https://www.ssa.gov/oact/cola/cbb.html',
+    label:
+      'SSA, Cost-of-Living Increase and Other Determinations for 2026, 90 FR 49047 (2025-11-03)',
+    url: 'https://www.federalregister.gov/documents/2025/11/03/2025-19763/cost-of-living-increase-and-other-determinations-for-2026',
   },
   se: {
     label: 'IRC §1401, §1402(a)(12); Schedule SE',

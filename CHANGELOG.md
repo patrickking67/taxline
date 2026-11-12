@@ -48,6 +48,13 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Fixed
 
+- Citations in the Python constants: the Social Security wage base now cites the
+  SSA notice (90 FR 49047, 2025-11-03) where it cited an IRS topic page, the
+  section 199A phase-in range and minimum cite Pub. L. 119-21 sec. 70105 as
+  amendments, forms carry their revision year, and the Tax Table rows say they
+  follow the 2025 instructions because the 2026 ones are not published. No value
+  changed. The TypeScript labels for section 199A and the wage base match.
+
 - The tax engine rounded some exact half-cent ties down. A product such as
   43,230.95 x 0.9 reaches `round2` as 38,907.85499999999, so the result was a
   cent low. `round2` now snaps to 15 significant digits before rounding. Found
