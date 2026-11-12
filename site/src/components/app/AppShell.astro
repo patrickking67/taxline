@@ -1,4 +1,5 @@
 ---
+import ThemeToggle from '../ThemeToggle.astro';
 import Base from '../../layouts/Base.astro';
 import Logo from '../Logo.astro';
 import Button from '../Button.astro';
@@ -99,6 +100,7 @@ const { title = '', active = 'app', breadcrumb } = Astro.props;
               class="w-60 bg-transparent text-sm text-fg placeholder:text-fg-faint focus:outline-none"
             />
           </label>
+          <ThemeToggle class="border border-border" />
           <button
             type="button"
             aria-label="Notifications"

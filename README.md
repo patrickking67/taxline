@@ -137,12 +137,12 @@ Package guide: [python/README.md](python/README.md).
 | Signal | Current state | Where |
 | --- | --- | --- |
 | Tax engine (TypeScript) | 37 tests, expected values worked by hand from IRS tables | `packages/tax-engine/test/` |
-| Quant package (Python) | 126 tests: hand-worked cases, hypothesis properties, CLI, report, the rules extractor on rendered scans | `python/tests/` |
+| Quant package (Python) | 127 tests: hand-worked cases, hypothesis properties, CLI, report, the rules extractor on rendered scans | `python/tests/` |
 | Cross-implementation parity | 47 named + 5,000 seeded cases, money equal to the cent, constants compared | `python/tests/test_parity.py` |
 | Agent service | 54 tests on a fake Messages client: loop, gates, routing, HTTP boundary, extraction and the model cross-check | `service/test/` |
 | Contact Worker | 7 tests | `workers/contact/test/` |
-| End to end | 36 Playwright tests against the production build under `/taxline` | `site/e2e/` |
-| Accessibility | axe WCAG 2.1 AA (serious and critical) on every sitemap page | `site/e2e/pages.spec.ts` |
+| End to end | 40 Playwright tests against the production build under `/taxline` | `site/e2e/` |
+| Accessibility | axe WCAG 2.1 AA (serious and critical) on every sitemap page and the demo console, in the light and the dark theme | `site/e2e/pages.spec.ts` |
 | Static checks | ESLint, Prettier, `tsc`, `astro check`, ruff, `mypy --strict` | `npm run verify` |
 | CI matrix | Node 22; Python 3.12 and 3.13 | `.github/workflows/ci.yml` |
 | Secrets and data | No key needed for any test; no live model call in tests; synthetic fixtures only | `AGENTS.md` |

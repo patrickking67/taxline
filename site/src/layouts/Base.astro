@@ -51,8 +51,18 @@ const graph = JSON.stringify({
     ) : (
       <link rel="canonical" href={canonical} />
     )}
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#0e0f10" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0e0f10" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)" />
+    {/* Apply a saved theme before first paint. With no saved choice the system setting decides. */}
+    <script is:inline>
+      try {
+        const saved = localStorage.getItem('taxline-theme');
+        if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+      } catch {
+        // Storage can be blocked; the system setting still applies.
+      }
+    </script>
     <meta property="og:site_name" content="Taxline" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />

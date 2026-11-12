@@ -25,42 +25,47 @@ test('the sitemap lists every page and excludes the demo app', async ({ page }) 
   for (const p of paths) expect(p.startsWith('/taxline/')).toBe(true);
 });
 
-test('every sitemap page renders cleanly and passes axe', async ({ page }) => {
-  test.slow();
-  const paths = await sitemapPaths(page);
-  const failures: string[] = [];
-  for (const path of paths) {
-    const errors = watchErrors(page);
-    const res = await page.goto(path, { waitUntil: 'networkidle' });
-    if (res?.status() !== 200) failures.push(`${path}: HTTP ${res?.status()}`);
-    if (!(await page.title()).trim()) failures.push(`${path}: empty <title>`);
-    if ((await page.locator('h1').count()) !== 1) failures.push(`${path}: expected one <h1>`);
-    const canonical = await page.locator('link[rel=canonical]').getAttribute('href');
-    if (!canonical || new URL(canonical).pathname !== path)
-      failures.push(`${path}: canonical ${canonical}`);
-    const ld = await page.locator('script[type="application/ld+json"]').first().textContent();
-    try {
-      JSON.parse(ld ?? '');
-    } catch {
-      failures.push(`${path}: invalid JSON-LD`);
+for (const colorScheme of ['dark', 'light'] as const) {
+  test(`every sitemap page renders cleanly and passes axe in the ${colorScheme} theme`, async ({
+    page,
+  }) => {
+    test.slow();
+    await page.emulateMedia({ colorScheme });
+    const paths = await sitemapPaths(page);
+    const failures: string[] = [];
+    for (const path of paths) {
+      const errors = watchErrors(page);
+      const res = await page.goto(path, { waitUntil: 'networkidle' });
+      if (res?.status() !== 200) failures.push(`${path}: HTTP ${res?.status()}`);
+      if (!(await page.title()).trim()) failures.push(`${path}: empty <title>`);
+      if ((await page.locator('h1').count()) !== 1) failures.push(`${path}: expected one <h1>`);
+      const canonical = await page.locator('link[rel=canonical]').getAttribute('href');
+      if (!canonical || new URL(canonical).pathname !== path)
+        failures.push(`${path}: canonical ${canonical}`);
+      const ld = await page.locator('script[type="application/ld+json"]').first().textContent();
+      try {
+        JSON.parse(ld ?? '');
+      } catch {
+        failures.push(`${path}: invalid JSON-LD`);
+      }
+      const axe = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+      for (const v of axe.violations.filter(
+        (x) => x.impact === 'serious' || x.impact === 'critical',
+      )) {
+        failures.push(
+          `${path}: axe ${v.id} (${v.impact}) × ${v.nodes.length}: ${v.nodes[0]?.target.join(' ')}`,
+        );
+      }
+      failures.push(...errors.map((e) => `${path}: ${e}`));
+      page.removeAllListeners('pageerror');
+      page.removeAllListeners('console');
+      page.removeAllListeners('response');
     }
-    const axe = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .analyze();
-    for (const v of axe.violations.filter(
-      (x) => x.impact === 'serious' || x.impact === 'critical',
-    )) {
-      failures.push(
-        `${path}: axe ${v.id} (${v.impact}) × ${v.nodes.length}: ${v.nodes[0]?.target.join(' ')}`,
-      );
-    }
-    failures.push(...errors.map((e) => `${path}: ${e}`));
-    page.removeAllListeners('pageerror');
-    page.removeAllListeners('console');
-    page.removeAllListeners('response');
-  }
-  expect(failures, failures.join('\n')).toEqual([]);
-});
+    expect(failures, failures.join('\n')).toEqual([]);
+  });
+}
 
 test('unknown paths get the branded 404 page', async ({ page }) => {
   const res = await page.goto('no-such-page/');
@@ -107,7 +112,9 @@ test('the home page shows the generated rate chart and links to the report', asy
   await expect(section.getByRole('heading', { level: 2 })).toHaveText(
     'A second engine checks the first.',
   );
-  const chart = section.locator('figure img');
+  // One rendering per theme; only the one for the active theme is displayed.
+  const chart = section.locator('figure img:visible');
+  await expect(section.locator('figure img')).toHaveCount(2);
   await chart.scrollIntoViewIfNeeded();
   await expect(chart).toHaveAttribute('alt', /marginal rate/i);
   await expect
@@ -132,4 +139,50 @@ test('the social card is 1200 by 630 and referenced absolutely', async ({ page }
     return [img.naturalWidth, img.naturalHeight];
   });
   expect(size).toEqual([1200, 630]);
+});
+
+test('the theme follows the system, and the toggle overrides and remembers it', async ({
+  page,
+}) => {
+  const background = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('./');
+  expect(await background()).toBe('rgb(14, 15, 16)');
+  await page.emulateMedia({ colorScheme: 'light' });
+  expect(await background()).toBe('rgb(244, 241, 234)');
+  await expect(page.locator('#quant figure img:visible')).toHaveAttribute('src', /rates-light/);
+
+  // Light system, switch to dark: saved, and it survives a reload.
+  const toggle = page.getByRole('button', { name: 'Switch to dark theme' });
+  await toggle.click();
+  expect(await background()).toBe('rgb(14, 15, 16)');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('#quant figure img:visible')).toHaveAttribute('src', /rates-dark/);
+  await page.reload();
+  expect(await background()).toBe('rgb(14, 15, 16)');
+
+  // Switching back to what the system asks for clears the saved choice.
+  await page.getByRole('button', { name: 'Switch to light theme' }).click();
+  expect(await background()).toBe('rgb(244, 241, 234)');
+  expect(await page.evaluate(() => localStorage.getItem('taxline-theme'))).toBeNull();
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+});
+
+test('the demo app passes axe in both themes', async ({ page }) => {
+  for (const colorScheme of ['dark', 'light'] as const) {
+    await page.emulateMedia({ colorScheme });
+    for (const path of ['app/', 'app/acme_w2_2024/']) {
+      await page.goto(path, { waitUntil: 'networkidle' });
+      const axe = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+      const bad = axe.violations
+        .filter((v) => v.impact === 'serious' || v.impact === 'critical')
+        .map(
+          (v) =>
+            `${colorScheme} ${path}: ${v.id} × ${v.nodes.length}: ${v.nodes[0]?.target.join(' ')}`,
+        );
+      expect(bad, bad.join('\n')).toEqual([]);
+    }
+  }
 });

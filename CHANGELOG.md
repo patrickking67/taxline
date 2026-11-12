@@ -9,6 +9,15 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Added
 
+- A light theme for the site. Every color token is `light-dark()`, the page
+  follows `prefers-color-scheme`, and a toggle in the nav and the console
+  overrides and remembers the choice. The rate chart swaps between its light
+  and dark renderings.
+- The e2e suite runs axe on every page in both themes and on the demo console,
+  and covers the toggle.
+- The e2e suite runs axe on every page in both themes and on the demo console,
+  and covers the toggle and the diagram.
+
 - A deterministic, offline rules extractor behind `extract_fields`
   (`service/src/extract`): caption anchoring, format validation with counted
   repairs, and cross-field arithmetic for W-2, 1099-NEC, and 1099-INT text.
