@@ -7,8 +7,42 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ## [Unreleased]
 
+### Added
+
+- `python/taxline_quant`, a typed Python package for tax year 2026: a federal
+  income tax model on `Decimal` (rate schedule and Tax Table, standard or
+  itemized deduction, Schedule SE, the section 199A deduction, Additional
+  Medicare Tax, the section 6654 safe harbor) with every constant cited and
+  listed in `docs/quant/constants.md`.
+- A parity test that runs 47 named cases and 5,000 seeded random cases through
+  both the Python model and the TypeScript engine and fails on a one-cent
+  difference (`python/tests/test_parity.py`, `packages/tax-engine/parity/`).
+- Scenario sweeps, income-by-deduction grids, and one-at-a-time sensitivity;
+  a seeded Monte Carlo projection of required estimated payments under profit
+  uncertainty, with its assumptions returned alongside the result.
+- An offline evaluation harness for field extraction: synthetic documents with
+  known truth, a simulated extractor, precision, recall, expected calibration
+  error, a reliability table, and what the 0.85 review gate lets through. It
+  can also score a recorded run in the service's `extract_fields` shape.
+- `python -m taxline_quant` (`tax`, `sweep`, `montecarlo`, `eval`, `constants`,
+  `report`, `parity`) and a generated report with SVG charts in `docs/quant/`.
+- A CI job for the Python package on 3.12 and 3.13 (ruff, mypy --strict,
+  pytest, parity required), `npm run verify:python`, and `npm run report`.
+- `docs/architecture.md` with component, agent-flow, review-routing,
+  calculation, and cross-check diagrams; README screenshots in `docs/assets/`
+  captured by `scripts/capture-screenshots.mjs`.
+- A quantitative engine section on the home page with the generated rate
+  chart, and source, architecture, and author links in the footer.
+
 ### Fixed
 
+- The tax engine rounded some exact half-cent ties down. A product such as
+  43,230.95 x 0.9 reaches `round2` as 38,907.85499999999, so the result was a
+  cent low. `round2` now snaps to 15 significant digits before rounding. Found
+  by the parity test; it changes a result only where the old one was a cent
+  off the engine's own half-up rule.
+- Schedule SE reported the remaining wage base with float noise
+  (34,770.76999999999) when W-2 wages had cents.
 - A client `maxHops` could end the agent chain early with no review item, and
   `maxHops: 0` ran no agent at all. The orchestrator now clamps it to 1 through
   5 and adds a review item naming the agent that did not run, so an early stop
@@ -28,6 +62,10 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Changed
 
+- The README leads with a screenshot, the engineering decisions, and Mermaid
+  diagrams of both halves of the project.
+- The Open Graph image is 1200 by 630 and taken from the real home page.
+- `E2E_PORT` moves the Playwright server when port 4173 is in use.
 - The repo is formatted with Prettier, and `npm run format:check` runs in
   `npm run verify`, `npm run verify:fast`, and the CI lint job. Generated files
   are listed in `.prettierignore`.

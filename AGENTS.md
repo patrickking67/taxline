@@ -63,7 +63,7 @@ says so in the output. Templates: `service/.env.example`, `site/.env.example`.
 | All typechecks | `npm run typecheck` | site, engine, service, Worker |
 | Lint | `npm run lint` | ESLint flat config |
 | Unit tests | `npm test` | engine, service, Worker (node:test) |
-| E2E + axe | `npm run test:e2e` | builds under `/taxline`, serves on :4173; `CHROMIUM_PATH` reuses a local Chromium |
+| E2E + axe | `npm run test:e2e` | builds under `/taxline`, serves on :4173 (`E2E_PORT` overrides); `CHROMIUM_PATH` reuses a local Chromium |
 | Everything CI runs | `npm run verify` | lint, format check, typecheck, tests, build, e2e, CMS typecheck + build, then `verify:python` |
 | Quick gate | `npm run verify:fast` | lint, format check, typecheck, tests |
 | Python gate | `npm run verify:python` | ruff, ruff format, mypy --strict, pytest with the parity test required (needs `npm ci`) |
@@ -71,6 +71,7 @@ says so in the output. Templates: `service/.env.example`, `site/.env.example`.
 | Rebuild the quant report | `npm run report` | rewrites `docs/quant/report.md` and the SVG charts |
 | Regenerate the constants table | `cd python && uv run python -m taxline_quant constants --markdown > ../docs/quant/constants.md` | after editing `constants.py` |
 | Refresh root llms.txt | `npm run llms` | copies the built `/llms.txt` to the repo root |
+| README screenshots + social card | `node scripts/capture-screenshots.mjs` | needs the dist server (`taxline-site-dist`); writes `docs/assets/` and `site/public/social-preview.png` |
 | Format | `npm run format` | Prettier; Markdown and generated files are ignored (`.prettierignore`) |
 | Format check | `npm run format:check` | part of `verify` and CI |
 

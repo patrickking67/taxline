@@ -9,7 +9,7 @@ export const GET: APIRoute = ({ site }) => {
   const a = (p: string) => absolute(p, site);
   const body = `# Taxline
 
-> Agentic tax operations. Five AI agents (Relay intake, Lens extraction, Atlas research, Ledger workpapers, Sentry compliance) work behind an orchestrator. Every field carries a confidence score and a citation; fields under 0.85 confidence route to a person, and a human approves before any output ships. Taxline does not file autonomously and does not train on client data.
+> Agentic tax operations. Five AI agents (Relay intake, Lens extraction, Atlas research, Ledger workpapers, Sentry compliance) work behind an orchestrator. Every field carries a confidence score and a citation; fields under 0.85 confidence route to a person, and a human approves before any output ships. Taxline does not file autonomously and does not train on client data. The tax math is implemented twice, in TypeScript and in Python on exact decimals, and a parity test compares the two to the cent. Educational project on synthetic data; not tax advice.
 
 ## Free tax calculators (tax year 2026, figures from IRS Rev. Proc. 2025-32)
 
@@ -34,13 +34,17 @@ ${insights.map((p) => `  - [${p.title}](${a(`insights/${p.slug}/`)}): ${p.excerp
 ## Source
 
 - [Repository](${REPO}): MIT-licensed monorepo with the site, agent service, tax engine, CMS, and contact Worker.
-- [README](${REPO}/blob/main/README.md): architecture, quick start, environment variables, and tests.
+- [README](${REPO}/blob/main/README.md): architecture, quick start, and quality signals.
 - [AGENTS.md](${REPO}/blob/main/AGENTS.md): commands, layout, and conventions for coding agents.
 - [Tax engine](${REPO}/tree/main/packages/tax-engine): deterministic TY2026 federal math, every figure cited.
 - [Agent service](${REPO}/tree/main/service): orchestrator, five agents, and the human-approval gate.
+- [Quantitative package](${REPO}/tree/main/python): taxline_quant, a Decimal TY2026 model with scenario sweeps, seeded Monte Carlo for estimated payments, and an offline extraction evaluation harness.
+- [Quantitative report](${REPO}/blob/main/docs/quant/report.md): generated rates, what-if tables, payment projections, and calibration results with their assumptions.
+- [Constants and sources](${REPO}/blob/main/docs/quant/constants.md): every TY2026 figure the Python model reads, with its citation.
 
 ## Optional
 
+- [Architecture](${REPO}/blob/main/docs/architecture.md): component, agent-flow, review-routing, and calculation diagrams.
 - [System design](${REPO}/blob/main/docs/system-design.md): deployment and runtime topology.
 - [Changelog](${REPO}/blob/main/CHANGELOG.md)
 - [Sitemap](${a('sitemap.xml')})
