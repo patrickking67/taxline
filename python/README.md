@@ -16,7 +16,7 @@ for the agents' extraction step.
 | `estimated.py` | The section 6654(d) safe harbor and four installments. |
 | `scenarios.py` | Sweeps over any input, marginal and effective rates, income-by-deduction grids, one-at-a-time sensitivity. |
 | `montecarlo.py` | Seeded projection of required estimated payments when profit is uncertain. |
-| `evals/` | Synthetic documents with known truth, a simulated extractor, and field-level precision, recall, and calibration scoring. |
+| `evals/` | Synthetic documents with known truth, rendered as damaged text and read by the service's rules extractor (`service/src/extract`, run through Node), then scored for field-level precision, recall, and calibration. A simulated extractor is kept to test the scoring and to show what miscalibration costs. |
 | `parity.py` | Runs the same cases through the TypeScript engine and lists every difference. |
 | `report.py`, `charts.py` | Rebuild [`docs/quant/report.md`](../docs/quant/report.md) and its SVG charts. |
 
@@ -33,16 +33,17 @@ uv sync
 uv run python -m taxline_quant tax --status single --se-profit 100000
 uv run python -m taxline_quant sweep --status single --vary self-employment-profit --start 0 --stop 300000 --step 50000
 uv run python -m taxline_quant montecarlo --status single --se-profit 120000 --cv 0.35 --seed 7
-uv run python -m taxline_quant eval --profile overconfident
+uv run python -m taxline_quant eval            # the service's rules extractor; needs Node
+uv run python -m taxline_quant eval --profile overconfident   # the simulator
 uv run python -m taxline_quant constants
-uv run python -m taxline_quant report          # rewrites docs/quant/
+uv run python -m taxline_quant report          # rewrites docs/quant/; needs Node for section 5
 uv run python -m taxline_quant parity          # needs Node and `npm ci` at the repo root
 ```
 
 Add `--json` to `tax`, `sweep`, `montecarlo`, or `eval` for machine-readable
 output; amounts come back as strings so nothing is read back as a float.
 
-To score a recorded extraction run instead of the simulator:
+To score a recorded extraction run:
 
 ```bash
 uv run python -m taxline_quant eval \

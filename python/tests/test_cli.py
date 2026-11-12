@@ -125,6 +125,18 @@ def test_eval_simulated(capsys: pytest.CaptureFixture[str]) -> None:
     assert "gate at 0.85" in out
 
 
+def test_eval_defaults_to_the_rules_extractor(capsys: pytest.CaptureFixture[str]) -> None:
+    from taxline_quant.evals import rules_available  # noqa: PLC0415
+
+    from .node import require_node  # noqa: PLC0415
+
+    if not rules_available():
+        require_node("the rules extractor is TypeScript")
+    code, out, _ = run(capsys, "eval", "--documents", "30")
+    assert code == 0
+    assert "rules extractor (service/src/extract), seed 7" in out
+
+
 def test_constants(capsys: pytest.CaptureFixture[str]) -> None:
     code, out, _ = run(capsys, "constants", "--markdown")
     assert code == 0

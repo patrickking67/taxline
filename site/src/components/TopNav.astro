@@ -2,6 +2,7 @@
 import Logo from './Logo.astro';
 import Button from './Button.astro';
 import MegaMenu from './MegaMenu.astro';
+import ThemeToggle from './ThemeToggle.astro';
 import { Icon } from 'astro-icon/components';
 import { u } from '../lib/url';
 ---
@@ -55,6 +56,7 @@ import { u } from '../lib/url';
       >
         Sign in
       </a>
+      <ThemeToggle />
       <Button href={u('contact')} size="sm">
         Book a demo
       </Button>

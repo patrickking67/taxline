@@ -19,6 +19,7 @@
   "include": [
     "src/**/*.ts",
     "test/**/*.ts",
+    "eval/**/*.ts",
     "../knowledge-base/ingest/**/*.ts",
     "../packages/tax-engine/src/**/*.ts"
   ]

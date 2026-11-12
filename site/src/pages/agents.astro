@@ -71,9 +71,9 @@ const agents = [
 
 // Extraction sample — green ≥0.85, amber 0.6–0.85, red <0.6
 const extractionFields = [
-  { label: 'Wages · box 1', value: 0.97 },
-  { label: 'State w/h', value: 0.74 },
-  { label: 'Local code', value: 0.41 },
+  { label: 'Wages · box 1', value: 0.99 },
+  { label: 'State w/h', value: 0.65 },
+  { label: 'Local code', value: 0.39 },
 ];
 
 const sectionLabel = 'flex items-center gap-2 font-mono text-[10px] font-medium uppercase tracking-[0.13em] text-fg-faint';
@@ -192,7 +192,7 @@ const sectionLabel = 'flex items-center gap-2 font-mono text-[10px] font-medium 
                       <div class="mt-3 space-y-2.5">
                         {extractionFields.map((f) => <ConfidenceMeter label={f.label} value={f.value} labelWidth="w-[86px]" />)}
                       </div>
-                      <p class="mt-3 font-mono text-[11px] leading-relaxed text-fg-faint">Local code 0.41 &lt; threshold → routed to review.</p>
+                      <p class="mt-3 font-mono text-[11px] leading-relaxed text-fg-faint">Local code 0.39 &lt; threshold → routed to review.</p>
                     </>
                   )}
 
@@ -275,9 +275,9 @@ const sectionLabel = 'flex items-center gap-2 font-mono text-[10px] font-medium 
             <div class="rounded-md border border-border-faint bg-inset p-4">
               <span class={sectionLabel}><Icon name="lucide:user-check" class="size-3.5" />Review gate</span>
               <div class="mt-3 space-y-2.5">
-                <ConfidenceMeter label="Wages · box 1" value={0.97} labelWidth="w-[90px]" />
-                <ConfidenceMeter label="State w/h" value={0.74} labelWidth="w-[90px]" />
-                <ConfidenceMeter label="Local code" value={0.41} labelWidth="w-[90px]" />
+                <ConfidenceMeter label="Wages · box 1" value={0.99} labelWidth="w-[90px]" />
+                <ConfidenceMeter label="State w/h" value={0.65} labelWidth="w-[90px]" />
+                <ConfidenceMeter label="Local code" value={0.39} labelWidth="w-[90px]" />
               </div>
               <p class="mt-3 inline-flex items-center gap-2 font-mono text-[11px] text-fg-faint">
                 <Icon name="lucide:lock" class="size-3.5 text-accent" />2 fields held for you

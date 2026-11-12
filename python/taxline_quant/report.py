@@ -17,7 +17,9 @@ from . import DISCLAIMER
 from .constants import FilingStatus
 from .evals import CALIBRATED, OVERCONFIDENT, Evaluation, evaluate, generate_documents
 from .evals.extractor import simulate_extraction
-from .evals.metrics import REVIEW_THRESHOLD
+from .evals.metrics import REVIEW_THRESHOLD, Counts
+from .evals.render import QUALITIES, render_documents
+from .evals.rules import run_rules_extractor
 from .model import ReturnInput, compute_return
 from .montecarlo import PERCENTILES, Distribution, PlanOutcome, Projection, simulate
 from .scenarios import grid, kinks, money_range, sensitivity, sweep
@@ -37,6 +39,8 @@ PRIOR_YEAR_TAX: Final = Decimal(24_000)
 PRIOR_YEAR_AGI: Final = Decimal(110_000)
 EVAL_SEED: Final = 7
 EVAL_DOCUMENTS: Final = 600
+TUNING_SEEDS: Final = (11, 23)
+"""Seeds the extractor's confidence weights were set on. Never the report seed."""
 
 
 def _usd(value: Decimal) -> str:
@@ -111,6 +115,13 @@ def _eval_rows(name: str, ev: Evaluation) -> str:
     )
 
 
+def _count_row(name: str, c: Counts) -> str:
+    return (
+        f"| {name} | {c.true_positive:,} | {c.false_positive:,} | {c.false_negative:,} | "
+        f"{_pct(c.precision)} | {_pct(c.recall)} |"
+    )
+
+
 def _reliability_table(name: str, ev: Evaluation) -> list[str]:
     lines = [
         f"Reliability table, {name}:",
@@ -157,7 +168,25 @@ def build() -> Mapping[str, str]:
         prior_year_agi=PRIOR_YEAR_AGI,
     )
     documents = generate_documents(EVAL_SEED, EVAL_DOCUMENTS)
-    evaluations = [
+    rendered = render_documents(documents, EVAL_SEED)
+    predictions = run_rules_extractor(rendered)
+
+    def scored(*qualities: str) -> Evaluation:
+        ids = {r.doc_id for r in rendered if r.quality in qualities}
+        return evaluate(
+            [d for d in documents if d.doc_id in ids],
+            [p for p in predictions if p.doc_id in ids],
+        )
+
+    names = [q.name for q in QUALITIES]
+    overall = scored(*names)
+    by_quality = [(f"{name} scans", scored(name)) for name in names]
+    charted = [
+        ("all scans", overall),
+        (f"{names[0]} scans", by_quality[0][1]),
+        ("damaged scans", scored(*names[1:])),
+    ]
+    simulated = [
         (profile.name, evaluate(documents, simulate_extraction(documents, profile, EVAL_SEED)))
         for profile in (CALIBRATED, OVERCONFIDENT)
     ]
@@ -166,8 +195,8 @@ def build() -> Mapping[str, str]:
     for theme in charts.THEMES:
         files[f"rates-{theme.name}.svg"] = charts.rates_chart(points, theme)
         files[f"montecarlo-{theme.name}.svg"] = charts.montecarlo_chart(no_prior, theme)
-        files[f"reliability-{theme.name}.svg"] = charts.reliability_chart(evaluations, theme)
-        files[f"gate-{theme.name}.svg"] = charts.gate_chart(evaluations, theme)
+        files[f"reliability-{theme.name}.svg"] = charts.reliability_chart(charted, theme)
+        files[f"gate-{theme.name}.svg"] = charts.gate_chart(charted, theme)
 
     md: list[str] = [
         "# Taxline quantitative report, tax year 2026",
@@ -286,44 +315,78 @@ def build() -> Mapping[str, str]:
         "## 5. Extraction evaluation",
         "",
         f"{EVAL_DOCUMENTS} synthetic documents (seed {EVAL_SEED}) with "
-        f"{evaluations[0][1].truth_fields:,} known fields, read by a simulated extractor. The "
-        "service's `extract_fields` tool is still a stub, so these numbers measure the "
-        "simulator and show what the harness reports; they are not a measurement of a model. "
-        "The two profiles make the same mistakes and differ only in the confidence they state.",
+        f"{overall.truth_fields:,} known fields, rendered as the text a scan would yield and "
+        "read by the rules extractor in `service/src/extract`, the code behind the service's "
+        "`extract_fields` tool. The extractor is deterministic and offline, and it is not told "
+        "which form it is reading. Its confidence comes from what it observes: how well the "
+        "caption matches, whether the value fits its pattern, how damaged the rest of the "
+        "document is, and whether the boxes agree with each other.",
+        "",
+        "The damage is a seeded noise model (`python/taxline_quant/evals/render.py`): "
+        + ", ".join(
+            f"{q.share_pct}% {q.name} scans ({q.char_error_per_mille / 10:g}% of characters "
+            f"misread, {q.line_drop_per_mille / 10:g}% of lines missing)"
+            for q in QUALITIES
+        )
+        + ". The confidence weights were set on seeds "
+        + " and ".join(str(n) for n in TUNING_SEEDS)
+        + f"; seed {EVAL_SEED} was held out. These numbers measure a rules extractor on "
+        "synthetic text. They are not a measurement of a model, of OCR, or of real scans.",
+        "",
+        "| Scans | Precision | Recall | F1 | ECE | Brier | Mean confidence | Accuracy "
+        f"| Sent to review at {REVIEW_THRESHOLD} | Errors past the gate | Errors caught |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        _eval_rows(f"all {overall.documents}", overall),
+        *[_eval_rows(f"{ev.documents} {name}", ev) for name, ev in by_quality],
+        "",
+        "| Group | Correct | Wrong or invented | Missed | Precision | Recall |",
+        "| --- | ---: | ---: | ---: | ---: | ---: |",
+        *[_count_row(name, c) for name, c in sorted(overall.by_doc_type.items())],
+        *[_count_row(f"{name} fields", c) for name, c in sorted(overall.by_kind.items())],
+        "",
+        "Names are the weakest group: a name has no pattern to check and no other box to "
+        "agree with, so a misread letter can only be suspected from the damage around it.",
+        "",
+        _picture(
+            "reliability",
+            "Reliability diagram: share of fields correct against mean stated confidence for "
+            "the rules extractor on all, clean, and damaged synthetic scans",
+        ),
+        "",
+        *_reliability_table("rules extractor, all scans", overall),
+        _picture(
+            "gate",
+            "Line chart of the error rate among auto-accepted fields against the confidence "
+            "threshold for the rules extractor on all, clean, and damaged synthetic scans, "
+            "with the service gate at 0.85 marked",
+        ),
+        "",
+        "| Threshold | " + " | ".join(f"{name}: review / error rate" for name, _ in charted) + " |",
+        "| ---: | " + " | ".join("---:" for _ in charted) + " |",
+    ]
+    for i, row in enumerate(overall.gate):
+        cells = " | ".join(
+            f"{_pct(ev.gate[i].review_rate)} / {_pct(ev.gate[i].escape_rate, 2)}"
+            for _, ev in charted
+        )
+        md.append(f"| {row.threshold} | {cells} |")
+    md += [
+        "",
+        "Reading it: the gate does most of its work on damaged scans. What gets past it is "
+        "mostly one digit or letter read as another on a field nothing else confirms. Those "
+        "errors are why a person approves every result.",
+        "",
+        "### What miscalibration would cost (simulated)",
+        "",
+        "The rules extractor has one confidence model, so it cannot show what a badly "
+        "calibrated one does. This comparison uses a simulator instead: two profiles that "
+        "make the same mistakes on the same documents and differ only in the confidence they "
+        "state. It is an illustration, not a measurement of any extractor.",
         "",
         "| Profile | Precision | Recall | F1 | ECE | Brier | Mean confidence | Accuracy "
         f"| Sent to review at {REVIEW_THRESHOLD} | Errors past the gate | Errors caught |",
         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
-        *[_eval_rows(name, ev) for name, ev in evaluations],
-        "",
-        _picture(
-            "reliability",
-            "Reliability diagram: share of fields correct against mean stated confidence "
-            "for a calibrated and an overconfident simulated extractor",
-        ),
-        "",
-    ]
-    for name, ev in evaluations:
-        md += _reliability_table(name, ev)
-    md += [
-        _picture(
-            "gate",
-            "Line chart of the error rate among auto-accepted fields against the confidence "
-            "threshold for both simulated extractors, with the service gate at 0.85 marked",
-        ),
-        "",
-        "| Threshold | "
-        + " | ".join(f"{name}: review / error rate" for name, _ in evaluations)
-        + " |",
-        "| ---: | " + " | ".join("---:" for _ in evaluations) + " |",
-    ]
-    for i, row in enumerate(evaluations[0][1].gate):
-        cells = " | ".join(
-            f"{_pct(ev.gate[i].review_rate)} / {_pct(ev.gate[i].escape_rate, 2)}"
-            for _, ev in evaluations
-        )
-        md.append(f"| {row.threshold} | {cells} |")
-    md += [
+        *[_eval_rows(name, ev) for name, ev in simulated],
         "",
         "A fixed threshold only protects the reviewer if the confidence is honest. With",
         "inflated scores the same 0.85 gate sends fewer fields to a person and lets more",

@@ -91,6 +91,8 @@ export interface ExtractedField {
   confidence: number | null;
   /** Where the value was read from. */
   citations: Citation[];
+  /** Plain-language evidence behind the confidence, when the extractor gives any. */
+  signals?: string[];
 }
 
 /** Item flagged for a human: a low-confidence field or an undecidable call. */

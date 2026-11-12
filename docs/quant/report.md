@@ -147,48 +147,73 @@ balance due at filing is as uncertain as before.
 
 ## 5. Extraction evaluation
 
-600 synthetic documents (seed 7) with 2,800 known fields, read by a simulated extractor. The service's `extract_fields` tool is still a stub, so these numbers measure the simulator and show what the harness reports; they are not a measurement of a model. The two profiles make the same mistakes and differ only in the confidence they state.
+600 synthetic documents (seed 7) with 2,800 known fields, rendered as the text a scan would yield and read by the rules extractor in `service/src/extract`, the code behind the service's `extract_fields` tool. The extractor is deterministic and offline, and it is not told which form it is reading. Its confidence comes from what it observes: how well the caption matches, whether the value fits its pattern, how damaged the rest of the document is, and whether the boxes agree with each other.
+
+The damage is a seeded noise model (`python/taxline_quant/evals/render.py`): 70% clean scans (0.2% of characters misread, 0% of lines missing), 22% smudged scans (2.5% of characters misread, 1% of lines missing), 8% poor scans (8% of characters misread, 5% of lines missing). The confidence weights were set on seeds 11 and 23; seed 7 was held out. These numbers measure a rules extractor on synthetic text. They are not a measurement of a model, of OCR, or of real scans.
+
+| Scans | Precision | Recall | F1 | ECE | Brier | Mean confidence | Accuracy | Sent to review at 0.85 | Errors past the gate | Errors caught |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| all 600 | 95.8% | 92.7% | 0.942 | 0.015 | 0.030 | 94.7% | 95.8% | 11.4% | 42 (1.7%) | 63.5% |
+| 440 clean scans | 98.9% | 98.6% | 0.987 | 0.008 | 0.010 | 98.2% | 98.9% | 0.6% | 19 (0.9%) | 17.4% |
+| 121 smudged scans | 90.6% | 83.7% | 0.870 | 0.025 | 0.076 | 88.8% | 90.6% | 27.1% | 22 (5.4%) | 55.1% |
+| 39 poor scans | 68.4% | 52.8% | 0.596 | 0.096 | 0.163 | 65.1% | 68.4% | 86.9% | 1 (4.3%) | 97.7% |
+
+| Group | Correct | Wrong or invented | Missed | Precision | Recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1099-INT | 749 | 34 | 51 | 95.7% | 93.6% |
+| 1099-NEC | 740 | 39 | 60 | 95.0% | 92.5% |
+| W-2 | 1,107 | 42 | 93 | 96.3% | 92.2% |
+| id fields | 555 | 23 | 45 | 96.0% | 92.5% |
+| money fields | 1,323 | 25 | 77 | 98.1% | 94.5% |
+| text fields | 718 | 67 | 82 | 91.5% | 89.8% |
+
+Names are the weakest group: a name has no pattern to check and no other box to agree with, so a misread letter can only be suspected from the damage around it.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="reliability-dark.svg">
+  <img src="reliability-light.svg" alt="Reliability diagram: share of fields correct against mean stated confidence for the rules extractor on all, clean, and damaged synthetic scans" width="760">
+</picture>
+
+Reliability table, rules extractor, all scans:
+
+| Confidence bin | Fields | Mean confidence | Accuracy | Gap |
+| --- | ---: | ---: | ---: | ---: |
+| 0.1 to 0.2 | 1 | 19.0% | 100.0% | 81.0% |
+| 0.2 to 0.3 | 9 | 27.6% | 33.3% | 5.8% |
+| 0.3 to 0.4 | 15 | 35.1% | 26.7% | 8.5% |
+| 0.4 to 0.5 | 26 | 44.1% | 30.8% | 13.3% |
+| 0.5 to 0.6 | 16 | 55.0% | 50.0% | 5.0% |
+| 0.6 to 0.7 | 43 | 65.3% | 74.4% | 9.1% |
+| 0.7 to 0.8 | 77 | 74.9% | 79.2% | 4.3% |
+| 0.8 to 0.9 | 162 | 86.1% | 93.2% | 7.1% |
+| 0.9 to 1.0 | 2362 | 98.0% | 98.6% | 0.6% |
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="gate-dark.svg">
+  <img src="gate-light.svg" alt="Line chart of the error rate among auto-accepted fields against the confidence threshold for the rules extractor on all, clean, and damaged synthetic scans, with the service gate at 0.85 marked" width="760">
+</picture>
+
+| Threshold | all scans: review / error rate | clean scans: review / error rate | damaged scans: review / error rate |
+| ---: | ---: | ---: | ---: |
+| 0.5 | 5.0% / 3.01% | 0.5% / 0.93% | 17.4% / 9.98% |
+| 0.6 | 5.6% / 2.72% | 0.5% / 0.93% | 19.6% / 8.91% |
+| 0.7 | 7.1% / 2.35% | 0.5% / 0.93% | 25.4% / 7.61% |
+| 0.8 | 9.9% / 1.78% | 0.6% / 0.93% | 35.7% / 5.46% |
+| 0.85 | 11.4% / 1.69% | 0.6% / 0.93% | 41.4% / 5.30% |
+| 0.9 | 15.6% / 1.44% | 2.6% / 0.90% | 51.9% / 4.49% |
+| 0.95 | 24.0% / 1.03% | 5.5% / 0.77% | 75.4% / 3.85% |
+| 0.99 | 38.0% / 0.98% | 18.5% / 0.83% | 92.3% / 5.26% |
+
+Reading it: the gate does most of its work on damaged scans. What gets past it is mostly one digit or letter read as another on a field nothing else confirms. Those errors are why a person approves every result.
+
+### What miscalibration would cost (simulated)
+
+The rules extractor has one confidence model, so it cannot show what a badly calibrated one does. This comparison uses a simulator instead: two profiles that make the same mistakes on the same documents and differ only in the confidence they state. It is an illustration, not a measurement of any extractor.
 
 | Profile | Precision | Recall | F1 | ECE | Brier | Mean confidence | Accuracy | Sent to review at 0.85 | Errors past the gate | Errors caught |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | calibrated | 93.4% | 91.3% | 0.923 | 0.008 | 0.050 | 93.2% | 93.4% | 15.7% | 75 (3.2%) | 58.3% |
 | overconfident | 93.4% | 91.3% | 0.923 | 0.035 | 0.057 | 96.9% | 93.4% | 4.6% | 151 (5.6%) | 16.1% |
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="reliability-dark.svg">
-  <img src="reliability-light.svg" alt="Reliability diagram: share of fields correct against mean stated confidence for a calibrated and an overconfident simulated extractor" width="760">
-</picture>
-
-Reliability table, calibrated:
-
-| Confidence bin | Fields | Mean confidence | Accuracy | Gap |
-| --- | ---: | ---: | ---: | ---: |
-| 0.5 to 0.6 | 149 | 54.8% | 55.7% | 0.9% |
-| 0.8 to 0.9 | 552 | 85.4% | 84.1% | 1.3% |
-| 0.9 to 1.0 | 2035 | 98.1% | 98.7% | 0.6% |
-
-Reliability table, overconfident:
-
-| Confidence bin | Fields | Mean confidence | Accuracy | Gap |
-| --- | ---: | ---: | ---: | ---: |
-| 0.8 to 0.9 | 134 | 85.4% | 54.5% | 30.9% |
-| 0.9 to 1.0 | 2602 | 97.5% | 95.4% | 2.1% |
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="gate-dark.svg">
-  <img src="gate-light.svg" alt="Line chart of the error rate among auto-accepted fields against the confidence threshold for both simulated extractors, with the service gate at 0.85 marked" width="760">
-</picture>
-
-| Threshold | calibrated: review / error rate | overconfident: review / error rate |
-| ---: | ---: | ---: |
-| 0.5 | 2.5% / 6.58% | 2.5% / 6.58% |
-| 0.6 | 7.8% / 4.41% | 2.5% / 6.58% |
-| 0.7 | 7.8% / 4.41% | 2.5% / 6.58% |
-| 0.8 | 7.8% / 4.41% | 2.5% / 6.58% |
-| 0.85 | 15.7% / 3.17% | 4.6% / 5.64% |
-| 0.9 | 27.5% / 1.28% | 7.3% / 4.57% |
-| 0.95 | 29.7% / 1.17% | 18.0% / 2.82% |
-| 0.99 | 60.9% / 0.91% | 58.7% / 1.12% |
 
 A fixed threshold only protects the reviewer if the confidence is honest. With
 inflated scores the same 0.85 gate sends fewer fields to a person and lets more

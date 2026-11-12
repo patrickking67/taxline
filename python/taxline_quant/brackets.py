@@ -79,7 +79,8 @@ def tax_table_tax(
 
     Below the table ceiling the IRS taxes the midpoint of the row that contains
     the taxable income and rounds to whole dollars. The first three rows are
-    irregular ($0-5, $5-15, $15-25); after that rows are $25 wide up to $3,000
+    irregular ($0-5, $5-15, $15-25; Form 1040 instructions (2025), Tax Table,
+    first rows); after that rows are $25 wide up to $3,000
     and $50 wide up to $100,000. At or above the ceiling the rate schedule
     applies unchanged.
     """

@@ -1,0 +1,62 @@
+---
+// Light and dark theme switch. The page follows the system setting until this is
+// used. Choosing the theme the system already asks for clears the saved choice,
+// so the page goes back to following the system.
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  class?: string;
+}
+const { class: cls = '' } = Astro.props;
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  aria-label="Switch color theme"
+  class:list={[
+    'grid size-9 shrink-0 place-items-center rounded-md text-fg-muted transition-colors hover:bg-raised hover:text-fg',
+    cls,
+  ]}
+>
+  <Icon name="lucide:sun" class="only-dark size-[18px]" />
+  <Icon name="lucide:moon" class="only-light size-[18px]" />
+</button>
+
+<script>
+  const root = document.documentElement;
+  const system = window.matchMedia('(prefers-color-scheme: light)');
+  const current = (): 'light' | 'dark' =>
+    root.dataset.theme === 'light' || root.dataset.theme === 'dark'
+      ? root.dataset.theme
+      : system.matches
+        ? 'light'
+        : 'dark';
+
+  function label() {
+    const next = current() === 'light' ? 'dark' : 'light';
+    for (const button of document.querySelectorAll('[data-theme-toggle]')) {
+      button.setAttribute('aria-label', `Switch to ${next} theme`);
+    }
+  }
+
+  function toggle() {
+    const next = current() === 'light' ? 'dark' : 'light';
+    const follows = next === (system.matches ? 'light' : 'dark');
+    if (follows) delete root.dataset.theme;
+    else root.dataset.theme = next;
+    try {
+      if (follows) localStorage.removeItem('taxline-theme');
+      else localStorage.setItem('taxline-theme', next);
+    } catch {
+      // Storage can be blocked; the choice still holds for this page.
+    }
+    label();
+  }
+
+  for (const button of document.querySelectorAll('[data-theme-toggle]')) {
+    button.addEventListener('click', toggle);
+  }
+  system.addEventListener('change', label);
+  label();
+</script>
