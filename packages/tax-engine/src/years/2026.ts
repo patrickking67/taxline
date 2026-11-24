@@ -46,6 +46,30 @@ export const cite = {
     label: 'IRC §168(k) as amended by OBBBA §70301',
     url: 'https://www.irs.gov/publications/p946',
   },
+  income: {
+    label: 'IRC §61; Form 1040 instructions',
+    url: 'https://www.irs.gov/instructions/i1040gi',
+  },
+  schedC: {
+    label: 'IRC §61(a)(2); Schedule C instructions',
+    url: 'https://www.irs.gov/instructions/i1040sc',
+  },
+  schedD: {
+    label: 'IRC §1(h), §1211(b); Schedule D instructions',
+    url: 'https://www.irs.gov/instructions/i1040sd',
+  },
+  schedE: {
+    label: 'IRC §1366; Schedule E instructions',
+    url: 'https://www.irs.gov/instructions/i1040se',
+  },
+  agi: {
+    label: 'IRC §62; Form 1040 instructions',
+    url: 'https://www.irs.gov/instructions/i1040gi',
+  },
+  taxableIncome: {
+    label: 'IRC §63; Form 1040 instructions',
+    url: 'https://www.irs.gov/instructions/i1040gi',
+  },
   taxTable: {
     label: '1040 Instructions, Tax Table',
     url: 'https://www.irs.gov/instructions/i1040gi',

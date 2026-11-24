@@ -196,14 +196,17 @@ export function computeReturn(
   ) => ({ id, label, value, ref, formula, ...extra });
 
   const lines: Trace = [
-    L('wages', 'Wages, salaries, tips', wages, '1040 L1z'),
-    L('interest', 'Taxable interest', interest, '1040 L2b'),
+    L('wages', 'Wages, salaries, tips', wages, '1040 L1z', undefined, { authority: cite.income }),
+    L('interest', 'Taxable interest', interest, '1040 L2b', undefined, {
+      authority: cite.income,
+    }),
     L(
       'dividends',
       'Ordinary dividends',
       ordDiv,
       '1040 L3b',
       qualDiv ? `includes ${fmtUsd(qualDiv)} qualified` : undefined,
+      { authority: cite.income },
     ),
     L(
       'capgain',
@@ -213,17 +216,26 @@ export function computeReturn(
       netCap < 0 && capLine !== netCap
         ? `loss limited to ${fmtUsd(-lossCap)}`
         : `${fmtUsd(st)} ST + ${fmtUsd(lt)} LT`,
+      { authority: cite.schedD },
     ),
-    L('business', 'Business income (Schedule C)', seProfit, 'Sch 1 L3'),
-    L('passthrough', 'S corporation income (K-1, Schedule E)', passThrough, 'Sch 1 L5'),
-    L('other', 'Other income', other, 'Sch 1 L8z'),
-    L('total', 'Total income', totalIncome, '1040 L9', undefined, { emphasis: 'subtotal' }),
+    L('business', 'Business income (Schedule C)', seProfit, 'Sch 1 L3', undefined, {
+      authority: cite.schedC,
+    }),
+    L('passthrough', 'S corporation income (K-1, Schedule E)', passThrough, 'Sch 1 L5', undefined, {
+      authority: cite.schedE,
+    }),
+    L('other', 'Other income', other, 'Sch 1 L8z', undefined, { authority: cite.income }),
+    L('total', 'Total income', totalIncome, '1040 L9', undefined, {
+      emphasis: 'subtotal',
+      authority: cite.income,
+    }),
     L(
       'adj',
       'Adjustments to income',
       adjustments,
       '1040 L10',
       `${fmtUsd(se.deduction, true)} ½ SE tax + ${fmtUsd(amount(input.adjustments))} other`,
+      { authority: cite.agi },
     ),
     L(
       'agi',
@@ -231,7 +243,7 @@ export function computeReturn(
       agi,
       '1040 L11',
       `${fmtUsd(totalIncome)} − ${fmtUsd(adjustments)}`,
-      { emphasis: 'subtotal' },
+      { emphasis: 'subtotal', authority: cite.agi },
     ),
     L(
       'deduction',
@@ -259,7 +271,7 @@ export function computeReturn(
       taxable,
       '1040 L15',
       `${fmtUsd(agi)} − ${fmtUsd(deduction)} − ${fmtUsd(qbi.deduction)}`,
-      { emphasis: 'subtotal' },
+      { emphasis: 'subtotal', authority: cite.taxableIncome },
     ),
     L(
       'tax',
@@ -312,9 +324,16 @@ export function computeReturn(
       niit ? `3.8% × min(NII ${fmtUsd(nii)}, MAGI over ${fmtUsd(y.niit.threshold[s])})` : undefined,
       { authority: cite.niit },
     ),
-    L('totaltax', 'Total tax', totalTax, '1040 L24', undefined, { emphasis: 'subtotal' }),
-    L('withholding', 'Federal income tax withheld', withholding, '1040 L25d'),
-    L('estimates', 'Estimated tax payments', estimates, '1040 L26'),
+    L('totaltax', 'Total tax', totalTax, '1040 L24', undefined, {
+      emphasis: 'subtotal',
+      authority: cite.income,
+    }),
+    L('withholding', 'Federal income tax withheld', withholding, '1040 L25d', undefined, {
+      authority: cite.income,
+    }),
+    L('estimates', 'Estimated tax payments', estimates, '1040 L26', undefined, {
+      authority: cite.estimated,
+    }),
     L(
       'actc',
       'Additional child tax credit (refundable)',
@@ -323,14 +342,17 @@ export function computeReturn(
       ctc.refundable ? `15% × (earned − $2,500), cap $1,700/child` : undefined,
       { authority: cite.ctc },
     ),
-    L('payments', 'Total payments', payments, '1040 L33', undefined, { emphasis: 'subtotal' }),
+    L('payments', 'Total payments', payments, '1040 L33', undefined, {
+      emphasis: 'subtotal',
+      authority: cite.income,
+    }),
     L(
       'balance',
       balance >= 0 ? 'Refund' : 'Amount you owe',
       Math.abs(balance),
       balance >= 0 ? '1040 L34' : '1040 L37',
       `${fmtUsd(payments)} − ${fmtUsd(totalTax)}`,
-      { emphasis: 'total' },
+      { emphasis: 'total', authority: cite.income },
     ),
   ];
 

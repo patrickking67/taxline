@@ -14,6 +14,10 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Added
 
+- Every Form 1040 workpaper line now names its authority and links the IRS page behind it
+  (Form 1040, Schedule C, D and E instructions, IRC sections). Before, only the computed credits
+  and tax lines did. No figure changes; a test fails if a line loses its citation.
+
 - A what-if comparison on the income tax calculator. Four optional fields (wages, Schedule C
   profit, adjustments, itemized deductions) show the current return beside the what-if, with the
   change in each figure. The what-if values live in the shareable URL.
