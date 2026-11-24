@@ -72,3 +72,16 @@ test('income tax: a what-if shows both returns and the change', async ({ page })
   await expect(row.locator('td').nth(1)).toHaveText('$110,000');
   await expect(row.locator('td').nth(2)).toHaveText('+$10,000');
 });
+
+test('income tax: bad input is explained, not silently changed', async ({ page }) => {
+  await page.goto('tools/income-tax/?status=single&wages=100000');
+  const wages = page.getByLabel('W-2 wages (box 1)');
+  await wages.fill('eighty');
+  await expect(wages).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#f-wages-msg')).toContainText('Enter a number');
+  await wages.fill('90,000');
+  await expect(page.locator('#f-wages-msg')).toHaveCount(0);
+
+  await page.goto('tools/income-tax/?status=single&children=50');
+  await expect(page.locator('#f-children-msg')).toContainText('highest value allowed is 12');
+});

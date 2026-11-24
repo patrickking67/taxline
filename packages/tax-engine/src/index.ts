@@ -12,6 +12,7 @@ export * from './qbi.js';
 export * from './credits.js';
 export * from './form1040.js';
 export * from './compare.js';
+export * from './validate.js';
 export * from './estimated.js';
 export * from './depreciation.js';
 export * from './roi.js';
