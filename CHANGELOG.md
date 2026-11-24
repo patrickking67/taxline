@@ -14,6 +14,9 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Added
 
+- `compareReturns` in the tax engine: computes two returns and reports the change in
+  each headline figure and in every trace line that moved. It adds no tax figures.
+
 - A light theme for the site. Every color token is `light-dark()`, the page
   follows `prefers-color-scheme`, and a toggle in the nav and the console
   overrides and remembers the choice. The rate chart swaps between its light
