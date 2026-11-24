@@ -14,6 +14,10 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Added
 
+- A what-if comparison on the income tax calculator. Four optional fields (wages, Schedule C
+  profit, adjustments, itemized deductions) show the current return beside the what-if, with the
+  change in each figure. The what-if values live in the shareable URL.
+
 - `compareReturns` in the tax engine: computes two returns and reports the change in
   each headline figure and in every trace line that moved. It adds no tax figures.
 

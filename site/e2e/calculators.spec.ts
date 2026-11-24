@@ -59,3 +59,16 @@ for (const t of tools) {
     expect(errors).toEqual([]);
   });
 }
+
+test('income tax: a what-if shows both returns and the change', async ({ page }) => {
+  await page.goto('tools/income-tax/?status=single&wages=100000');
+  await expect(page.locator('[data-compare]')).toBeHidden();
+
+  await page.goto('tools/income-tax/?status=single&wages=100000&altWages=110000');
+  const panel = page.locator('[data-compare]');
+  await expect(panel).toBeVisible();
+  const row = panel.locator('tr', { has: page.getByRole('rowheader', { name: 'Total income' }) });
+  await expect(row.locator('td').nth(0)).toHaveText('$100,000');
+  await expect(row.locator('td').nth(1)).toHaveText('$110,000');
+  await expect(row.locator('td').nth(2)).toHaveText('+$10,000');
+});
