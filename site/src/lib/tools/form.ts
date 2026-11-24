@@ -2,27 +2,45 @@
 // mirrors them so a result is shareable and survives a reload. Values are read
 // by `name`, coerced by input type, and handed to the page's compute function.
 
-export type FormValues = Record<string, string | number | boolean>;
+import { checkAmount } from '@taxline/tax-engine';
 
-/**
- * Clamp to the input's declared min/max. HTML constraints do not stop a typed or
- * URL-restored value, and calculator loops scale with some inputs (?years=1e9).
- */
-function clampToInput(el: HTMLInputElement, n: number): number {
-  const min = el.min !== '' ? Number(el.min) : -Infinity;
-  const max = el.max !== '' ? Number(el.max) : Infinity;
-  return Math.min(max, Math.max(min, n));
-}
+export type FormValues = Record<string, string | number | boolean>;
 
 function readValue(el: HTMLInputElement | HTMLSelectElement): string | number | boolean {
   if (el instanceof HTMLInputElement && el.type === 'checkbox') return el.checked;
   if (el.dataset.kind === 'money' || (el instanceof HTMLInputElement && el.type === 'number')) {
+    const input = el as HTMLInputElement;
     // Blank stays blank so optional fields can mean "not provided".
-    if (el.value.trim() === '') return '';
-    const n = Number(el.value.replace(/[$,\s]/g, ''));
-    return Number.isFinite(n) ? clampToInput(el as HTMLInputElement, n) : 0;
+    const { value, message } = checkAmount(input.value, {
+      min: input.min !== '' ? Number(input.min) : undefined,
+      max: input.max !== '' ? Number(input.max) : undefined,
+    });
+    showMessage(input, message);
+    return value ?? '';
   }
   return el.value;
+}
+
+/** Show or clear the inline message under an input, wired for screen readers. */
+function showMessage(el: HTMLInputElement, message: string | null): void {
+  const id = `${el.id || el.name}-msg`;
+  let p = document.getElementById(id);
+  if (!message) {
+    p?.remove();
+    el.removeAttribute('aria-invalid');
+    el.removeAttribute('aria-describedby');
+    return;
+  }
+  if (!p) {
+    p = document.createElement('p');
+    p.id = id;
+    p.className = 'mt-1 text-[11px] leading-snug text-danger-bright';
+    p.setAttribute('role', 'status');
+    el.closest('div')?.append(p);
+  }
+  p.textContent = message;
+  el.setAttribute('aria-invalid', 'true');
+  el.setAttribute('aria-describedby', id);
 }
 
 const fields = (form: HTMLFormElement) =>

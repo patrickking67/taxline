@@ -14,6 +14,10 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Added
 
+- Calculator inputs explain themselves. A value that is not a number, or is outside the field's
+  range, now gets a plain message under the field (and `aria-invalid`) saying what was used,
+  instead of being changed silently. The check is `checkAmount` in the tax engine, with tests.
+
 - Every Form 1040 workpaper line now names its authority and links the IRS page behind it
   (Form 1040, Schedule C, D and E instructions, IRC sections). Before, only the computed credits
   and tax lines did. No figure changes; a test fails if a line loses its citation.
