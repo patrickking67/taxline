@@ -202,3 +202,19 @@ test('the how-it-works diagram names all five agents, the reviewer, and the gate
   const box = await diagram.boundingBox();
   expect(box!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
 });
+
+test('home: the approval gate demo blocks release until every flagged field is reviewed', async ({
+  page,
+}) => {
+  await page.goto('./');
+  const release = page.getByRole('button', { name: 'Approve and release' });
+  await expect(release).toBeDisabled();
+  const confirms = page.locator('[data-gate] [data-confirm]');
+  await expect(confirms).toHaveCount(2);
+  await confirms.first().click();
+  await expect(release).toBeDisabled();
+  await confirms.last().click();
+  await expect(release).toBeEnabled();
+  await release.click();
+  await expect(page.locator('[data-gate-msg]')).toContainText('nothing was filed');
+});

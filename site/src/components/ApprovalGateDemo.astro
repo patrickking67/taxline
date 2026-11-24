@@ -1,0 +1,137 @@
+---
+// A small, offline demo of the approval gate. Fields at or above the review
+// threshold (0.85) pass; the rest wait for a person. Release stays disabled
+// until every review item is confirmed or corrected. Synthetic data only.
+import Button from './Button.astro';
+
+const THRESHOLD = 0.85;
+const fields = [
+  { id: 'ein', label: 'Employer EIN', value: '00-0000001', confidence: 0.98, source: 'W-2 box b' },
+  { id: 'wages', label: 'Wages, box 1', value: '84,250.00', confidence: 0.97, source: 'W-2 box 1' },
+  {
+    id: 'ss',
+    label: 'Social Security wages, box 3',
+    value: '84,250.00',
+    confidence: 0.71,
+    source: 'W-2 box 3, caption partly cut off',
+  },
+  {
+    id: 'withheld',
+    label: 'Federal tax withheld, box 2',
+    value: '9,120.00',
+    confidence: 0.62,
+    source: 'W-2 box 2, digits unclear',
+  },
+].map((f) => ({ ...f, review: f.confidence < THRESHOLD }));
+const reviewCount = fields.filter((f) => f.review).length;
+---
+
+<div data-gate class="rounded-lg border border-border bg-panel p-5" data-review-total={reviewCount}>
+  <div class="flex flex-wrap items-baseline justify-between gap-2">
+    <h3 class="text-[15px] font-semibold text-fg">W-2 from a synthetic client</h3>
+    <p class="font-mono text-[11px] text-fg-muted">review threshold {THRESHOLD}</p>
+  </div>
+  <ul class="mt-4 divide-y divide-border">
+    {fields.map((f) => (
+      <li class="py-3" data-field={f.id} data-review={f.review ? 'true' : 'false'}>
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <div class="min-w-0">
+            <p class="text-[13px] font-medium text-fg">{f.label}</p>
+            <p class="font-mono text-[11px] text-fg-muted">
+              {f.source} · confidence {f.confidence.toFixed(2)}
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="sr-only" for={`gate-${f.id}`}>
+              {f.label}
+            </label>
+            <input
+              id={`gate-${f.id}`}
+              value={f.value}
+              readonly={!f.review}
+              inputmode="decimal"
+              class="w-32 rounded-md border border-border bg-inset px-2.5 py-1.5 text-right font-mono text-[13px] text-fg"
+            />
+            {f.review ? (
+              <button
+                type="button"
+                data-confirm
+                class="rounded-md border border-border bg-raised px-3 py-1.5 text-[13px] font-medium text-fg hover:border-border-strong"
+              >
+                Confirm
+              </button>
+            ) : null}
+            <span data-status class="min-w-[92px] text-right font-mono text-[11px] text-fg-muted">
+              {f.review ? 'Needs review' : 'Passed'}
+            </span>
+          </div>
+        </div>
+      </li>
+    ))}
+  </ul>
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+    <p data-gate-msg role="status" class="text-[13px] text-fg-muted">
+      {reviewCount} fields are waiting for a person.
+    </p>
+    <div class="flex gap-2">
+      <Button variant="ghost" size="sm" class="" type="button" data-reset>
+        Reset
+      </Button>
+      <button
+        type="button"
+        data-release
+        disabled
+        class="inline-flex items-center justify-center rounded-md bg-accent px-3 py-1.5 text-[13px] font-medium text-on-accent hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Approve and release
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-gate]');
+  if (root) {
+    const msg = root.querySelector<HTMLElement>('[data-gate-msg]')!;
+    const release = root.querySelector<HTMLButtonElement>('[data-release]')!;
+    const items = Array.from(root.querySelectorAll<HTMLElement>('[data-field]'));
+    const open = () => items.filter((i) => i.dataset.review === 'true');
+
+    const update = () => {
+      const left = open().length;
+      release.disabled = left > 0;
+      msg.textContent =
+        left > 0
+          ? `${left} ${left === 1 ? 'field is' : 'fields are'} waiting for a person.`
+          : 'Every field is reviewed. You can release to the workpapers.';
+    };
+
+    for (const item of items) {
+      const btn = item.querySelector<HTMLButtonElement>('[data-confirm]');
+      const status = item.querySelector<HTMLElement>('[data-status]')!;
+      btn?.addEventListener('click', () => {
+        item.dataset.review = 'false';
+        status.textContent = 'Reviewed';
+        btn.disabled = true;
+        update();
+      });
+    }
+
+    release.addEventListener('click', () => {
+      msg.textContent =
+        'Released to the workpapers. This is a demo: nothing was filed and no data left your browser.';
+      release.disabled = true;
+    });
+
+    root.querySelector('[data-reset]')?.addEventListener('click', () => {
+      for (const item of items) {
+        const btn = item.querySelector<HTMLButtonElement>('[data-confirm]');
+        if (!btn) continue;
+        item.dataset.review = 'true';
+        btn.disabled = false;
+        item.querySelector<HTMLElement>('[data-status]')!.textContent = 'Needs review';
+      }
+      update();
+    });
+  }
+</script>
