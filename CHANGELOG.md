@@ -7,6 +7,11 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ## [Unreleased]
 
+### Fixed
+
+- The contact Worker package declares `"type": "module"`, which removes the
+  Node module-type warning when its tests run.
+
 ### Added
 
 - A light theme for the site. Every color token is `light-dark()`, the page
