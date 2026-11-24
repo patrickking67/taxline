@@ -14,6 +14,15 @@ not cut a tagged release yet, so history below is grouped by date.
 
 ### Added
 
+- An approval gate demo on the home page. Synthetic W-2 fields below the 0.85 review threshold
+  stop for a person; the release button stays disabled until each one is confirmed. It runs
+  offline in the browser and has an e2e test.
+
+### Changed
+
+- The home hero lead now states the mechanism plainly: five agents, a confidence score and a
+  citation on every field, review under 0.85, human approval before anything ships.
+
 - Calculator inputs explain themselves. A value that is not a number, or is outside the field's
   range, now gets a plain message under the field (and `aria-invalid`) saying what was used,
   instead of being changed silently. The check is `checkAmount` in the tax engine, with tests.

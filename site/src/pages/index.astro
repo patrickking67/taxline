@@ -4,6 +4,7 @@ import TopNav from '../components/TopNav.astro';
 import Footer from '../components/Footer.astro';
 import Button from '../components/Button.astro';
 import ConsoleHero from '../components/ConsoleHero.astro';
+import ApprovalGateDemo from '../components/ApprovalGateDemo.astro';
 import FleetOrbit from '../components/FleetOrbit.astro';
 import HowItWorks from '../components/HowItWorks.astro';
 import FeatureShowcase from '../components/FeatureShowcase.astro';
@@ -105,9 +106,9 @@ const steps = [
             <br class="hidden sm:block" /> Keep the human approval.
           </h1>
           <p class="ds-lead reveal mt-5 max-w-xl" style="animation-delay:.1s">
-            A coordinated agent fleet — Relay, Lens, Atlas, Ledger, and Sentry — turns a pile of
-            documents into reviewer-ready workpapers. A confidence score and a citation on every
-            field. You approve. Nothing ships unreviewed.
+            Five agents turn a pile of client documents into reviewer-ready workpapers. Every field
+            carries a confidence score and a citation. Anything under 0.85 goes to a person, and a
+            person approves before anything ships.
           </p>
           <div class="reveal mt-8 flex flex-wrap gap-3" style="animation-delay:.15s">
             <Button href={u('contact')}>Book a demo</Button>
@@ -143,6 +144,22 @@ const steps = [
             </span>
           ))}
         </div>
+      </div>
+    </section>
+
+    <!-- Approval gate demo -->
+    <section id="approval-gate" class="border-b border-border">
+      <div class="mx-auto grid max-w-[1200px] items-start gap-10 px-5 py-20 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+        <div>
+          <p class="ds-eyebrow">The approval gate</p>
+          <h2 class="ds-h2 mt-3">Try it: nothing ships until a person says so.</h2>
+          <p class="ds-body mt-4 text-fg-muted">
+            Fields the agents read with high confidence pass. Low-confidence fields stop at the gate
+            with their source. The release button stays off until each one is confirmed or
+            corrected. This runs in your browser on synthetic data.
+          </p>
+        </div>
+        <ApprovalGateDemo />
       </div>
     </section>
 
