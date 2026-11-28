@@ -13,14 +13,14 @@
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@fontsource/ibm-plex-sans": "^5.2.8",
-    "@iconify-json/lucide": "^1.2.156",
+    "@iconify-json/lucide": "^1.2.159",
     "@taxline/tax-engine": "*",
-    "astro": "^7.4.12",
+    "astro": "^7.4.13",
     "astro-icon": "^1.2.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
-    "@axe-core/playwright": "^4.14.0",
+    "@axe-core/playwright": "^4.14.1",
     "@playwright/test": "^1.65.1",
     "@tailwindcss/vite": "^4.3.5",
     "@types/node": "^22.10.0",
